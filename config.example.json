@@ -1,0 +1,37 @@
+{
+	"path": "/path/to/b0t/folder/",
+
+	"bot_nick": "b0t",
+	"permissions": ["+", "-", "@", "%", "&", "~"],
+
+	"command_prefix": "!",
+
+	"owner": "",
+	"network_name": "localhost",
+	"channels": ["#test"],
+
+	"reg_password": "",
+	"op_password": "",
+
+	"API": {
+		"LastFM": {
+			"api_key": "",
+			"secret": ""
+		},
+		"TraktTV": {
+			"api_key": ""
+		},
+		"Weather": {
+			"api_key": ""
+		},
+		"MWDictionary": {
+			"api_key": ""
+		},
+		"Untappd": {
+			"api_key": "",
+			"secret": ""
+		}
+	},
+
+	"debug": false
+}
