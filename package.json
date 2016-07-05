@@ -6,16 +6,16 @@
   "scripts": {
     "start": "node b0t.js",
     "predeploy": "echo get jiggy wit it",
-    "postdeploy": "echo jiggy been jagged",
+    "postdeploy": "echo jiggy been jagged"
   },
   "main": "b0t.js",
   "repository": {
   "type": "git",
-  "url": "https://github.com/z0mbieparade/b0t"
-},
+    "url": "https://github.com/z0mbieparade/b0t"
+  },
   "bugs": {
-  "url": "https://github.com/z0mbieparade/b0t/issues"
-},
+    "url": "https://github.com/z0mbieparade/b0t/issues"
+  },
   "keywords": [
   "irc",
   "bot",
@@ -28,7 +28,7 @@
   "dictionary",
   "node",
   "node.js"
-],
+  ],
   "dependencies": {
     "irc": "~0.5.0",
     "log-simple": "~0.1.3",
