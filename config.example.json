@@ -23,9 +23,6 @@
 		},
 		"Weather": {
 			"api_key": ""
-		},
-		"MWDictionary": {
-			"api_key": ""
 		}
 	},
 
