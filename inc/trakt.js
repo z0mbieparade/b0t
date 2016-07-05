@@ -1,6 +1,6 @@
 var config = require('.././config.json');
 
-var Trakt = require('node-trakt-api'),
+var Trakt = require('trakt-api'),
     log = require('log-simple')(null, {debug: config.debug}),
     c = require('irc-colors');
 
