@@ -51,6 +51,11 @@ var respond = {
         var str = c.bold.teal('Usage: ') + d.usage + ' ';
         str += c.bold.teal('Description: ') + d.description + '.';
         return str;
+    },
+    "commands": function(d){
+        if(d && d.err) return er(d.err);
+
+        return "Your avaliable commands: " + d.commands.join(', ');
     }
 }
 exports.respond = respond;
@@ -84,6 +89,17 @@ var commands = {
                 if(d && d.err) return er(d.err);
                 
                 var str = c.bold(d.irc_nick) + '\'s ' + d.label + ' has now been set';
+                return str;
+            }
+        },
+        "unreg": {
+            "action": "unregister a user for any service (lastfm, trakt, location)",
+            "commands": ["service", "irc nick"],
+            "perm": "~",
+            "format": function(d){ 
+                if(d && d.err) return er(d.err);
+                
+                var str = c.bold(d.irc_nick) + '\'s ' + d.label + ' has now been removed';
                 return str;
             }
         }
