@@ -26,10 +26,6 @@
 		},
 		"MWDictionary": {
 			"api_key": ""
-		},
-		"Untappd": {
-			"api_key": "",
-			"secret": ""
 		}
 	},
 
