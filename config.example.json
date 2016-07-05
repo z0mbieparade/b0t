@@ -16,7 +16,8 @@
 	"API": {
 		"LastFM": {
 			"api_key": "",
-			"secret": ""
+			"secret": "",
+			"app_name": ""
 		},
 		"TraktTV": {
 			"api_key": ""

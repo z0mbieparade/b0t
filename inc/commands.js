@@ -63,7 +63,7 @@ exports.respond = respond;
 var commands = {
     "other" : {
         "commands": {
-            "action": "list all of the avaliable bot commands.",
+            "action": "list all of the available bot commands.",
             "commands": [],
             "format": function(d){
                 if(d && d.err) return er(d.err);
@@ -161,7 +161,7 @@ var commands = {
             }
         },
         "sa" : {
-            "action": "get similar asrtists by percentage",
+            "action": "get similar artists by percentage",
             "commands": ["artist"],
             "format": function(d){
                 if(d && d.err) return er(d.err);
@@ -249,7 +249,7 @@ var commands = {
         "w" : {
             "action": "get current weather (if no zip or city/state is used, attempts to get weather for your registered location)",
             "commands": ["*zip/city, state"],
-            "register": "loc",
+            "register": "location",
             "format": function(d){
                 if(d && d.err) return er(d.err);
 

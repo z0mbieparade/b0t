@@ -7,7 +7,7 @@ var LastFmNode = require('lastfm').LastFmNode,
 var lastfm = new LastFmNode({
         api_key: config.API.LastFM.api_key,
         secret: config.API.LastFM.secret,
-        useragent: 'appname/necr0bot'
+        useragent: 'appname/' + config.API.LastFM.app_name || 'b0t'
     });
 
 var LFM = exports.LFM = function(){}
