@@ -26,7 +26,8 @@ TTV.prototype.parseMediaInfo = function(media, irc_nick, ttv_nick, ww, callback)
         irc_nick: irc_nick,
         title: '',
         year: '',
-        type: media.type
+        type: media.type,
+        now_watching: media.now_watching
     };
     switch(media.type)
     {
@@ -66,19 +67,22 @@ TTV.prototype.getRecent = function(irc_nick, ttv_nick, ww, callback) {
     trakt.userWatching(ttv_nick, function(err, data) {
         if (err){
           log.error('trakt.userWatching error', err);  
-          callback({'err': ''});
+          callback({'err': err.statusMessage});
           return;
         }
 
         if(data.statusCode && data.statusCode !== 204) {
-            _this.parseMediaInfo(data, irc_nick, ttv_nick, ww, callback);
+             var media = data;
+            media.now_watching = true;
+
+            _this.parseMediaInfo(media, irc_nick, ttv_nick, ww, callback);
 
         //not currently watching anything, get history
         } else if(data.statusCode && data.statusCode === 204) {
             trakt.userHistory(ttv_nick, function(err2, data2) {
                 if (err){
                   log.error('trakt.userHistory error', err2);  
-                  callback({'err': ''});
+                  callback({'err': err.statusMessage});
                   return;
                 } 
 

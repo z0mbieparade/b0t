@@ -7,6 +7,16 @@ You can either download this repository, or git clone it into the directory you 
 cd b0t
 npm install
 ```
+If you run into errors durring the install try running these commands:
+```
+npm update -g
+run npm cache clear
+```
+And then run install again.
+```
+npm install
+```
+
 In the b0t folder, you should see a config.example.json. We want to make a copy of this file, and name it config.json.
 ```
 cp config.example.json config.json
@@ -139,4 +149,4 @@ Command syntax:
             "perm": "+", //if this section isn't present, all users have permission to use command. Otherwise everyone with a + and up can use it.
             "disabled": true //if you add this it disables the command.
         }
-    }
+    }   

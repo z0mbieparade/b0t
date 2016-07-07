@@ -205,8 +205,8 @@ var commands = {
                 if(d && d.err) return er(d.err);
 
                 var str = c.bold(d.irc_nick);
-                str += d.now_watching ? ' is now watching: ' + this.symbols[d.type] + ' ' + c.green.bold(d.title) :
-                 ' last watched: ' + this.symbols[d.type] + ' ' + c.gray.bold(d.title);
+                str += (d.now_watching ? ' is now watching: ' + this.symbols[d.type] + ' ' + c.green.bold(d.title) :
+                 ' last watched: ' + this.symbols[d.type] + ' ' + c.gray.bold(d.title));
                 str += (d.year !== '' ? ' (' + d.year + ')' : '');
             
                 return str;
