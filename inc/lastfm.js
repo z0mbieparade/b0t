@@ -161,7 +161,7 @@ LFM.prototype.getRecent = function(irc_nick, lfm_nick, wp, callback) {
                         }
                     });
                 } else {
-                    var msg = (wp ? '[' + c.bold(irc_nick) + ']' : c.bold(irc_nick)) + ' hasn\'t scrobbled any tracks yet.';
+                    var msg = (wp ? '[' + c.teal(irc_nick) + ']' : c.teal(irc_nick)) + ' hasn\'t scrobbled any tracks yet.';
                     callback({'err': 'hasn\'t scrobbled any tracks'});
                 }
             },

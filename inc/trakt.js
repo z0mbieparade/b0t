@@ -145,8 +145,8 @@ TTV.prototype.getRecent = function(irc_nick, ttv_nick, callback) {
                     var media = data2[0];
                     _this.parseMediaInfo(media, irc_nick, ttv_nick, {now_watching: false}, callback);
                 } else {
-                    log.error(c.bold(irc_nick) + ' hasn\'t scrobbled any media yet.');
-                    callback({'err': c.bold(irc_nick) + ' hasn\'t scrobbled any media yet.'});
+                    log.error(c.teal(irc_nick) + ' hasn\'t scrobbled any media yet.');
+                    callback({'err': c.teal(irc_nick) + ' hasn\'t scrobbled any media yet.'});
                 }
             });
         }

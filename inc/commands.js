@@ -9,12 +9,12 @@ function score(score, max, end)
         score = Number((parseFloat(score) * 100).toFixed(1));
     }
 
-    var score_color = c.bold.teal;
+    var score_color = c.teal;
 
-    if (score < (max * .25)) score_color = c.bold.red;
-    else if (score < (max * .50)) score_color = c.bold.brown;
-    else if (score < (max * .75)) score_color = c.bold.olive;
-    else if (score < (max * .95)) score_color = c.bold.green;
+    if (score < (max * .25)) score_color = c.red;
+    else if (score < (max * .50)) score_color = c.brown;
+    else if (score < (max * .75)) score_color = c.olive;
+    else if (score < (max * .95)) score_color = c.green;
 
     score_str = score_color(score + end);
 
@@ -23,7 +23,7 @@ function score(score, max, end)
 
 function er(err){ //error handling
     console.log(err);
-    return c.bold.red('Error: ' + err);
+    return c.red('Error: ' + err);
 }
 
 var respond = {
@@ -31,31 +31,31 @@ var respond = {
         if(d[0] == '-v') {
             return 'verson: ' + pkg.version; //can we check for updates?
         } else if(d[0] == '-o') {
-            return 'owner: ' + c.bold.rainbow(config.owner);
+            return 'owner: ' + c.rainbow(config.owner);
         } else {
-            return 'for more info try ' + c.bold(config.bot_nick) + ' -v or -o';
+            return 'for more info try ' + c.teal(config.bot_nick) + ' -v or -o';
         }      
 
     },
     "err": function(d){
     },
     "syntax": function(d){
-        return 'Please type ' + c.bold.teal(d.syntax) + ' to ' + d.action;
+        return 'Please type ' + c.teal(d.syntax) + ' to ' + d.action;
     },
     "enter_room": function(d){  //on chat enter
         return 'holla'; 
     },
     "no_users_registered": function(d){
-        return 'No users registered with ' + c.bold(d.label) + ' currently in the channel';
+        return 'No users registered with ' + c.teal(d.label) + ' currently in the channel';
     },
     "not_registered": function(d){
         var register_syntax = config.command_prefix + d.col + ' <' + commands[d.cat][d.col].commands.join('> <') + '>'; 
-        return 'Your ' + c.bold(d.label) + ' is not registered! Please type ' + c.bold.teal(register_syntax) + ' to register it';
+        return 'Your ' + c.teal(d.label) + ' is not registered! Please type ' + c.teal(register_syntax) + ' to register it';
         
     },
     "cmd_help": function(d){
-        var str = c.bold.teal('Usage: ') + d.usage + ' ';
-        str += c.bold.teal('Description: ') + d.description + '.';
+        var str = c.teal('Usage: ') + d.usage + ' ';
+        str += c.teal('Description: ') + d.description + '.';
         return str;
     },
     "commands": function(d){
@@ -70,7 +70,7 @@ var commands = {
             "action": "list all of the available bot commands.",
             "commands": [],
             "format": function(d){
-                var str = c.bold.teal("Avaliable commands: ") + d.commands.join(', ');
+                var str = c.teal("Avaliable commands: ") + d.commands.join(', ');
                 str += c.red(' (for more info, you can type any command followed by help)');
                 return str;
             }
@@ -88,7 +88,7 @@ var commands = {
             "commands": ["service", "irc nick", "data"],
             "perm": "~",
             "format": function(d){ 
-                var str = c.bold(d.irc_nick) + '\'s ' + d.label + ' has now been set';
+                var str = c.teal(d.irc_nick) + '\'s ' + d.label + ' has now been set';
                 return str;
             }
         },
@@ -97,7 +97,7 @@ var commands = {
             "commands": ["service", "irc nick"],
             "perm": "~",
             "format": function(d){ 
-                var str = c.bold(d.irc_nick) + '\'s ' + d.label + ' has now been removed';
+                var str = c.teal(d.irc_nick) + '\'s ' + d.label + ' has now been removed';
                 return str;
             }
         },
@@ -123,9 +123,9 @@ var commands = {
                 if(d.name !== '') title.push(d.name);
                 if(d.album !== '') title.push(d.album); 
 
-                var str = c.bold(d.irc_nick) + ' ';
-                str += d.now_playing ? 'is now playing: ' + c.bold.green(title.join(' - ')) : 'last played: ' + c.bold.gray(title.join(' - ')) 
-                str += ' [' + c.bold(d.play_count + 'x') + '] ' + (d.loved ? c.red('♥') + ' (' : '('); 
+                var str = c.teal(d.irc_nick) + ' ';
+                str += d.now_playing ? 'is now playing: ' + c.green(title.join(' - ')) : 'last played: ' + c.gray(title.join(' - ')) 
+                str += ' [' + d.play_count + 'x] ' + (d.loved ? c.red('♥') + ' (' : '('); 
 
                 if(d.tags.length > 0){
                     var tags = d.tags.splice(0, 4); //max 4 tags
@@ -149,8 +149,8 @@ var commands = {
                 if(d.name !== '') title.push(d.name);
                 if(d.album !== '') title.push(d.album); 
 
-                var str = '[ ' + (d.now_playing ? c.bold.green(d.irc_nick) : c.bold.gray(d.irc_nick)) + ' ] ';
-                str += c.teal(title.join(' - ')) + ' [' + c.bold(d.play_count + 'x') + '] ' + (d.loved ? c.red('♥') + ' (' : '('); 
+                var str = '[ ' + (d.now_playing ? c.green(d.irc_nick) : c.gray(d.irc_nick)) + ' ] ';
+                str += c.teal(title.join(' - ')) + ' [' + d.play_count + 'x] ' + (d.loved ? c.red('♥') + ' (' : '('); 
 
                 if(d.tags.length > 0){
                     var tags = d.tags.splice(0, 2); //max 2 tags
@@ -168,7 +168,7 @@ var commands = {
             "action": "get similar artists by percentage",
             "commands": ["artist"],
             "format": function(d){
-                var str =  c.teal(' Similar to ' + c.bold(d.artist) + ': ');
+                var str =  c.teal(' Similar to ' + c.teal(d.artist) + ': ');
                 var sa = d.similar_artists.map(function(artist){ 
                     return artist.name + ' ' + score(artist.match, 100, '%'); 
                 });
@@ -181,7 +181,7 @@ var commands = {
             "action": "get artist bio",
             "commands": ["artist"],
             "format": function(d){
-                var str =  c.teal(' Bio for ' + c.bold(d.artist) + ': ') + d.bio;
+                var str =  c.teal(' Bio for ' + c.teal(d.artist) + ': ') + d.bio;
                 return str;
             }
         },
@@ -189,7 +189,7 @@ var commands = {
             "action": "register your last.fm username with your irc nick",
             "commands": ["last.fm username"],
             "format": function(d){
-                var str = 'Thanks ' + c.bold(d.irc_nick) + ' your last.fm username was set!';
+                var str = 'Thanks ' + c.teal(d.irc_nick) + ' your last.fm username was set!';
                 return str;
             }
         }
@@ -200,9 +200,9 @@ var commands = {
             "commands": [],
             "register": "trakt",
             "format": function(d) {
-                var str = c.bold(d.irc_nick);
-                str += (d.now_watching ? ' is now watching: ' + this.symbols[d.type] + ' ' + c.green.bold(d.title) :
-                 ' last watched: ' + this.symbols[d.type] + ' ' + c.gray.bold(d.title));
+                var str = c.teal(d.irc_nick);
+                str += (d.now_watching ? ' is now watching: ' + this.symbols[d.type] + ' ' + c.green(d.title) :
+                 ' last watched: ' + this.symbols[d.type] + ' ' + c.gray(d.title));
                 str += (d.year !== '' ? ' (' + d.year + ')' : '');
             
                 return str;
@@ -217,8 +217,8 @@ var commands = {
             "commands": [],
             "format": function(d) {
                 var str = '[ ';
-                str += d.now_watching ? c.bold.green(d.irc_nick) : c.bold.gray(d.irc_nick);
-                str += ' ] ' + this.symbols[d.type] + ' ' + c.teal.bold(d.title) + ' ';
+                str += d.now_watching ? c.green(d.irc_nick) : c.gray(d.irc_nick);
+                str += ' ] ' + this.symbols[d.type] + ' ' + c.teal(d.title) + ' ';
                 (d.year !== '' ? ' (' + d.year + ')' : '');
             
                 return str;
@@ -232,13 +232,13 @@ var commands = {
             "action": "get movies/shows currently trending",
             "commands": ["movies|shows"],
             "format": function(d){
-                var str = c.bold.teal('Trending ');
+                var str = c.teal('Trending ');
                 var high_watch = 0;
 
                 var arr = [];
                 for(var i = 0; i < d.length; i++) {
                     if(i === 0){
-                       str += c.bold.teal(d[i].type + 's: ');
+                       str += c.teal(d[i].type + 's: ');
                        high_watch = d[i].watchers;  
                     }
 
@@ -257,7 +257,7 @@ var commands = {
             "action": "register your trakt.tv username with your irc nick",
             "commands": ["trakt.tv username"],
             "format": function(d){
-                var str = 'Thanks ' + c.bold(d.irc_nick) + ' your trakt.tv username was set!';
+                var str = 'Thanks ' + c.teal(d.irc_nick) + ' your trakt.tv username was set!';
                 return str;
             }
         }
@@ -268,13 +268,13 @@ var commands = {
             "commands": [],
             "register": "untappd",
             "format": function(d) {
-                var str = c.bold(d.irc_nick);
-                str += ' last drank ' + c.yellow.bold(this.symbols['beer']) + ' ' + c.gray.bold(d.beer_name);
+                var str = c.teal(d.irc_nick);
+                str += ' last drank ' + c.yellow(this.symbols['beer']) + ' ' + c.gray(d.beer_name);
         		str += ' (' + d.beer_style + ' - ' + d.beer_abv + '%abv)';
         		str += ' (from ' + d.brewery + ')';
 
         		if (d.venue) {
-        			str += ' (at ' + c.green.bold(d.venue) + ')';
+        			str += ' (at ' + c.green(d.venue) + ')';
         			//UntappdMsg += " on " + checkin.created_at;
         		}
             
@@ -291,13 +291,13 @@ var commands = {
             "action": "get all users in current chan w/ registered untappd nicks last checked in beer",
             "commands": [],
             "format": function(d) {
-                var str = '[ ' + c.bold(d.irc_nick) + ' ] ';
-                str += c.gray.bold(d.beer_name);
+                var str = '[ ' + c.teal(d.irc_nick) + ' ] ';
+                str += c.gray(d.beer_name);
         		str += ' (' + d.beer_style + ' - ' + d.beer_abv + '%abv)';
         		str += ' (from ' + d.brewery + ')';
 
         		if (d.venue) {
-        			str += ' (at ' + c.green.bold(d.venue) + ')';
+        			str += ' (at ' + c.green(d.venue) + ')';
         			//UntappdMsg += " on " + checkin.created_at;
         		}
                     
@@ -314,7 +314,7 @@ var commands = {
             "action": "register your untappd username with your irc nick",
             "commands": ["untappd username"],
             "format": function(d){
-                var str = 'Thanks ' + c.bold(d.irc_nick) + ' your untappd username was set!';
+                var str = 'Thanks ' + c.teal(d.irc_nick) + ' your untappd username was set!';
                 return str;
             }
         }
@@ -325,7 +325,7 @@ var commands = {
             "commands": ["*zip/city, state"],
             "register": "location",
             "format": function(d){
-                var str = 'Weather for ' + c.bold(d.location) + ': ' + this.symbols[d.icon] + ' ' + d.weath + ' ' + d.temp + ' ' + d.humid + ' humidity';
+                var str = 'Weather for ' + c.teal(d.location) + ': ' + this.symbols[d.icon] + ' ' + d.weath + ' ' + d.temp + ' ' + d.humid + ' humidity';
                 return str;
             },
             "symbols": {
@@ -354,7 +354,7 @@ var commands = {
             "action": "register your location with your irc nick",
             "commands": ["zip/city, state"],
             "format": function(d){
-                var str = 'Thanks ' + c.bold(d.irc_nick) + ' your location was set!';
+                var str = 'Thanks ' + c.teal(d.irc_nick) + ' your location was set!';
                 return str;
             }
         }
