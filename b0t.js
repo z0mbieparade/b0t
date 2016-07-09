@@ -241,7 +241,7 @@ var verify_command = function(chan, nick, command, command_args, callback) {
 bot.addListener('message', function(nick, chan, text, message) {
 
     var links = text.match(/(\b(https?|http):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig);
-    if(links.length > 0 && config.parse_links)
+    if(links && links.length && links.length > 0 && config.parse_links)
     {
         for(var i = 0; i < links.length; i++) {
             get_url(links[i], 'sup', function(data){
