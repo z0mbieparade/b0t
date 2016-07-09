@@ -1,14 +1,12 @@
 var config = require('.././config.json');
 
-//log = require('log-simple')(null, {debug: config.debug}),
-var UntappdClient = require('node-untappd'),
-    c             = require('irc-colors');
+var UntappdClient = require('node-untappd');
 
 log.debug('Authenticating with untappd...');
 
 var f_untappd = new UntappdClient(true);
-    f_untappd.setClientId(config.API.UNTAPPD.client_id);
-    f_untappd.setClientSecret(config.API.UNTAPPD.client_secret);
+    f_untappd.setClientId(config.API.UNTAPPD.api_key);
+    f_untappd.setClientSecret(config.API.UNTAPPD.secret);
 
 log.debug('untappd authentication: Successful!');
 
@@ -20,7 +18,8 @@ UTPD.prototype.parseBeerInfo = function(beer, irc_nick, untappd_nick, ww, callba
 
     if (!beer && !beer.response && !beer.response.checkins && !beer.response.checkins.items) {
         log.error('no beer data found');
-        return callback({'err': 'no beer data found'}); 
+        callback({'err': 'no beer data found'}); 
+        return;
     } 
 
     //error, non-fatal
@@ -67,7 +66,8 @@ UTPD.prototype.getBeer = function(irc_nick, untappd_nick, ww, callback) {
           callback({'err': err.statusMessage});
           return;
         } else {
-        	//log.debug('getBeer -> userActivityFeed -> obj: ' + JSON.stringify(obj));
+        
+        log.debug('getBeer -> userActivityFeed -> obj: ' + JSON.stringify(obj));
 		_this.parseBeerInfo(obj, irc_nick, lc_untappd_nick, ww, callback);
 	}
     }, lc_untappd_nick);
