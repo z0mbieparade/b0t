@@ -12,7 +12,8 @@ var config = require('./config.json'),
     flatfile = require('flat-file-db'),
     db = flatfile(__dirname + '/db.db'),
     urban = require('urban'),
-    request = require('request');
+    request = require('request'),
+    Entities = require("html-entities").AllHtmlEntities;;
 
 //only add these things if user has an API key
 if(config.API.LastFM && config.API.LastFM.api_key !== '') {
@@ -76,6 +77,7 @@ bot.addListener('+mode', function(chan, by, mode, argument, message)  {
     bot.send('names', chan);
 });
 
+
 var get_url = function(url, type, callback){
     request(url, function (error, response, body) {
         //Check for error
@@ -88,11 +90,29 @@ var get_url = function(url, type, callback){
             return log.error('Invalid Status Code Returned:', response.statusCode);
         }
 
-        //All is good. Print the body
-        log.debug(body); // Show the HTML for the Modulus homepage.
-
         if(type === 'json') callback(JSON.parse(body));
 
+        if(type === 'sup') {
+
+            var titleRegex = new RegExp("<title>(.*?)(</title>|\n|\r)", "im");
+            var match = body.match(titleRegex);
+
+            // fill titleTag if there is data, otherwise leave it blank
+            var titleTag = "";
+            if(match && match[0]) {
+                titleTag = match[0].replace(/(<([^>]+)>)/ig, "").replace(/\n/ig, "");
+            }
+            // if we came out of that with a title tag, say it in the channel
+            if(titleTag.length > 0) {
+                // change any html entities to their corresponding characters
+                var entities = new Entities();
+                titleTag = entities.decode(titleTag);
+
+                // set up the message and then say it in the channel
+                var urlMsg = titleTag + " (" + url + ")";
+                callback(urlMsg);
+            }
+        }
     });
 }
 
@@ -219,7 +239,16 @@ var verify_command = function(chan, nick, command, command_args, callback) {
 
 
 bot.addListener('message', function(nick, chan, text, message) {
-    if (text.indexOf(config.bot_nick) === 0) {
+
+    var links = text.match(/(\b(https?|http):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig);
+    if(links.length > 0 && config.parse_links)
+    {
+        for(var i = 0; i < links.length; i++) {
+            get_url(links[i], 'sup', function(data){
+                bot.say(chan, data);
+            }); 
+        }
+    } else if (text.indexOf(config.bot_nick) === 0) {
         var command_args_org = text.split(' ');
         command_args_org.shift();
 
