@@ -36,7 +36,7 @@ if(config.API.YouTube && config.API.YouTube.api_key !== ''){
             key: config.API.YouTube.api_key
         };
 } else { //disable yt command, doesn't work manually since yt is under lastfm
-    commands.LastFM.yt.disable = true;
+    commands.LastFM.yt.disabled = true;
 }
 if(config.API.TraktTV && config.API.TraktTV.api_key !== '') {
     var traktTV = require(__dirname + '/inc/trakt.js').TTV,
