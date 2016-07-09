@@ -405,9 +405,9 @@ function verify(fn) {
                         obj[key] = obj[key].replace(/\r?\n|\r/g, ' ');
                     }
 
-                    //if a str is long than 434 char, cut it.
-                    if(obj[key].length > 434){
-                        obj[key] = obj[key].slice(0, 434) + '...';
+                    //if a str is long than 430 char, cut it.
+                    if(obj[key].length > 430){
+                        obj[key] = obj[key].slice(0, 430) + '...';
                     }
 
                 } else if(typeof obj[key] === 'object') {
