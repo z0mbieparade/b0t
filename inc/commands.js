@@ -310,13 +310,13 @@ var commands = {
 
                 var str = c.bold(d.irc_nick);
                 str += ' last drank ' + c.yellow.bold(this.symbols['beer']) + ' ' + c.gray.bold(d.beer_name);
-		str += ' (' + d.beer_style + ' - ' + d.beer_abv + '%abv)';
-		str += ' (from ' + d.brewery + ')';
+        		str += ' (' + d.beer_style + ' - ' + d.beer_abv + '%abv)';
+        		str += ' (from ' + d.brewery + ')';
 
-		if (d.venue) {
-			str += ' (at ' + c.green.bold(d.venue) + ')';
-			//UntappdMsg += " on " + checkin.created_at;
-		}
+        		if (d.venue) {
+        			str += ' (at ' + c.green.bold(d.venue) + ')';
+        			//UntappdMsg += " on " + checkin.created_at;
+        		}
             
                 return str;
             },
@@ -335,14 +335,14 @@ var commands = {
 
                 var str = '[ ' + c.bold(d.irc_nick) + ' ] ';
                 str += c.gray.bold(d.beer_name);
-		str += ' (' + d.beer_style + ' - ' + d.beer_abv + '%abv)';
-		str += ' (from ' + d.brewery + ')';
+        		str += ' (' + d.beer_style + ' - ' + d.beer_abv + '%abv)';
+        		str += ' (from ' + d.brewery + ')';
 
-		if (d.venue) {
-			str += ' (at ' + c.green.bold(d.venue) + ')';
-			//UntappdMsg += " on " + checkin.created_at;
-		}
-            
+        		if (d.venue) {
+        			str += ' (at ' + c.green.bold(d.venue) + ')';
+        			//UntappdMsg += " on " + checkin.created_at;
+        		}
+                    
                 return str;
             },
             "symbols": {

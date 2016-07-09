@@ -62,6 +62,9 @@ You will need an api_key here. The docs should have a link for creating your key
 **Weather** - https://www.wunderground.com/weather/api/d/pricing.html
 You can get a free key for Weather Underground here, so long as you don't go over a certain number of requests a day. 
 
+**Untappd** - https://untappd.com/api/docs
+Untappd.com takes a couple of weeks to approve your api_key and secret.
+
 ----------
 
 ## Starting your bot
@@ -119,6 +122,14 @@ command | action | default permission | syntax
 w | get current weather (if no zip or city/state is used, attempts to get weather for your registered location) | all users | `!w <*zip/city, state>`
 location | register your location with your irc nick | all users | `!location <zip/city, state>`
 
+###Untappd Commands
+
+command | action | default permission | syntax
+------- | ------ | ------------------ | ------
+ut | get your last beer drank from untappd.com | all users | `!ut`
+wu | get all users in current chan w/ registered untappd nicks last checked in beer | all users | `!wu`
+untappd | register your untappd username with your irc nick | all users | `!untappd <untapped.com username>`
+
 ###Urban Dictionary
 Note that urban dictionary doesn't require an api key to use.
 
@@ -163,3 +174,4 @@ Command syntax:
 Thanks to everyone in oontz, but especially:
 - [jrwren](https://github.com/jrwren )
 - [plstate](https://github.com/plstate )
+- [thegleek](https://github.com/thegleek )
