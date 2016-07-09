@@ -1,6 +1,6 @@
 {
   "name": "b0t",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "irc node bot with trakt.tv, last.fm, urban dictionary, and more functionality",
   "author": "<z0mbieparade.com>",
   "scripts": {
@@ -37,7 +37,8 @@
     "urban": "~0.3.1",
     "lastfm": "~0.9.2",
     "wunderbar": "~0.0.2",
-    "trakt-api": "https://github.com/z0mbieparade/node-trakt-api"
+    "trakt-api": "https://github.com/z0mbieparade/node-trakt-api",
+    "request":  "~2.72.0"
   },
   "preferGlobal": false,
   "private": true,

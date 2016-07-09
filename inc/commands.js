@@ -1,18 +1,22 @@
 var config = require('.././config.json'),
-    c = require('irc-colors');
+    c = require('irc-colors'),
+    pkg = require('.././package.json');
 
-function score(score)
+function score(score, max, end)
 {
-    score = Number((parseFloat(score) * 100).toFixed(1));
+    max = max || 100;
+    if(end === '%'){
+        score = Number((parseFloat(score) * 100).toFixed(1));
+    }
 
     var score_color = c.bold.teal;
 
-    if (score < 25) score_color = c.bold.red;
-    else if (score < 50) score_color = c.bold.brown;
-    else if (score < 75) score_color = c.bold.olive;
-    else if (score < 95) score_color = c.bold.green;
+    if (score < (max * .25)) score_color = c.bold.red;
+    else if (score < (max * .50)) score_color = c.bold.brown;
+    else if (score < (max * .75)) score_color = c.bold.olive;
+    else if (score < (max * .95)) score_color = c.bold.green;
 
-    score_str = score_color(score + '%');
+    score_str = score_color(score + end);
 
     return score_str;
 }
@@ -23,6 +27,18 @@ function er(err){ //error handling
 }
 
 var respond = {
+    "say_my_name": function(d){
+        if(d && d.err) return er(d.err);
+
+        if(d[0] == '-v') {
+            return 'verson: ' + pkg.version; //can we check for updates?
+        } else if(d[0] == '-o') {
+            return 'owner: ' + c.bold.rainbow(config.owner);
+        } else {
+            return 'for more info try ' + c.bold(config.bot_nick) + ' -v or -o';
+        }      
+
+    },
     "err": function(d){
         if(d && d.err) return er(d.err);
     },
@@ -102,6 +118,18 @@ var commands = {
                 var str = c.bold(d.irc_nick) + '\'s ' + d.label + ' has now been removed';
                 return str;
             }
+        },
+        "updates": {
+            "action": "check for updates to b0t script",
+            "commands": [],
+            "perm": "@",
+            "format": function(d){ 
+                if(d && d.err) return er(d.err);
+                
+                if(d === pkg.version) return 'I am up to date!';
+
+                return 'Please update me! My version: ' + pkg.version + ' Current version: ' + d;
+            }
         }
     },
     "LastFM" : {
@@ -168,7 +196,7 @@ var commands = {
 
                 var str =  c.teal(' Similar to ' + c.bold(d.artist) + ': ');
                 var sa = d.similar_artists.map(function(artist){ 
-                    return artist.name + ' ' + score(artist.match); 
+                    return artist.name + ' ' + score(artist.match, 100, '%'); 
                 });
                 str += sa.join(', ');
 
@@ -232,6 +260,33 @@ var commands = {
             "symbols": {
                 "episode": "📺",
                 "movie": "🎥"
+            }
+        },
+        "trend" : {
+            "action": "get movies/shows currently trending",
+            "commands": ["movies|shows"],
+            "format": function(d){
+                if(d && d.err) return er(d.err);
+
+                var str = c.bold.teal('Trending ');
+                var high_watch = 0;
+
+                var arr = [];
+                for(var i = 0; i < d.length; i++) {
+                    if(i === 0){
+                       str += c.bold.teal(d[i].type + 's: ');
+                       high_watch = d[i].watchers;  
+                    }
+
+                    var watch = d[i].title;
+                    if(d[i].year !== '') watch += ' (' + d[i].year + ')';
+                    watch += ' ' + score(d[i].watchers, high_watch, 'x');
+
+                    arr.push(watch);
+                }
+                str += arr.join(', ');
+
+                return str;
             }
         },
         "trakt" : {

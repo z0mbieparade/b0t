@@ -8,8 +8,45 @@ var trakt = Trakt(config.API.TraktTV.api_key, {noReject: true});
 
 var TTV = exports.TTV = function(){}
 
-TTV.prototype.parseMediaInfo = function(media, irc_nick, ttv_nick, ww, callback) {
-    log.debug('parseMediaInfo:', media);
+TTV.prototype.getTrending = function(media_type, callback)
+{
+    var _this = this;
+    if(media_type !== 'movies' && media_type !== 'shows'){
+        callback({'err': 'movies and shows are the only accepted parameters'}); 
+        return;
+    }
+
+    if(media_type === 'movies'){
+        trakt.movieTrending(function(err, data){
+            if (err){
+              log.error('trakt.movieTrending error', err);  
+              callback({'err': err.statusMessage});
+              return;
+            }
+
+            _this.parseMediaInfo(data, null, null, {type: 'movie'}, function(new_data){
+                log.debug(new_data)
+                callback(new_data);
+            });
+        });
+    } else if(media_type === 'shows') {
+        trakt.showTrending(function(err, data){
+            if (err){
+              log.error('trakt.showTrending error', err);  
+              callback({'err': err.statusMessage});
+              return;
+            }
+
+            _this.parseMediaInfo(data, null, null, {type: 'show'}, function(new_data){
+                log.debug(new_data)
+                callback(new_data);
+            });
+        });
+    } 
+};
+
+TTV.prototype.parseMediaInfo = function(media, irc_nick, ttv_nick, merge_info, callback) {
+   log.debug('parseMediaInfo:', media);
     if (!media){
         log.error('no media found');
         return callback({'err': 'no media found'}); 
@@ -22,46 +59,63 @@ TTV.prototype.parseMediaInfo = function(media, irc_nick, ttv_nick, ww, callback)
         return;
     }
 
-    var media_info = {
-        irc_nick: irc_nick,
-        title: '',
-        year: '',
-        type: media.type,
-        now_watching: media.now_watching
-    };
-    switch(media.type)
-    {
-        case 'episode':
-            var title = [];
-            if(media.show.title) title.push(media.show.title);
-            if(media.episode.title) title.push(media.episode.title);
+    if(!media.length) media = [media];
 
-            var season = media.season ? media.season : media.episode.season;
-            var episode = media.number ? media.number : media.episode.number;
+    var media_arr = [];
+    for(var m = 0; m < media.length; m++){
+        var media_info = {
+            title: '',
+            year: '',
+            type: media[m].type || ''
+        };
 
-            var SE = 'S' + (season < 10 ? '0' + season : season);
-            SE += 'E' + (episode < 10 ? '0' + episode : episode);
+        for(var key in merge_info){
+            media_info[key] = merge_info[key];
+        }
 
-            title.push(SE);
+        if(media[m].watchers) media_info.watchers = media[m].watchers;
+        if(media[m].now_watching !== undefined) media_info = media[m].now_watching;
+        if(irc_nick) media_info.irc_nick = irc_nick;
 
-            media_info.title = title.join(' - ');
-            media_info.year = media.show.year;
-            break;
+        switch(media_info.type)
+        {
+            case 'episode':
+                var title = [];
+                if(media[m].show.title) title.push(media[m].show.title);
+                if(media[m].episode.title) title.push(media[m].episode.title);
 
-        case 'movie':
-            media_info.title = media.movie.title;
-            media_info.year = media.movie.year;
-            break;
+                var season = media[m].season ? media[m].season : media[m].episode.season;
+                var episode = media[m].number ? media[m].number : media[m].episode.number;
 
-        default:
-            media_info = media;
-            break;
+                var SE = 'S' + (season < 10 ? '0' + season : season);
+                SE += 'E' + (episode < 10 ? '0' + episode : episode);
+
+                title.push(SE);
+
+                media_info.title = title.join(' - ');
+                media_info.year = media[m].show.year;
+                break;
+            case 'show': 
+                media_info.title = media[m].show.title;
+                media_info.year = media[m].show.year;
+                break;
+            case 'movie':
+                media_info.title = media[m].movie.title;
+                media_info.year = media[m].movie.year;
+                break;
+
+            default:
+                media_info = media[m];
+                break;
+        }
+
+        media_arr.push(media_info);
     }
     
-    callback(media_info);
+    callback(media_arr.length === 1 ? media_arr[0] : media_arr);
 };
 
-TTV.prototype.getRecent = function(irc_nick, ttv_nick, ww, callback) {
+TTV.prototype.getRecent = function(irc_nick, ttv_nick, callback) {
     var _this = this;
 
     trakt.userWatching(ttv_nick, function(err, data) {
@@ -73,9 +127,8 @@ TTV.prototype.getRecent = function(irc_nick, ttv_nick, ww, callback) {
 
         if(data.statusCode && data.statusCode !== 204) {
              var media = data;
-            media.now_watching = true;
 
-            _this.parseMediaInfo(media, irc_nick, ttv_nick, ww, callback);
+            _this.parseMediaInfo(media, irc_nick, ttv_nick, {now_watching: true}, callback);
 
         //not currently watching anything, get history
         } else if(data.statusCode && data.statusCode === 204) {
@@ -86,10 +139,11 @@ TTV.prototype.getRecent = function(irc_nick, ttv_nick, ww, callback) {
                   return;
                 } 
 
+                log.debug(data2)
+
                 if(data2.length > 0) {
                     var media = data2[0];
-                    media.now_watching = false;
-                    _this.parseMediaInfo(media, irc_nick, ttv_nick, ww, callback);
+                    _this.parseMediaInfo(media, irc_nick, ttv_nick, {now_watching: false}, callback);
                 } else {
                     log.error(c.bold(irc_nick) + ' hasn\'t scrobbled any media yet.');
                     callback({'err': c.bold(irc_nick) + ' hasn\'t scrobbled any media yet.'});
@@ -99,9 +153,7 @@ TTV.prototype.getRecent = function(irc_nick, ttv_nick, ww, callback) {
         else
         {
             var media = data;
-            media.now_watching = true;
-
-            _this.parseMediaInfo(media, irc_nick, ttv_nick, ww, callback);
+            _this.parseMediaInfo(media, irc_nick, ttv_nick, {now_watching: true}, callback);
         }
     });
 }

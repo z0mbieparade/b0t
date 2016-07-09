@@ -2,6 +2,7 @@
 
 //require ALL OF THE THINGS
 var config = require('./config.json'),
+    pkg = require('./package.json'),
     CMD = require(__dirname + '/inc/./commands.js'),
     commands = CMD.commands,
     respond = CMD.respond,
@@ -9,21 +10,22 @@ var config = require('./config.json'),
     irc = require('irc'),
     c = require('irc-colors'),
     flatfile = require('flat-file-db'),
-    db = flatfile(__dirname + '/db.db');
-//    urban = require('urban');
+    db = flatfile(__dirname + '/db.db'),
+    urban = require('urban'),
+    request = require('request');
 
 //only add these things if user has an API key
-if(config.API.LastFM.api_key !== '') {
+if(config.API.LastFM && config.API.LastFM.api_key !== '') {
     var lastFM = require(__dirname + '/inc/lastfm.js').LFM,
         lfm = new lastFM();
 }
-if(config.API.TraktTV.api_key !== '') {
+if(config.API.TraktTV && config.API.TraktTV.api_key !== '') {
     var traktTV = require(__dirname + '/inc/trakt.js').TTV,
         ttv = new traktTV();
 }
-if(config.API.Weather.api_key !== '') {
-    var wunderbar = require('wunderbar'),
-        weather = new wunderbar(config.API.Weather.api_key);
+if(config.API.Weather && config.API.Weather.api_key !== '') {
+    var Weather = require(__dirname + '/inc/weather.js').WU,
+        wu = new Weather();
 }
 
 var bot = new irc.Client(config.network_name, config.bot_nick, {
@@ -35,15 +37,15 @@ db.on('open', function() {
     log.debug('DB Loaded');
 });
 
-var names = {}; // { channel : { nick: rank }} 
+var names = {}; // { channel : { nick: rank }}
 
 bot.addListener('error', function(message) {
     log.error('ERROR: %s: %s', message.command, message.args.join(' '));
 });
 
 bot.addListener('registered', function(message) {
-    bot.say('NickServ', 'identify ' + config.reg_password);
-    bot.send('oper', config.bot_nick, config.op_password);
+    if(config.reg_password !== '') bot.say('NickServ', 'identify ' + config.reg_password);
+    if(config.op_password !== '') bot.send('oper', config.bot_nick, config.op_password);
 });
 
 bot.addListener('join', function(chan, nick, message) {
@@ -51,17 +53,20 @@ bot.addListener('join', function(chan, nick, message) {
     if (nick === config.bot_nick) {
         bot.say(chan, respond.enter_room());
         bot.send('samode', chan, '+a', config.bot_nick);
-    } else if (nick === config.owner) {
-        bot.send('samode', chan, '+q', config.owner);
-    } else {
-        //bot.send('samode', chan, '+v', nick);
     }
-
     bot.send('names', chan);
 });
 
 bot.addListener('names', function(chan, nicks) {
     names[chan] = nicks;
+
+    for(var nick in nicks){
+        if (nick === config.owner && nicks[nick] !== '~') {
+            bot.send('samode', chan, '+q', config.owner);
+        } else if(nicks[nick] === ''){
+            if(config.voice_users_on_join) bot.send('samode', chan, '+v', nick);
+        }
+    }
 });
 
 bot.addListener('+mode', function(chan, by, mode, argument, message)  {
@@ -70,6 +75,26 @@ bot.addListener('+mode', function(chan, by, mode, argument, message)  {
 bot.addListener('+mode', function(chan, by, mode, argument, message)  {
     bot.send('names', chan);
 });
+
+var get_url = function(url, type, callback){
+    request(url, function (error, response, body) {
+        //Check for error
+        if(error){
+            return log.error('Error:', error);
+        }
+
+        //Check for right status code
+        if(response.statusCode !== 200){
+            return log.error('Invalid Status Code Returned:', response.statusCode);
+        }
+
+        //All is good. Print the body
+        log.debug(body); // Show the HTML for the Modulus homepage.
+
+        if(type === 'json') callback(JSON.parse(body));
+
+    });
+}
 
 
 /* data = {
@@ -77,11 +102,11 @@ bot.addListener('+mode', function(chan, by, mode, argument, message)  {
     cat: 'Command Category',
     col: 'db_col_name'
 } */
-var get_user_data = function(chan, nick, data, callback) { 
+var get_user_data = function(chan, nick, data, callback) {
     var user_data = db.get(nick);
     if(user_data && user_data[data.col] && user_data[data.col] !== ''){
         callback(user_data[data.col]);
-    } else {    
+    } else {
         bot.say(chan, respond.not_registered(data));
     }
 }
@@ -90,16 +115,16 @@ var get_user_data = function(chan, nick, data, callback) {
     label: 'name name',
     col: 'db_col_name'
 } */
-var get_all_users_in_chan_data = function(chan, nick, data, callback) {   
+var get_all_users_in_chan_data = function(chan, nick, data, callback) {
     var rows = {},
         count = 0;
-    Object.keys(names[chan]).forEach(function(key) { 
+    Object.keys(names[chan]).forEach(function(key) {
         var user_data = db.get(key);
         if(user_data && user_data[data.col] && user_data[data.col] !== '')
         {
             rows[key] = user_data[data.col];
             count++;
-        } 
+        }
     });
 
     if (count === 0) {
@@ -113,7 +138,7 @@ var get_all_users_in_chan_data = function(chan, nick, data, callback) {
     col: 'db_col_name',
     data: 'data to update col to'
 } */
-var update_user = function(chan, nick, data, callback) { 
+var update_user = function(chan, nick, data, callback) {
     var user_data = db.get(nick) || {};
     user_data[data.col] = data.data;
 
@@ -132,7 +157,7 @@ var verify_command = function(chan, nick, command, command_args, callback) {
         for(var cmd in commands[category]) {
             if(cmd === command){
                 command_data = commands[category][cmd];
-                command_category = category; 
+                command_category = category;
             }
         }
     }
@@ -147,13 +172,13 @@ var verify_command = function(chan, nick, command, command_args, callback) {
     //if disabled, return
     if(command_data.disabled){
         log.error('Command disabled');
-        return;  
+        return;
     }
 
     //if API key required but not in config, return
     if(config.API[command_category] && config.API[command_category].api_key === ''){
         log.error('No API key');
-        return;  
+        return;
     }
 
     //if bad permissions, return
@@ -192,60 +217,14 @@ var verify_command = function(chan, nick, command, command_args, callback) {
     }
 };
 
-var get_weather = function(chan, loc, set_loc, nick, callback) {
-    weather.conditions(loc, function(err, res) {
-        if(err) {
-            log.error(err);
-            bot.say(chan, 'error');
-        } else {
-            if(res.response.error)
-            {
-                bot.say(chan, res.response.error.description);
-            }
-            else if(res.current_observation)
-            {
-                var say_weather = function()
-                {
-                    log.debug(res.current_observation);
-
-                    var data = {
-                        irc_nick: nick,
-                        location: res.current_observation.display_location.full,
-                        weath: res.current_observation.weather,
-                        temp: res.current_observation.temperature_string,
-                        humid: res.current_observation.relative_humidity,
-                        icon: res.current_observation.icon
-                    }
-
-                    callback(data);
-                }
-
-                if(set_loc)
-                {
-                    var loc_set = res.current_observation.display_location.zip !== '00000' ? 
-                        res.current_observation.display_location.zip : res.current_observation.display_location.full;
-                    
-                    update_user(chan, nick, {
-                        label: 'location',
-                        col: 'location',
-                        data: loc_set
-                    }, function(){
-                        say_weather();
-                    });
-
-                } else {
-                    say_weather()
-                }
-            } else if (res.response.results) {
-                bot.say(chan, respond.err({'err': 'There are ' + res.response.results.length + ' locations with that name. Please be more specific.'}));
-            }
-        }
-    });
-}
 
 bot.addListener('message', function(nick, chan, text, message) {
+    if (text.indexOf(config.bot_nick) === 0) {
+        var command_args_org = text.split(' ');
+        command_args_org.shift();
 
-    if (text.indexOf(config.command_prefix) === 0) {
+        bot.say(chan, respond.say_my_name(command_args_org));
+    } else if (text.indexOf(config.command_prefix) === 0) {
         var command_args_org = text.split(' ');
         var command = command_args_org[0].slice(1);
         command_args_org.shift();
@@ -277,10 +256,12 @@ bot.addListener('message', function(nick, chan, text, message) {
                     var cmd_arr = [];
                     for(var category in commands) {
                         for(var cmd in commands[category]) {
-                            if(cmd === 'commands' || 
+                            if( cmd === 'commands' ||
                                 commands[category][cmd].disabled ||
-                                (config.API[category] && config.API[category].api_key === '')) 
+                                (config.API[category] && config.API[category].api_key === '') ||
+                                (commands[category][cmd].perm && config.permissions.indexOf(names[chan][nick]) < config.permissions.indexOf(commands[category][cmd].perm)))
                                 continue;
+
                             cmd_arr.push(config.command_prefix + cmd)
                         }
                     }
@@ -312,6 +293,14 @@ bot.addListener('message', function(nick, chan, text, message) {
                     }, function(data){
                         bot.say(chan, command_data.format(data));
                     });
+                    break;
+                case 'updates':
+                    var data = get_url(
+                        'https://raw.githubusercontent.com/z0mbieparade/b0t/master/package.json', 
+                        'json',
+                        function(data){
+                           bot.say(chan, command_data.format(data.version));
+                       });
                     break;
 
                 //LAST.FM
@@ -377,7 +366,7 @@ bot.addListener('message', function(nick, chan, text, message) {
                         cat: 'TraktTV',
                         col: 'trakt'
                     }, function(trakt_un){
-                        ttv.getRecent(nick, trakt_un, false, function(data) {
+                        ttv.getRecent(nick, trakt_un, function(data) {
                             bot.say(chan, command_data.format(data));
                         });
                     });
@@ -400,10 +389,15 @@ bot.addListener('message', function(nick, chan, text, message) {
                         }
 
                         for(var trakt_un in user_dups){
-                            ttv.getRecent(irc_un, user_dups[trakt_un].join('|'), true, function(data) {
+                            ttv.getRecent(user_dups[trakt_un].join('|'), trakt_un, function(data) {
                                 bot.say(chan, command_data.format(data));
                             });
                         }
+                    });
+                    break;
+                case 'trend':
+                    ttv.getTrending(command_args[0], function(data) {
+                        bot.say(chan, command_data.format(data));
                     });
                     break;
                 case 'trakt':
@@ -424,19 +418,25 @@ bot.addListener('message', function(nick, chan, text, message) {
                             cat: 'Weather',
                             col: 'location'
                         }, function(user_data){
-                            get_weather(chan, user_data, false, nick, function(data){
+                            wu.get_weather(user_data, false, function(data){
                                 bot.say(chan, command_data.format(data));
                             });
                         });
                     } else {
-                        get_weather(chan, command_args.join(' '), false, nick, function(data){
+                        wu.get_weather(command_args.join(' '), nick, function(data){
                             bot.say(chan, command_data.format(data));
                         });
                     }
                     break;
                 case 'location':
-                    get_weather(chan, command_args.join(' '), true, nick, function(data){
-                        bot.say(chan, command_data.format(data));
+                    wu.set_location(command_args.join(' '), nick, function(data){
+                        update_user(chan, nick, {
+                            label: 'location',
+                            col: 'location',
+                            data: data.location
+                        }, function(){
+                            bot.say(chan, command_data.format(data));
+                        });
                     });
                     break;
 

@@ -42,8 +42,9 @@ network_name | the network name for the irc channel. if your bot is running on t
 channels | an array of channels you want your bot to join. | ["#test1", "#test2"]
 reg_password | NickServ registration password. You don't have to have this, but if your bot isn't registered it may cause problems with commands. | "bot_nickserv_pw"
 op_password | if your bot is an oper on your network, set their oper password here. | "bot_oper_password"
+voice_users_on_join | will autovoice everyone in the room when they join, or the bot joins. NOTE: atheme uses, if ChanServ baby sits your room, it may de-voice. | true/false
 API | If you would like to use a set of commands that require and API key, you must go register for that API key and copy and paste it here. DO NOT DELETE THESE SECTIONS. If you don't want to use a set of commands, just leave the api_key section blank. This will automatically disable all of the commands that require the key. | 
-debug | Generates more logs in your console. If you're having an issue with the bot, good to set to true, otherwise just leave it as false. | false
+debug | Generates more logs in your console. If you're having an issue with the bot, good to set to true, otherwise just leave it as false. | true/false
 
 
 ----------
@@ -75,6 +76,7 @@ If all goes well your bot should start up and join your network and channels. Yo
 
 ## Bot Commands
 A list of all of the currently available commands.
+You can also type [bot_nick] -o or -v to have the bot say it's owner or version.
 
 ###Other Commands
 general commands that don't have a specific category
@@ -85,6 +87,7 @@ commands | list all of the available bot commands for user's permission level | 
 set | set the channel topic | all users with voice | `!set <topic>`
 reg | register a user for any service (lastfm, trakt, location) | owner | `!reg <service> <irc nick> <data>`
 unreg | unregister a user for any service (lastfm, trakt, location) | owner | `!unreg <service> <irc nick>`
+updates | check for updates to b0t script | ops | `!updates`
 
 ###Last.FM Commands
 !np and !wp require a last.fm account, and registration with the bot to use.
@@ -106,6 +109,7 @@ command | action | default permission | syntax
 ------- | ------ | ------------------ | ------
 nw | get your last scrobbled show/movie from trakt.tv | all users | `!nw`
 ww | get all users in current chan w/ registered trakt.tv nicks last scrobbled show/movie | all users | `!ww`
+trend | list top 5 trending movies/shows | all users | `!trend <'movies' or 'shows'>`
 trakt | register your trakt.tv username with your irc nick | all users | `!trakt <trakt.tv username>`
 
 ###Weather Commands
@@ -149,4 +153,13 @@ Command syntax:
             "perm": "+", //if this section isn't present, all users have permission to use command. Otherwise everyone with a + and up can use it.
             "disabled": true //if you add this it disables the command.
         }
-    }   
+    }
+
+
+----------
+
+
+###Contributers
+Thanks to everyone in oontz, but especially:
+- [jrwren](https://github.com/jrwren )
+- [plstate](https://github.com/plstate )

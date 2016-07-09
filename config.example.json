@@ -1,6 +1,4 @@
 {
-	"path": "/path/to/b0t/folder/",
-
 	"bot_nick": "b0t",
 	"permissions": ["+", "-", "@", "%", "&", "~"],
 
@@ -12,6 +10,8 @@
 
 	"reg_password": "",
 	"op_password": "",
+
+	"voice_users_on_join": false,
 
 	"API": {
 		"LastFM": {
