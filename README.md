@@ -33,7 +33,6 @@ Go thru your new config.json file, line by line and make sure you have everythin
 
 key | description | example
 --- | ----------- | -------
-path | The path to your b0t folder | "/home/user/b0t/"
 bot_nick  | the nickname your bot has on the irc server | "b0t"
 permissions | order these from lowest to highest user permission symbols in the irc. these are used to permission commands if you don't want to give everyone access to a command in the chan. | ["+", "-", "@", "%", "&", "~"]
 command_prefix | this is the character that starts every command that the bot listens for. (i.e. !np) | "!"
@@ -43,6 +42,7 @@ channels | an array of channels you want your bot to join. | ["#test1", "#test2"
 reg_password | NickServ registration password. You don't have to have this, but if your bot isn't registered it may cause problems with commands. | "bot_nickserv_pw"
 op_password | if your bot is an oper on your network, set their oper password here. | "bot_oper_password"
 voice_users_on_join | will autovoice everyone in the room when they join, or the bot joins. NOTE: atheme uses, if ChanServ baby sits your room, it may de-voice. | true/false
+parse_links | parse links in chat, and say their title | true/false
 API | If you would like to use a set of commands that require and API key, you must go register for that API key and copy and paste it here. DO NOT DELETE THESE SECTIONS. If you don't want to use a set of commands, just leave the api_key section blank. This will automatically disable all of the commands that require the key. | 
 debug | Generates more logs in your console. If you're having an issue with the bot, good to set to true, otherwise just leave it as false. | true/false
 

@@ -3,3 +3,4 @@
 config.json
 db.db
 node_modules/*
+logs/*
