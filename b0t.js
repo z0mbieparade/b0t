@@ -1,20 +1,29 @@
 #!/usr/bin/env node
 
 //require ALL OF THE THINGS
-var config = require('./config.json'),
-    pkg = require('./package.json'),
-    CMD = require(__dirname + '/inc/./commands.js'),
+var config   = require('./config.json'),
+    pkg      = require('./package.json'),
+    CMD      = require(__dirname + '/inc/./commands.js'),
     commands = CMD.commands,
-    respond = CMD.respond,
-    log = require('log-simple')(null, {debug: config.debug}),
-    irc = require('irc'),
-    c = require('irc-colors'),
+    respond  = CMD.respond,
+    mLog4js  = require('log4js'),
+    irc      = require('irc'),
+    c        = require('irc-colors'),
     flatfile = require('flat-file-db'),
-    db = flatfile(__dirname + '/db.db'),
-    urban = require('urban'),
-    request = require('request'),
-    Entities = require("html-entities").AllHtmlEntities;;
+    db       = flatfile(__dirname + '/db.db'),
+    urban    = require('urban'),
+    request  = require('request'),
+    Entities = require("html-entities").AllHtmlEntities;
 
+//start logs
+mLog4js.loadAppender('file');
+mLog4js.addAppender(mLog4js.appenders.file(__dirname + '/logs/' + config.bot_nick + '.log'));
+if (config.debug) { mLog4js.replaceConsole(); }
+global.log = mLog4js.getLogger('logfile');
+log.setLevel('ALL');
+log.debug("------------------------------------------------------------");
+log.debug("Initializing...");
+ 
 //only add these things if user has an API key
 if(config.API.LastFM && config.API.LastFM.api_key !== '') {
     var lastFM = require(__dirname + '/inc/lastfm.js').LFM,
@@ -27,6 +36,10 @@ if(config.API.TraktTV && config.API.TraktTV.api_key !== '') {
 if(config.API.Weather && config.API.Weather.api_key !== '') {
     var Weather = require(__dirname + '/inc/weather.js').WU,
         wu = new Weather();
+}
+if(config.API.UNTAPPD.api_key !== '') {
+    var m_UNTAPPD = require(__dirname + '/inc/untappd.js').UTPD,
+        m_untappd = new m_UNTAPPD();
 }
 
 var bot = new irc.Client(config.network_name, config.bot_nick, {
@@ -433,6 +446,52 @@ bot.addListener('message', function(nick, chan, text, message) {
                     update_user(chan, nick, {
                             label: 'trakt.tv username',
                             col: 'trakt',
+                            data: command_args[0]
+                    }, function(data){
+                        bot.say(chan, command_data.format(data));
+                    });
+                    break;
+
+                //UNTAPPD
+                case 'ut':
+                    get_user_data(chan, nick, {
+                        label: 'untappd username',
+                        cat: 'UNTAPPD',
+                        col: 'untappd'
+                    }, function(untappd_un){
+                        m_untappd.getBeer(nick, untappd_un, false, function(data) {
+                            bot.say(chan, command_data.format(data));
+                        });
+                    });
+                    break;
+                case 'wu':
+                    get_all_users_in_chan_data(chan, nick, {
+                        label: 'untappd',
+                        col: 'untappd'
+                    }, function(data){
+                        log.debug(data);
+                        var user_dups = {};
+                        for(var irc_un in data){
+                            var untappd_un = data[irc_un];
+
+                            if(user_dups[untappd_un]){
+                                user_dups[untappd_un].push(irc_un);
+                            } else {
+                                user_dups[untappd_un] = [irc_un];
+                            }
+                        }
+
+                        for(var untappd_un in user_dups){
+                            m_untappd.getBeer(irc_un, user_dups[untappd_un].join('|'), true, function(data) {
+                                bot.say(chan, command_data.format(data));
+                            });
+                        }
+                    });
+                    break;
+                case 'untappd':
+                    update_user(chan, nick, {
+                            label: 'untappd username',
+                            col: 'untappd',
                             data: command_args[0]
                     }, function(data){
                         bot.say(chan, command_data.format(data));
