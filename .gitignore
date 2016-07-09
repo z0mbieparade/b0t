@@ -3,8 +3,4 @@
 config.json
 db.db
 node_modules/*
-<<<<<<< HEAD
 logs/*
-=======
-logs/*
->>>>>>> ef2626d887188caff1e92013e58b844cc8445737
