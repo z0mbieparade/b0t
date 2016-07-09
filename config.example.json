@@ -12,6 +12,7 @@
 	"op_password": "",
 
 	"voice_users_on_join": false,
+	"parse_links": true,
 
 	"API": {
 		"LastFM": {
