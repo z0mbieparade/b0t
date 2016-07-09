@@ -28,8 +28,6 @@ function er(err){ //error handling
 
 var respond = {
     "say_my_name": function(d){
-        if(d && d.err) return er(d.err);
-
         if(d[0] == '-v') {
             return 'verson: ' + pkg.version; //can we check for updates?
         } else if(d[0] == '-o') {
@@ -40,37 +38,27 @@ var respond = {
 
     },
     "err": function(d){
-        if(d && d.err) return er(d.err);
     },
     "syntax": function(d){
-        if(d && d.err) return er(d.err);
         return 'Please type ' + c.bold.teal(d.syntax) + ' to ' + d.action;
     },
     "enter_room": function(d){  //on chat enter
-        if(d && d.err) return er(d.err);
         return 'holla'; 
     },
     "no_users_registered": function(d){
-        if(d && d.err) return er(d.err);
         return 'No users registered with ' + c.bold(d.label) + ' currently in the channel';
     },
     "not_registered": function(d){
-        if(d && d.err) return er(d.err);
-
         var register_syntax = config.command_prefix + d.col + ' <' + commands[d.cat][d.col].commands.join('> <') + '>'; 
         return 'Your ' + c.bold(d.label) + ' is not registered! Please type ' + c.bold.teal(register_syntax) + ' to register it';
         
     },
     "cmd_help": function(d){
-        if(d && d.err) return er(d.err);
-
         var str = c.bold.teal('Usage: ') + d.usage + ' ';
         str += c.bold.teal('Description: ') + d.description + '.';
         return str;
     },
     "commands": function(d){
-        if(d && d.err) return er(d.err);
-
         return "Your avaliable commands: " + d.commands.join(', ');
     }
 }
@@ -82,7 +70,6 @@ var commands = {
             "action": "list all of the available bot commands.",
             "commands": [],
             "format": function(d){
-                if(d && d.err) return er(d.err);
                 var str = c.bold.teal("Avaliable commands: ") + d.commands.join(', ');
                 str += c.red(' (for more info, you can type any command followed by help)');
                 return str;
@@ -93,7 +80,6 @@ var commands = {
             "commands": ["topic"],
             "perm": "+",
             "format": function(d){ 
-                if(d && d.err) return er(d.err);
                 return "Topic set!"; 
             }
         },
@@ -102,8 +88,6 @@ var commands = {
             "commands": ["service", "irc nick", "data"],
             "perm": "~",
             "format": function(d){ 
-                if(d && d.err) return er(d.err);
-                
                 var str = c.bold(d.irc_nick) + '\'s ' + d.label + ' has now been set';
                 return str;
             }
@@ -113,8 +97,6 @@ var commands = {
             "commands": ["service", "irc nick"],
             "perm": "~",
             "format": function(d){ 
-                if(d && d.err) return er(d.err);
-                
                 var str = c.bold(d.irc_nick) + '\'s ' + d.label + ' has now been removed';
                 return str;
             }
@@ -124,8 +106,6 @@ var commands = {
             "commands": [],
             "perm": "@",
             "format": function(d){ 
-                if(d && d.err) return er(d.err);
-                
                 if(d === pkg.version) return 'I am up to date!';
 
                 return 'Please update me! My version: ' + pkg.version + ' Current version: ' + d;
@@ -138,8 +118,6 @@ var commands = {
             "commands": [],
             "register": "lastfm",
             "format": function(d){
-                if(d && d.err) return er(d.err);
-
                 var title = [];
                 if(d.artist !== '') title.push(d.artist);
                 if(d.name !== '') title.push(d.name);
@@ -166,8 +144,6 @@ var commands = {
             "action": "get all users in current chan w/ registered last.fm nicks last scrobbled song",
             "commands": [],
             "format": function(d){
-                if(d && d.err) return er(d.err);
-
                 var title = [];
                 if(d.artist !== '') title.push(d.artist);
                 if(d.name !== '') title.push(d.name);
@@ -192,8 +168,6 @@ var commands = {
             "action": "get similar artists by percentage",
             "commands": ["artist"],
             "format": function(d){
-                if(d && d.err) return er(d.err);
-
                 var str =  c.teal(' Similar to ' + c.bold(d.artist) + ': ');
                 var sa = d.similar_artists.map(function(artist){ 
                     return artist.name + ' ' + score(artist.match, 100, '%'); 
@@ -207,8 +181,6 @@ var commands = {
             "action": "get artist bio",
             "commands": ["artist"],
             "format": function(d){
-                if(d && d.err) return er(d.err);
-
                 var str =  c.teal(' Bio for ' + c.bold(d.artist) + ': ') + d.bio;
                 return str;
             }
@@ -217,8 +189,6 @@ var commands = {
             "action": "register your last.fm username with your irc nick",
             "commands": ["last.fm username"],
             "format": function(d){
-                if(d && d.err) return er(d.err);
-
                 var str = 'Thanks ' + c.bold(d.irc_nick) + ' your last.fm username was set!';
                 return str;
             }
@@ -230,8 +200,6 @@ var commands = {
             "commands": [],
             "register": "trakt",
             "format": function(d) {
-                if(d && d.err) return er(d.err);
-
                 var str = c.bold(d.irc_nick);
                 str += (d.now_watching ? ' is now watching: ' + this.symbols[d.type] + ' ' + c.green.bold(d.title) :
                  ' last watched: ' + this.symbols[d.type] + ' ' + c.gray.bold(d.title));
@@ -248,8 +216,6 @@ var commands = {
             "action": "get all users in current chan w/ registered trakt.tv nicks last scrobbled show/movie",
             "commands": [],
             "format": function(d) {
-                if(d && d.err) return er(d.err);
-
                 var str = '[ ';
                 str += d.now_watching ? c.bold.green(d.irc_nick) : c.bold.gray(d.irc_nick);
                 str += ' ] ' + this.symbols[d.type] + ' ' + c.teal.bold(d.title) + ' ';
@@ -266,8 +232,6 @@ var commands = {
             "action": "get movies/shows currently trending",
             "commands": ["movies|shows"],
             "format": function(d){
-                if(d && d.err) return er(d.err);
-
                 var str = c.bold.teal('Trending ');
                 var high_watch = 0;
 
@@ -293,8 +257,6 @@ var commands = {
             "action": "register your trakt.tv username with your irc nick",
             "commands": ["trakt.tv username"],
             "format": function(d){
-                if(d && d.err) return er(d.err);
-
                 var str = 'Thanks ' + c.bold(d.irc_nick) + ' your trakt.tv username was set!';
                 return str;
             }
@@ -306,8 +268,6 @@ var commands = {
             "commands": [],
             "register": "untappd",
             "format": function(d) {
-                if(d && d.err) return er(d.err);
-
                 var str = c.bold(d.irc_nick);
                 str += ' last drank ' + c.yellow.bold(this.symbols['beer']) + ' ' + c.gray.bold(d.beer_name);
         		str += ' (' + d.beer_style + ' - ' + d.beer_abv + '%abv)';
@@ -331,8 +291,6 @@ var commands = {
             "action": "get all users in current chan w/ registered untappd nicks last checked in beer",
             "commands": [],
             "format": function(d) {
-                if(d && d.err) return er(d.err);
-
                 var str = '[ ' + c.bold(d.irc_nick) + ' ] ';
                 str += c.gray.bold(d.beer_name);
         		str += ' (' + d.beer_style + ' - ' + d.beer_abv + '%abv)';
@@ -356,8 +314,6 @@ var commands = {
             "action": "register your untappd username with your irc nick",
             "commands": ["untappd username"],
             "format": function(d){
-                if(d && d.err) return er(d.err);
-
                 var str = 'Thanks ' + c.bold(d.irc_nick) + ' your untappd username was set!';
                 return str;
             }
@@ -369,8 +325,6 @@ var commands = {
             "commands": ["*zip/city, state"],
             "register": "location",
             "format": function(d){
-                if(d && d.err) return er(d.err);
-
                 var str = 'Weather for ' + c.bold(d.location) + ': ' + this.symbols[d.icon] + ' ' + d.weath + ' ' + d.temp + ' ' + d.humid + ' humidity';
                 return str;
             },
@@ -400,8 +354,6 @@ var commands = {
             "action": "register your location with your irc nick",
             "commands": ["zip/city, state"],
             "format": function(d){
-                if(d && d.err) return er(d.err);
-
                 var str = 'Thanks ' + c.bold(d.irc_nick) + ' your location was set!';
                 return str;
             }
@@ -412,8 +364,6 @@ var commands = {
             "action": "get urban dictionary term/word definition",
             "commands": ["term"],
             "format": function(d){
-                if(d && d.err) return er(d.err);
-
                 var str = c.teal(' UD ' + c.underline(d.term) + ': ') + ' ' + d.definition;
                 if(d.example !== '') str += '\n' + c.teal('i.e. ') + d.example;
 
@@ -422,4 +372,54 @@ var commands = {
         }
     }
 }
+
+for(var cat in commands){
+    for(var cmd in commands[cat]){
+        commands[cat][cmd].format = verify(commands[cat][cmd].format)
+    }
+}
+for(var cat in respond){
+    respond[cat] = verify(respond[cat])
+}
+
+//this verifies string length and such, 
+//and anything else that needs to be verified before
+//having the bot send it back.
+function verify(fn) {
+    return function() {
+        console.log(arguments);
+        if(arguments && arguments[0] && arguments[0].err) return er(arguments[0].err);
+
+        var arg = arguments[0];
+
+        var parse = function(obj)
+        {
+            for(var key in obj)
+            {
+                if(typeof obj[key] === 'string'){
+
+                    var breaks = obj[key].match(/\r?\n|\r/g) || [];
+
+                    //if there are more than 3 new line breaks, remove them.
+                    if(breaks.length > 3){
+                        obj[key] = obj[key].replace(/\r?\n|\r/g, ' ');
+                    }
+
+                    //if a str is long than 434 char, cut it.
+                    if(obj[key].length > 434){
+                        obj[key] = obj[key].slice(0, 434) + '...';
+                    }
+
+                } else if(typeof obj[key] === 'object') {
+                    parse(obj[key]);
+                }
+            }
+            
+        }
+        parse(arg);
+
+        return fn.apply(this, arguments);
+    }
+}
+
 exports.commands = commands;
