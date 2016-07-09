@@ -1,7 +1,7 @@
 var config = require('.././config.json');
 
 var Trakt = require('trakt-api'),
-    log = require('log-simple')(null, {debug: config.debug}),
+    //log = require('log-simple')(null, {debug: config.debug}),
     c = require('irc-colors');
 
 var trakt = Trakt(config.API.TraktTV.api_key, {noReject: true});

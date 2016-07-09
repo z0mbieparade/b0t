@@ -1,7 +1,7 @@
 var config = require('.././config.json');
 
 var LastFmNode = require('lastfm').LastFmNode,
-    log = require('log-simple')(null, {debug: config.debug}),
+    //log = require('log-simple')(null, {debug: config.debug}),
     c = require('irc-colors');
 
 var lastfm = new LastFmNode({
