@@ -82,7 +82,7 @@ var commands = {
             }
         },
         "reg": {
-            "action": "register a user for any service (lastfm, trakt, location)",
+            "action": "register a user for any service (lastfm, trakt, location, untappd)",
             "commands": ["service", "irc nick", "data"],
             "perm": "~",
             "format": function(d){ 
@@ -93,7 +93,7 @@ var commands = {
             }
         },
         "unreg": {
-            "action": "unregister a user for any service (lastfm, trakt, location)",
+            "action": "unregister a user for any service (lastfm, trakt, location, untappd)",
             "commands": ["service", "irc nick"],
             "perm": "~",
             "format": function(d){ 
@@ -241,6 +241,69 @@ var commands = {
                 if(d && d.err) return er(d.err);
 
                 var str = 'Thanks ' + c.bold(d.irc_nick) + ' your trakt.tv username was set!';
+                return str;
+            }
+        }
+    },
+    "UNTAPPD" : {
+        "ut" : {
+            "action": "get your last beer drank from untappd.com",
+            "commands": [],
+            "register": "untappd",
+            "format": function(d) {
+                if(d && d.err) return er(d.err);
+
+                var str = c.bold(d.irc_nick);
+                str += ' last drank ' + c.yellow.bold(this.symbols['beer']) + ' ' + c.gray.bold(d.beer_name);
+		str += ' (' + d.beer_style + ' - ' + d.beer_abv + '%abv)';
+		str += ' (from ' + d.brewery + ')';
+
+		if (d.venue) {
+			str += ' (at ' + c.green.bold(d.venue) + ')';
+			//UntappdMsg += " on " + checkin.created_at;
+		}
+            
+                return str;
+            },
+            "symbols": {
+                "beer":  "🍺",
+                "cider": "🍺",
+                "mead":  "🍺",
+                "other": "🍺"
+            }
+        },
+        "wu" : {
+            "action": "get all users in current chan w/ registered untappd nicks last checked in beer",
+            "commands": [],
+            "format": function(d) {
+                if(d && d.err) return er(d.err);
+
+                var str = '[ ' + c.bold(d.irc_nick) + ' ] ';
+                str += c.gray.bold(d.beer_name);
+		str += ' (' + d.beer_style + ' - ' + d.beer_abv + '%abv)';
+		str += ' (from ' + d.brewery + ')';
+
+		if (d.venue) {
+			str += ' (at ' + c.green.bold(d.venue) + ')';
+			//UntappdMsg += " on " + checkin.created_at;
+		}
+            
+                return str;
+            },
+            "symbols": {
+                "beer":  "🍺",
+                "cider": "🍺",
+                "mead":  "🍺",
+                "other": "🍺"
+            }
+        },
+        "untappd" : {
+            "action": "register your untappd username with your irc nick",
+            "commands": ["untappd username"],
+            "format": function(d){
+                if(d && d.err) return er(d.err);
+
+                var str = 'Thanks ' + c.bold(d.irc_nick) + ' your untappd username was set!';
                 return str;
             }
         }

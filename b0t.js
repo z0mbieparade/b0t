@@ -1,16 +1,25 @@
 #!/usr/bin/env node
 
 //require ALL OF THE THINGS
-var config = require('./config.json'),
-    CMD = require(config.path + 'inc/./commands.js'),
+var config   = require('./config.json'),
+    CMD      = require(config.path + 'inc/./commands.js'),
     commands = CMD.commands,
-    respond = CMD.respond,
-    log = require('log-simple')(null, {debug: config.debug}),
-    irc = require('irc'),
-    c = require('irc-colors'),
+    respond  = CMD.respond,
+    //log    = require('log-simple')(null, {debug: config.debug}),
+    mLog4js  = require('log4js'),
+    irc      = require('irc'),
+    c        = require('irc-colors'),
     flatfile = require('flat-file-db'),
-    db = flatfile(config.path + 'db.db'),
-    urban = require('urban');
+    db       = flatfile(config.path + 'db.db'),
+    urban    = require('urban');
+
+mLog4js.loadAppender('file');
+mLog4js.addAppender(mLog4js.appenders.file(config.path + 'logs/' + config.bot_nick + '.log'));
+if (config.debug) { mLog4js.replaceConsole(); }
+global.log = mLog4js.getLogger('logfile');
+log.setLevel('ALL');
+log.debug("------------------------------------------------------------");
+log.debug("Initializing...");
  
 //only add these things if user has an API key
 if(config.API.LastFM.api_key !== '') {
@@ -20,6 +29,10 @@ if(config.API.LastFM.api_key !== '') {
 if(config.API.TraktTV.api_key !== '') {
     var traktTV = require(config.path + 'inc/trakt.js').TTV,
         ttv = new traktTV();
+}
+if(config.API.UNTAPPD.api_key !== '') {
+    var m_UNTAPPD = require(config.path + 'inc/untappd.js').UTPD,
+        m_untappd = new m_UNTAPPD();
 }
 if(config.API.Weather.api_key !== '') {
     var wunderbar = require('wunderbar'),
@@ -410,6 +423,52 @@ bot.addListener('message', function(nick, chan, text, message) {
                     update_user(chan, nick, {
                             label: 'trakt.tv username',
                             col: 'trakt',
+                            data: command_args[0]
+                    }, function(data){
+                        bot.say(chan, command_data.format(data));
+                    });
+                    break;
+
+                //UNTAPPD
+                case 'ut':
+                    get_user_data(chan, nick, {
+                        label: 'untappd username',
+                        cat: 'UNTAPPD',
+                        col: 'untappd'
+                    }, function(untappd_un){
+                        m_untappd.getBeer(nick, untappd_un, false, function(data) {
+                            bot.say(chan, command_data.format(data));
+                        });
+                    });
+                    break;
+                case 'wu':
+                    get_all_users_in_chan_data(chan, nick, {
+                        label: 'untappd',
+                        col: 'untappd'
+                    }, function(data){
+                        log.debug(data);
+                        var user_dups = {};
+                        for(var irc_un in data){
+                            var untappd_un = data[irc_un];
+
+                            if(user_dups[untappd_un]){
+                                user_dups[untappd_un].push(irc_un);
+                            } else {
+                                user_dups[untappd_un] = [irc_un];
+                            }
+                        }
+
+                        for(var untappd_un in user_dups){
+                            m_untappd.getBeer(irc_un, user_dups[untappd_un].join('|'), true, function(data) {
+                                bot.say(chan, command_data.format(data));
+                            });
+                        }
+                    });
+                    break;
+                case 'untappd':
+                    update_user(chan, nick, {
+                            label: 'untappd username',
+                            col: 'untappd',
                             data: command_args[0]
                     }, function(data){
                         bot.say(chan, command_data.format(data));
