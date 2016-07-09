@@ -161,7 +161,7 @@ var commands = {
             "format": function(d){
                 var str = c.teal(d.irc_nick) + ' ';
                 str += d.now_playing ? 'is now playing: ' + c.green(title.join(' - ')) : 'last played: ';
-                str += d.title + ' ' + d.link; 
+                str += (d.title || '') + ' ' + d.link; 
 
                 return str;
             }
