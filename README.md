@@ -43,6 +43,7 @@ reg_password | NickServ registration password. You don't have to have this, but 
 op_password | if your bot is an oper on your network, set their oper password here. | "bot_oper_password"
 voice_users_on_join | will autovoice everyone in the room when they join, or the bot joins. NOTE: atheme uses, if ChanServ baby sits your room, it may de-voice. | true/false
 parse_links | parse links in chat, and say their title | true/false
+less_chan_spam | bot says more things in PMs to users, like errors, !commands, !cmd help, etc. Keeps channel feed a bit cleaner. | true/false
 API | If you would like to use a set of commands that require and API key, you must go register for that API key and copy and paste it here. DO NOT DELETE THESE SECTIONS. If you don't want to use a set of commands, just leave the api_key section blank. This will automatically disable all of the commands that require the key. | 
 debug | Generates more logs in your console. If you're having an issue with the bot, good to set to true, otherwise just leave it as false. | true/false
 
@@ -55,6 +56,9 @@ Currently, the bot uses 3 different api's that require a key. Here's where to ge
 
 **Last.FM** - http://www.last.fm/api/account/create
 You will need an api_key and a secret. You can enter an app_name here too, otherwise it defaults to b0t.
+
+**YouTube** - https://console.developers.google.com/apis
+You will need a google account to use this. The first time you use a youtube command like !yt, the terminal console will throw an error with a link to enable your api key for youtube.
 
 **Trakt.TV** - http://docs.trakt.apiary.io/
 You will need an api_key here. The docs should have a link for creating your key.
@@ -79,14 +83,14 @@ If all goes well your bot should start up and join your network and channels. Yo
 
 ## Bot Commands
 A list of all of the currently available commands.
-You can also type [bot_nick] -o or -v to have the bot say it's owner or version.
+You can also type [bot_nick] -owner to bot say it's owner, -version for the bot version, and -link for a link to this repo.
 
 ###Other Commands
 general commands that don't have a specific category
 
 command | action | default permission | syntax
 ------- | ------ | ------------------ | ------
-commands | list all of the available bot commands for user's permission level | all users | `!commands`
+commands | list all of the available bot commands for user's permission level | all users | `!commands <*-list>`
 set | set the channel topic | all users with voice | `!set <topic>`
 reg | register a user for any service (lastfm, trakt, location) | owner | `!reg <service> <irc nick> <data>`
 unreg | unregister a user for any service (lastfm, trakt, location) | owner | `!unreg <service> <irc nick>`
@@ -98,6 +102,7 @@ updates | check for updates to b0t script | ops | `!updates`
 command | action | default permission | syntax
 ------- | ------ | ------------------ | ------
 np | get your last scrobbled song from last.fm | all users | `!np`
+yt | get your last scrobbled song from last.fm and attempt to locate a youtube video of it *NOTE this command requires the YouTube API | all users | `!yt`
 wp | get all users in current chan w/ registered last.fm nicks last scrobbled song | all users | `!wp`
 sa | get similar artists by percentage | all users | `!sa <artist name>`
 bio | get artist bio | all users | `!bio <artist name>`
@@ -112,7 +117,7 @@ command | action | default permission | syntax
 ------- | ------ | ------------------ | ------
 nw | get your last scrobbled show/movie from trakt.tv | all users | `!nw`
 ww | get all users in current chan w/ registered trakt.tv nicks last scrobbled show/movie | all users | `!ww`
-trend | list top 5 trending movies/shows | all users | `!trend <'movies' or 'shows'>`
+trend | list top 5 trending movies/shows | all users | `!trend <-movies|-shows>`
 trakt | register your trakt.tv username with your irc nick | all users | `!trakt <trakt.tv username>`
 
 ###Weather Commands

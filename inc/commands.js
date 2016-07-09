@@ -28,12 +28,14 @@ function er(err){ //error handling
 
 var respond = {
     "say_my_name": function(d){
-        if(d[0] == '-v') {
-            return 'verson: ' + pkg.version; //can we check for updates?
-        } else if(d[0] == '-o') {
+        if(d[0] == '-version') {
+            return 'verson: ' + pkg.version;
+        } else if(d[0] == '-owner') {
             return 'owner: ' + c.rainbow(config.owner);
+        } else if(d[0] == '-link') {
+            return 'link: https://github.com/z0mbieparade/b0t';
         } else {
-            return 'for more info try ' + c.teal(config.bot_nick) + ' -v or -o';
+            return 'for more info try ' + c.teal(config.bot_nick) + ' -version|-owner|-link';
         }      
 
     },
@@ -54,12 +56,24 @@ var respond = {
         
     },
     "cmd_help": function(d){
-        var str = c.teal('Usage: ') + d.usage + ' ';
-        str += c.teal('Description: ') + d.description + '.';
+        var syntax = config.command_prefix + d;
+        var command_data = {};
+        for(var cat in commands){
+            for(var cmd in commands[cat]){
+                if(cmd === d) command_data = commands[cat][cmd];
+            }
+        }
+
+        console.log(command_data);
+
+        if(command_data.commands.length > 0) {
+            syntax += ' <' + command_data.commands.join('> <') + '>';
+        }
+        if (syntax.indexOf('*') > -1) syntax += ' (* commands are optional)';
+
+        var str = c.teal('Usage: ') + syntax + ' ';
+        str += c.teal('Description: ') + command_data.action + '.';
         return str;
-    },
-    "commands": function(d){
-        return "Your avaliable commands: " + d.commands.join(', ');
     }
 }
 exports.respond = respond;
@@ -68,7 +82,7 @@ var commands = {
     "other" : {
         "commands": {
             "action": "list all of the available bot commands.",
-            "commands": [],
+            "commands": ["*-list"],
             "format": function(d){
                 var str = c.teal("Avaliable commands: ") + d.commands.join(', ');
                 str += c.red(' (for more info, you can type any command followed by help)');
@@ -136,6 +150,18 @@ var commands = {
                 }
 
                 str += ')';
+
+                return str;
+            }
+        },
+        "yt": {
+            "action": "get your last scrobbled song from last.fm and attempt to locate a youtube video of it",
+            "commands": [],
+            "register": "lastfm",
+            "format": function(d){
+                var str = c.teal(d.irc_nick) + ' ';
+                str += d.now_playing ? 'is now playing: ' + c.green(title.join(' - ')) : 'last played: ';
+                str += d.title + ' ' + d.link; 
 
                 return str;
             }
@@ -230,7 +256,7 @@ var commands = {
         },
         "trend" : {
             "action": "get movies/shows currently trending",
-            "commands": ["movies|shows"],
+            "commands": ["-movies|-shows"],
             "format": function(d){
                 var str = c.teal('Trending ');
                 var high_watch = 0;
@@ -392,10 +418,8 @@ function verify(fn) {
 
         var arg = arguments[0];
 
-        var parse = function(obj)
-        {
-            for(var key in obj)
-            {
+        var parse = function(obj) {
+            for(var key in obj) {
                 if(typeof obj[key] === 'string'){
 
                     var breaks = obj[key].match(/\r?\n|\r/g) || [];

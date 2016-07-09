@@ -29,6 +29,15 @@ if(config.API.LastFM && config.API.LastFM.api_key !== '') {
     var lastFM = require(__dirname + '/inc/lastfm.js').LFM,
         lfm = new lastFM();
 }
+if(config.API.YouTube && config.API.YouTube.api_key !== ''){
+    var yt_search = require('youtube-search'),
+        yt_opts = {
+            maxResults: 1,
+            key: config.API.YouTube.api_key
+        };
+} else { //disable yt command, doesn't work manually since yt is under lastfm
+    commands.LastFM.yt.disable = true;
+}
 if(config.API.TraktTV && config.API.TraktTV.api_key !== '') {
     var traktTV = require(__dirname + '/inc/trakt.js').TTV,
         ttv = new traktTV();
@@ -151,6 +160,11 @@ var get_user_data = function(chan, nick, data, callback) {
 var get_all_users_in_chan_data = function(chan, nick, data, callback) {
     var rows = {},
         count = 0;
+
+    if(!names[chan]){
+        bot.say(chan, respond.no_users_registered(data));
+    }
+
     Object.keys(names[chan]).forEach(function(key) {
         var user_data = db.get(key);
         if(user_data && user_data[data.col] && user_data[data.col] !== '')
@@ -184,6 +198,7 @@ var update_user = function(chan, nick, data, callback) {
 }
 
 var verify_command = function(chan, nick, command, command_args, callback) {
+    var spam_chan = config.less_chan_spam ? nick : chan;
     var command_data = null;
     var command_category = null;
     for(var category in commands) {
@@ -214,15 +229,29 @@ var verify_command = function(chan, nick, command, command_args, callback) {
         return;
     }
 
+    //if this is say, a pm, and there are no user perms, look for the user in another chan
+    //and choose the highest permission. If they aren't in one, just asume they're unvoiced with
+    //lowest permissions.
+    if(!names[chan] || !names[chan][nick]){
+        names[chan] = names[chan] || {};
+        names[chan][nick] = "";
+        for(var c in names){
+            for(var n in names[c]){
+                if( n === nick && 
+                    config.permissions.indexOf(names[c][n]) > 
+                    config.permissions.indexOf(names[chan][nick])) names[chan][nick] = names[c][n];
+            }
+        }
+    }
+
     //if bad permissions, return
-    if(command_data.perm)
-    {
+    if(command_data.perm){
         var nick_perm = config.permissions.indexOf(names[chan][nick]);
         var cmd_perm = config.permissions.indexOf(command_data.perm);
 
         if(nick_perm < cmd_perm)
         {
-            bot.say(chan, respond.err({'err': 'You do not have permission to use this command!'}));
+            bot.say(spam_chan, respond.err({'err': 'You do not have permission to use this command!'}));
             return;
         }
     }
@@ -244,7 +273,7 @@ var verify_command = function(chan, nick, command, command_args, callback) {
             syntax: syntax,
             action: command_data.action
         }
-        bot.say(chan, respond.syntax(data));
+        bot.say(spam_chan, respond.syntax(data));
     } else {
         callback(command_data, command_args);
     }
@@ -252,6 +281,10 @@ var verify_command = function(chan, nick, command, command_args, callback) {
 
 
 bot.addListener('message', function(nick, chan, text, message) {
+    if(nick === config.bot_nick && chan === config.bot_nick) return;
+    var spam_chan = config.less_chan_spam || message.args[0] === config.bot_nick ? nick : chan;
+    var chan = message.args[0] === config.bot_nick ? nick : chan;
+
 
     var links = text.match(/(\b(https?|http):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig);
     if(links && links.length && links.length > 0 && config.parse_links)
@@ -276,19 +309,7 @@ bot.addListener('message', function(nick, chan, text, message) {
         verify_command(chan, nick, command, command_args_org, function(command_data, command_args){
             if(command_args[0] === 'help')
             {
-                var syntax = config.command_prefix + command;
-                if(command_data.commands.length > 0)
-                {
-                    syntax += ' <' + command_data.commands.join('> <') + '>';
-                }
-                if (syntax.indexOf('*') > -1) syntax += ' (* commands are optional)';
-
-                var data = {
-                    usage: syntax,
-                    description: command_data.action
-                }
-
-                bot.say(chan, respond.cmd_help(data));
+                bot.say(spam_chan, respond.cmd_help(command));
                 return;
             }
 
@@ -304,19 +325,22 @@ bot.addListener('message', function(nick, chan, text, message) {
                                 (commands[category][cmd].perm && config.permissions.indexOf(names[chan][nick]) < config.permissions.indexOf(commands[category][cmd].perm)))
                                 continue;
 
-                            cmd_arr.push(config.command_prefix + cmd)
+                            if(command_args[0] === '-list') {
+                                bot.say(nick, respond.cmd_help(cmd));
+                            } else {
+                                cmd_arr.push(config.command_prefix + cmd)
+                            }
                         }
                     }
 
-                    var data = {
-                        commands: cmd_arr
+                    if(command_args[0] !== '-list'){
+                        bot.say(spam_chan, command_data.format({commands: cmd_arr}));
                     }
-
-                    bot.say(chan, respond.commands(data));
+                    
                     break;
                 case 'set':
                     bot.send('topic', chan, command_args_org.join(' '));
-                    bot.say(chan, command_data.format());
+                    bot.say(spam_chan, command_data.format());
                     break;
                 case 'reg':
                     update_user(chan, command_args[1], {
@@ -324,7 +348,7 @@ bot.addListener('message', function(nick, chan, text, message) {
                             col: command_args[0],
                             data: command_args[2]
                     }, function(data){
-                        bot.say(chan, command_data.format(data));
+                        bot.say(spam_chan, command_data.format(data));
                     });
                     break;
                 case 'unreg':
@@ -333,7 +357,7 @@ bot.addListener('message', function(nick, chan, text, message) {
                             col: command_args[0],
                             data: ''
                     }, function(data){
-                        bot.say(chan, command_data.format(data));
+                        bot.say(spam_chan, command_data.format(data));
                     });
                     break;
                 case 'updates':
@@ -341,7 +365,7 @@ bot.addListener('message', function(nick, chan, text, message) {
                         'https://raw.githubusercontent.com/z0mbieparade/b0t/master/package.json', 
                         'json',
                         function(data){
-                           bot.say(chan, command_data.format(data.version));
+                           bot.say(spam_chan, command_data.format(data.version));
                        });
                     break;
 
@@ -352,8 +376,41 @@ bot.addListener('message', function(nick, chan, text, message) {
                         cat: 'LastFM',
                         col: 'lastfm'
                     }, function(lastfm_un){
-                        var msg = lfm.getRecent(nick, lastfm_un, false, function(data) {
-                            bot.say(chan, command_data.format(data));
+                        lfm.getRecent(nick, lastfm_un, false, function(d) {
+                            bot.say(d.err ? spam_chan : chan, command_data.format(d));
+                        });
+                    });
+                    break;
+                case 'yt':
+                    get_user_data(chan, nick, {
+                        label: 'last.fm username',
+                        cat: 'LastFM',
+                        col: 'lastfm'
+                    }, function(lastfm_un){
+                        lfm.getRecent(nick, lastfm_un, false, function(data) {
+                            var title = [];
+                            if(data.artist !== '') title.push(data.artist);
+                            if(data.name !== '') title.push(data.name);
+                            yt_search(title.join(' '), yt_opts, function(err, results) {
+                                if(err){
+                                    log.error(err);
+                                    bot.say(config.owner, err);
+                                    bot.say(spam_chan, command_data.format({'err': 'an error has occured'}))
+                                    return;
+                                }
+                             
+                             if(!results || results.length === 0){
+                                bot.say(spam_chan, command_data.format({'err': 'no youtube video found for last played song'}))
+                                return;
+                             }
+
+                              var d = data;
+                              for(var key in results[0]){
+                                d[key] = results[0][key];
+                              }
+
+                              bot.say(chan, command_data.format(d));
+                            });
                         });
                     });
                     break;
@@ -375,20 +432,20 @@ bot.addListener('message', function(nick, chan, text, message) {
                         }
 
                         for(var lastfm_un in user_dups){
-                            lfm.getRecent(user_dups[lastfm_un].join('|'), lastfm_un, true, function(data){
-                                bot.say(chan, command_data.format(data));
+                            lfm.getRecent(user_dups[lastfm_un].join('|'), lastfm_un, true, function(d){
+                                bot.say(d.err ? spam_chan : chan, command_data.format(d));
                             });
                         }
                     });
                     break;
                 case 'sa':
-                    lfm.getSimilarArtists(command_args.join(' '), function(data){
-                        bot.say(chan, command_data.format(data));
+                    lfm.getSimilarArtists(command_args.join(' '), function(d){
+                        bot.say(d.err ? spam_chan : chan, command_data.format(d));
                     });
                     break;
                 case 'bio':
-                    lfm.getArtistInfo(command_args.join(' '), function(data){
-                        bot.say(chan, command_data.format(data));
+                    lfm.getArtistInfo(command_args.join(' '), function(d){
+                        bot.say(d.err ? spam_chan : chan, command_data.format(d));
                     });
                     break;
                 case 'lastfm':
@@ -396,8 +453,8 @@ bot.addListener('message', function(nick, chan, text, message) {
                             label: 'last.fm username',
                             col: 'lastfm',
                             data: command_args[0]
-                    }, function(data){
-                        bot.say(chan, command_data.format(data));
+                    }, function(d){
+                        bot.say(spam_chan, command_data.format(d));
                     });
                     break;
 
@@ -408,8 +465,8 @@ bot.addListener('message', function(nick, chan, text, message) {
                         cat: 'TraktTV',
                         col: 'trakt'
                     }, function(trakt_un){
-                        ttv.getRecent(nick, trakt_un, function(data) {
-                            bot.say(chan, command_data.format(data));
+                        ttv.getRecent(nick, trakt_un, function(d) {
+                            bot.say(d.err ? spam_chan : chan, command_data.format(d));
                         });
                     });
                     break;
@@ -431,15 +488,15 @@ bot.addListener('message', function(nick, chan, text, message) {
                         }
 
                         for(var trakt_un in user_dups){
-                            ttv.getRecent(user_dups[trakt_un].join('|'), trakt_un, function(data) {
-                                bot.say(chan, command_data.format(data));
+                            ttv.getRecent(user_dups[trakt_un].join('|'), trakt_un, function(d) {
+                                bot.say(d.err ? spam_chan : chan, command_data.format(d));
                             });
                         }
                     });
                     break;
                 case 'trend':
-                    ttv.getTrending(command_args[0], function(data) {
-                        bot.say(chan, command_data.format(data));
+                    ttv.getTrending(command_args[0], function(d) {
+                        bot.say(d.err ? spam_chan : chan, command_data.format(d));
                     });
                     break;
                 case 'trakt':
@@ -447,8 +504,8 @@ bot.addListener('message', function(nick, chan, text, message) {
                             label: 'trakt.tv username',
                             col: 'trakt',
                             data: command_args[0]
-                    }, function(data){
-                        bot.say(chan, command_data.format(data));
+                    }, function(d){
+                        bot.say(spam_chan, command_data.format(d));
                     });
                     break;
 
@@ -459,8 +516,8 @@ bot.addListener('message', function(nick, chan, text, message) {
                         cat: 'UNTAPPD',
                         col: 'untappd'
                     }, function(untappd_un){
-                        m_untappd.getBeer(nick, untappd_un, false, function(data) {
-                            bot.say(chan, command_data.format(data));
+                        m_untappd.getBeer(nick, untappd_un, false, function(d) {
+                            bot.say(d.err ? spam_chan : chan, command_data.format(d));
                         });
                     });
                     break;
@@ -482,8 +539,8 @@ bot.addListener('message', function(nick, chan, text, message) {
                         }
 
                         for(var untappd_un in user_dups){
-                            m_untappd.getBeer(irc_un, user_dups[untappd_un].join('|'), true, function(data) {
-                                bot.say(chan, command_data.format(data));
+                            m_untappd.getBeer(irc_un, user_dups[untappd_un].join('|'), true, function(d) {
+                                bot.say(d.err ? spam_chan : chan, command_data.format(data));
                             });
                         }
                     });
@@ -493,8 +550,8 @@ bot.addListener('message', function(nick, chan, text, message) {
                             label: 'untappd username',
                             col: 'untappd',
                             data: command_args[0]
-                    }, function(data){
-                        bot.say(chan, command_data.format(data));
+                    }, function(d){
+                        bot.say(spam_chan, command_data.format(d));
                     });
                     break;
 
@@ -506,24 +563,24 @@ bot.addListener('message', function(nick, chan, text, message) {
                             cat: 'Weather',
                             col: 'location'
                         }, function(user_data){
-                            wu.get_weather(user_data, false, function(data){
-                                bot.say(chan, command_data.format(data));
+                            wu.get_weather(user_data, false, function(d){
+                                bot.say(d.err ? spam_chan : chan, command_data.format(d));
                             });
                         });
                     } else {
-                        wu.get_weather(command_args.join(' '), nick, function(data){
-                            bot.say(chan, command_data.format(data));
+                        wu.get_weather(command_args.join(' '), nick, function(d){
+                            bot.say(d.err ? spam_chan : chan, command_data.format(d));
                         });
                     }
                     break;
                 case 'location':
-                    wu.set_location(command_args.join(' '), nick, function(data){
+                    wu.set_location(command_args.join(' '), nick, function(d){
                         update_user(chan, nick, {
                             label: 'location',
                             col: 'location',
                             data: data.location
                         }, function(){
-                            bot.say(chan, command_data.format(data));
+                            bot.say(spam_chan, command_data.format(d));
                         });
                     });
                     break;
@@ -533,15 +590,15 @@ bot.addListener('message', function(nick, chan, text, message) {
                     var ud = urban(command_args.join(' '));
                     ud.first(function(json) {
                         if(json){
-                            var data = {
+                            var d = {
                                 term: command_args.join(' '),
                                 definition: json.definition,
                                 example: json.example
                             };
 
-                            bot.say(chan, command_data.format(data));
+                            bot.say(chan, command_data.format(d));
                         } else {
-                             bot.say(chan, command_data.format({'err': 'Nothing found'}));
+                             bot.say(spam_chan, command_data.format({'err': 'Nothing found'}));
                         }
                     });
                     break;

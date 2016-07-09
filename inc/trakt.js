@@ -11,12 +11,12 @@ var TTV = exports.TTV = function(){}
 TTV.prototype.getTrending = function(media_type, callback)
 {
     var _this = this;
-    if(media_type !== 'movies' && media_type !== 'shows'){
+    if(media_type !== '-movies' && media_type !== '-shows'){
         callback({'err': 'movies and shows are the only accepted parameters'}); 
         return;
     }
 
-    if(media_type === 'movies'){
+    if(media_type === '-movies'){
         trakt.movieTrending(function(err, data){
             if (err){
               log.error('trakt.movieTrending error', err);  
@@ -29,7 +29,7 @@ TTV.prototype.getTrending = function(media_type, callback)
                 callback(new_data);
             });
         });
-    } else if(media_type === 'shows') {
+    } else if(media_type === '-shows') {
         trakt.showTrending(function(err, data){
             if (err){
               log.error('trakt.showTrending error', err);  

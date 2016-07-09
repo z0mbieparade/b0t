@@ -2,13 +2,9 @@ var config = require('.././config.json');
 
 var UntappdClient = require('node-untappd');
 
-log.debug('Authenticating with untappd...');
-
 var f_untappd = new UntappdClient(true);
     f_untappd.setClientId(config.API.UNTAPPD.api_key);
     f_untappd.setClientSecret(config.API.UNTAPPD.secret);
-
-log.debug('untappd authentication: Successful!');
 
 var UTPD = exports.UTPD = function(){};
 
