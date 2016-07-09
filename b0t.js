@@ -2,23 +2,23 @@
 
 //require ALL OF THE THINGS
 var config = require('./config.json'),
-    CMD = require(__dirname + 'inc/./commands.js'),
+    CMD = require(__dirname + '/inc/./commands.js'),
     commands = CMD.commands,
     respond = CMD.respond,
     log = require('log-simple')(null, {debug: config.debug}),
     irc = require('irc'),
     c = require('irc-colors'),
     flatfile = require('flat-file-db'),
-    db = flatfile(__dirname + 'db.db');
+    db = flatfile(__dirname + '/db.db');
 //    urban = require('urban');
 
 //only add these things if user has an API key
 if(config.API.LastFM.api_key !== '') {
-    var lastFM = require(__dirname + 'inc/lastfm.js').LFM,
+    var lastFM = require(__dirname + '/inc/lastfm.js').LFM,
         lfm = new lastFM();
 }
 if(config.API.TraktTV.api_key !== '') {
-    var traktTV = require(__dirname + 'inc/trakt.js').TTV,
+    var traktTV = require(__dirname + '/inc/trakt.js').TTV,
         ttv = new traktTV();
 }
 if(config.API.Weather.api_key !== '') {
