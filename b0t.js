@@ -99,13 +99,18 @@ bot.addListener('+mode', function(chan, by, mode, argument, message)  {
     bot.send('names', chan);
 });
 
-
-var get_url = function(url, type, callback){
+var get_url = function(url, nick, type, callback){
     request(url, function (error, response, body) {
         //Check for error
         if(error){
             return log.error('Error:', error);
         }
+
+	if(response.statusCode == 404) {
+            bot.notice(nick, respond.err({'err': 'The API returned null, try another search...'}));
+
+            return log.error('404: No data retrieved from API');
+	}
 
         //Check for right status code
         if(response.statusCode !== 200){
@@ -137,7 +142,6 @@ var get_url = function(url, type, callback){
         }
     });
 }
-
 
 /* data = {
     label: 'name name',
@@ -278,18 +282,16 @@ var verify_command = function(chan, nick, command, command_args, callback) {
     }
 };
 
-
 bot.addListener('message', function(nick, chan, text, message) {
     if(nick === config.bot_nick && chan === config.bot_nick) return;
     //var spam_chan = config.less_chan_spam || message.args[0] === config.bot_nick ? nick : chan;
     var chan = message.args[0] === config.bot_nick ? nick : chan;
 
-
     var links = text.match(/(\b(https?|http):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig);
     if(links && links.length && links.length > 0 && config.parse_links)
     {
         for(var i = 0; i < links.length; i++) {
-            get_url(links[i], 'sup', function(data){
+            get_url(links[i], nick, 'sup', function(data){
                 bot.say(chan, data);
             }); 
         }
@@ -362,12 +364,12 @@ bot.addListener('message', function(nick, chan, text, message) {
                 case 'updates':
                     var data = get_url(
                         'https://raw.githubusercontent.com/z0mbieparade/b0t/master/package.json', 
+			nick,
                         'json',
                         function(data){
                            bot.notice(nick, command_data.format(data.version));
                        });
                     break;
-
                 //LAST.FM
                 case 'np':
                     get_user_data(chan, nick, {
@@ -629,6 +631,75 @@ bot.addListener('message', function(nick, chan, text, message) {
                             bot.notice(nick, command_data.format(d));
                         });
                     });
+                    break;
+
+		//TVMAZE
+                case 'tvmaze':
+		    var getData = function() {
+                    	var data = get_url(
+				'http://api.tvmaze.com/singlesearch/shows?q=' + command_args.join('%20'),
+                        	nick,
+				'json',
+                        	function(t){
+			   		//log.debug('>>> b0t -> tvmaze -> t: ' + JSON.stringify(t));
+					saveData(t);
+                       		}
+			);
+		    };
+
+		    var saveData = function(tvMazeData) {
+		   	//log.error('>>> b0t -> tvmaze -> err: ' + err);
+			//return bot.notice(nick, 'Unknown tvmaze api error: ' + err);
+
+			var nextep = JSON.parse(JSON.stringify(tvMazeData));
+
+			if(tvMazeData.status == "Running" && tvMazeData._links.nextepisode) {
+                       		var d = get_url(
+                               		tvMazeData._links.nextepisode.href,
+					nick,
+                               		'json',
+                               		function(a){
+						var SE = 'S' + (a.season < 10 ? '0' + a.season : a.season);
+						SE += 'E' + (a.number < 10 ? '0' + a.number : a.number);
+
+                                       		var str = '[' + c.teal(tvMazeData.name) + ' (' + c.green(tvMazeData.status) + '): ' + c.teal(SE) + '] Next airdate: ' + c.teal(a.airdate);
+                                		bot.say(chan, str);
+                       			}
+				);
+               		} else if (tvMazeData.status == "Ended") {
+                       		var d = get_url(
+                               		tvMazeData._links.previousepisode.href,
+					nick,
+                               		'json',
+                               		function(a){
+			   			//log.debug('>>> b0t -> tvmaze -> a: ' + JSON.stringify(a));
+						var SE = 'S' + (a.season < 10 ? '0' + a.season : a.season);
+						SE += 'E' + (a.number < 10 ? '0' + a.number : a.number);
+
+                                       		var str = '[' + c.teal(tvMazeData.name) + ' (' + c.red(tvMazeData.status) + '): ' + c.gray(SE) + '] Last airdate: ' + c.teal(a.airdate);
+                                		bot.say(chan, str);
+                       			}
+				);
+               		} else {
+                       		var d = get_url(
+                               		tvMazeData._links.previousepisode.href,
+					nick,
+                               		'json',
+                               		function(a){
+						var SE = 'S' + (a.season < 10 ? '0' + a.season : a.season);
+						SE += 'E' + (a.number < 10 ? '0' + a.number : a.number);
+
+                                       		var str = '[' + c.teal(tvMazeData.name) + ' (' + c.olive('Season Ended - Unknown Return Date') + '): ' + c.teal(SE) + '] Last airdate: ' + c.teal(a.airdate);
+                                		bot.say(chan, str);
+                       			}
+				);
+			}
+
+			return;
+		    };
+
+		    getData();
+
                     break;
 
                 //URBAN DICTIONARY

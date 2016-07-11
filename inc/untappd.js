@@ -63,7 +63,7 @@ UTPD.prototype.getBeer = function(irc_nick, untappd_nick, ww, callback) {
           return;
         } else {
         
-        log.debug('getBeer -> userActivityFeed -> obj: ' + JSON.stringify(obj));
+        //log.debug('getBeer -> userActivityFeed -> obj: ' + JSON.stringify(obj));
 		_this.parseBeerInfo(obj, irc_nick, lc_untappd_nick, ww, callback);
 	}
     }, lc_untappd_nick);

@@ -115,6 +115,15 @@ var commands = {
                 return str;
             }
         },
+        "tvmaze" : {
+            "action": "gets tv episode data",
+            "commands": ["tv series"],
+            "format": function(d){
+		log.debug('>>>>>> commands -> tvmaze -> d: ' + JSON.stringify(d));
+
+		return;
+            }
+    	},
         "updates": {
             "action": "check for updates to b0t script",
             "commands": [],
