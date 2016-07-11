@@ -135,10 +135,12 @@ var commands = {
                 var title = [];
                 if(d.artist !== '') title.push(d.artist);
                 if(d.name !== '') title.push(d.name);
-                if(d.album !== '') title.push(d.album); 
+                var title_str = title.join(' - ');
+                if(d.album !== '') title_str += ' (' + d.album + ')';
+
 
                 var str = c.teal(d.irc_nick) + ' ';
-                str += d.now_playing ? 'is now playing: ' + c.green(title.join(' - ')) : 'last played: ' + c.gray(title.join(' - ')) 
+                str += d.now_playing ? 'is now playing: ' + c.green(title_str) : 'last played: ' + c.gray(title_str); 
                 str += ' [' + d.play_count + 'x] ' + (d.loved ? c.red('♥') + ' (' : '('); 
 
                 if(d.tags.length > 0){
@@ -160,8 +162,8 @@ var commands = {
             "register": "lastfm",
             "format": function(d){
                 var str = c.teal(d.irc_nick) + ' ';
-                str += d.now_playing ? 'is now playing: ' + c.green(title.join(' - ')) : 'last played: ';
-                str += (d.title || '') + ' ' + d.link; 
+                str += d.now_playing ? 'is now playing: ' + c.green(d.title || '') : 'last played: ' + c.gray(d.title || '');
+                str += ' ' + d.link; 
 
                 return str;
             }
