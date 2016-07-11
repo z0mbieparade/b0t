@@ -121,25 +121,6 @@ var commands = {
             "format": function(d){
 		log.debug('>>>>>> commands -> tvmaze -> d: ' + JSON.stringify(d));
 
-		//var extend = require('node.extend');
-		//var obj = extend(true, {}, d);
-
-		//if(obj.nextepisode !== '') {
-			//log.debug('>>> commands -> tvmaze -> obj.nextepisode: ' + JSON.stringify(obj.nextepisode));
-
- 			//var data = get_url_modified(
-                        	//obj.nextepisode.href,
-                        	//'json',
-                        	//function(data){
-					//var str = '[' + c.teal(data.name) + ': S' + c.teal(data.season) + 'E' + c.teal(data.number) + '] :Next airate: ' + c.teal(data.airdate);
-                           		//bot.notice(nick, str);
-                       	//});
-			//return str;
-		//} else {
-			//var str = c.gray(obj.name) + ' status is: ' + c.red(obj.status);
-			//bot.notice(nick, str);
-			//return str;
-		//}
 		return;
             }
     	},
