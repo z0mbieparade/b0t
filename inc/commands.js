@@ -119,9 +119,14 @@ var commands = {
             "action": "gets tv episode data",
             "commands": ["tv series"],
             "format": function(d){
-		log.debug('>>>>>> commands -> tvmaze -> d: ' + JSON.stringify(d));
-
-		return;
+                var str = '[' + c.teal(d.name) + ' (';
+                if(d.status === 'Running'){
+                    str += c.green(d.status) + '): ' + c.teal('S' + d.season + 'E' + d.episode) + '] Next airdate: '
+                } else {
+                    str += c.red(d.status) + '): ' + c.gray('S' + d.season + 'E' + d.episode) + '] Last airdate: '
+                }
+                str += d.airdate;
+                return str;
             }
     	},
         "updates": {
