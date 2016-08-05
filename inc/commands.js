@@ -155,7 +155,7 @@ var commands = {
 
                 var str = c.teal(d.irc_nick) + ' ';
                 str += d.now_playing ? 'is now playing: ' + c.green(title_str) : 'last played: ' + c.gray(title_str); 
-                str += ' [' + d.play_count + 'x] ' + (d.loved ? c.red('♥') + ' (' : '('); 
+                str += ' [' + d.play_count + '/' + d.total_play_count + '] ' + (d.loved ? c.red('♥') + ' (' : '('); 
 
                 if(d.tags.length > 0){
                     var tags = d.tags.splice(0, 4); //max 4 tags
