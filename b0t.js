@@ -117,19 +117,22 @@ var get_url = function(url, nick, type, callback){
 
         if(type === 'sup') {
 
-            var titleRegex = new RegExp("<title>(.*?)(</title>|\n|\r)", "im");
+            var titleRegex = new RegExp("<title>([^<]+)(</title>)", "im");
             var match = body.match(titleRegex);
 
             // fill titleTag if there is data, otherwise leave it blank
             var titleTag = "";
             if(match && match[0]) {
-                titleTag = match[0].replace(/(<([^>]+)>)/ig, "").replace(/\n/ig, "");
+                titleTag = match[0].replace(/(<\/?title>|\r|\n)/ig, "");
             }
             // if we came out of that with a title tag, say it in the channel
             if(titleTag.length > 0) {
                 // change any html entities to their corresponding characters
                 var entities = new Entities();
                 titleTag = entities.decode(titleTag);
+
+                // limit title to 40 characters
+                titleTag = titleTag.substr(0, 40);
 
                 // set up the message and then say it in the channel
                 callback(c.underline(titleTag));
@@ -398,7 +401,7 @@ bot.addListener('message', function(nick, chan, text, message) {
                                     bot.notice(nick, command_data.format({'err': 'an error has occured'}))
                                     return;
                                 }
-                             
+
                              if(!results || results.length === 0){
                                 bot.notice(nick, command_data.format({'err': 'no youtube video found for last played song'}))
                                 return;
@@ -454,6 +457,7 @@ bot.addListener('message', function(nick, chan, text, message) {
                 case 'bio':
                     lfm.getArtistInfo(command_args.join(' '), function(d){
                         if(d && d.err){
+                            d = d.substr(0, 140)
                             bot.notice(nick, command_data.format(d))
                         } else {
                             bot.say(chan, command_data.format(d));
@@ -630,7 +634,7 @@ bot.addListener('message', function(nick, chan, text, message) {
 
 		      //TVMAZE
                 case 'tvmaze':
-        		    var search = command_args.join('%20');
+                    var search = command_args.join('%20');
                     tvm.getNextAirdate(nick, search, function(d) {
                         if(d && d.err){
                             bot.notice(nick, command_data.format(d))
