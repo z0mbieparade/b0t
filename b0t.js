@@ -457,7 +457,6 @@ bot.addListener('message', function(nick, chan, text, message) {
                 case 'bio':
                     lfm.getArtistInfo(command_args.join(' '), function(d){
                         if(d && d.err){
-                            d = d.substr(0, 140)
                             bot.notice(nick, command_data.format(d))
                         } else {
                             bot.say(chan, command_data.format(d));

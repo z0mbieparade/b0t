@@ -223,7 +223,7 @@ var commands = {
             "action": "get artist bio",
             "commands": ["artist"],
             "format": function(d){
-                var str =  c.teal(' Bio for ' + c.teal(d.artist) + ': ') + d.bio;
+                var str =  c.teal(' Bio for ' + c.teal(d.artist) + ': ') + d.bio.substr(0, 350);
                 return str;
             }
         },
