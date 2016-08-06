@@ -192,7 +192,7 @@ var commands = {
                 if(d.album !== '') title.push(d.album); 
 
                 var str = '[ ' + (d.now_playing ? c.green(d.irc_nick) : c.gray(d.irc_nick)) + ' ] ';
-                str += c.teal(title.join(' - ')) + ' [' + d.play_count + 'x] ' + (d.loved ? c.red('♥') + ' (' : '('); 
+                str += c.teal(title.join(' - ')) + ' [' + d.play_count + '/' + d.total_play_count + '] ' + (d.loved ? c.red('♥') + ' (' : '('); 
 
                 if(d.tags.length > 0){
                     var tags = d.tags.splice(0, 2); //max 2 tags
