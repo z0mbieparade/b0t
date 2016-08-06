@@ -80,6 +80,11 @@ exports.respond = respond;
 
 var commands = {
     "other" : {
+        "8ball": {
+            "action": "shake the magic 8 ball",
+            "commands": [],
+            "format": _ => {},
+        },
         "commands": {
             "action": "list all of the available bot commands.",
             "commands": ["*-list"],
