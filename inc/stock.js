@@ -18,7 +18,7 @@ function get_quote(stock, cb) {
         }
         // example response:
         // "aapl",107.48,+1.61,"+1.52%",89.47,123.82,106.18,40553402,12.53,2.28,2.16,"Apple Inc."
-        var f = body.split(',');
+        var f = body.trim().split(',');
         var quote = {
             symbol : f[0],
             price : f[1],
