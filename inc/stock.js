@@ -33,6 +33,7 @@ function get_quote(stock, cb) {
             yield : f[10],
             name : f[11]
         };
+        if(quote.price==='N/A') { quote.err = 'looks like junk'; }
         cb(quote);
     });
 }
