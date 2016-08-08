@@ -16,6 +16,7 @@ var config   = require('./config.json'),
     request  = require('request'),
     Entities = require("html-entities").AllHtmlEntities,
     TVMaze   = require(__dirname + '/inc/tvmaze.js').TVM,
+    stock    = require(__dirname + '/inc/stock.js'),
     tvm      = new TVMaze();
 
 //start logs
@@ -634,7 +635,15 @@ bot.addListener('message', function(nick, chan, text, message) {
                         });
                     });
                     break;
-
+                case 'stock':
+                    stock.get_quote(command_args, function(d) {
+                        if(d && d.err) {
+                            bot.notice(nick, command_data.format(d));
+                        } else {
+                            bot.say(chan, stock.format(d));
+                        }
+                    });
+                    break;
 		      //TVMAZE
                 case 'tvmaze':
                     var search = command_args.join('%20');

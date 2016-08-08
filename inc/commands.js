@@ -120,6 +120,11 @@ var commands = {
                 return str;
             }
         },
+        "stock": {
+            "action": "get stock quotes",
+            "commands": [],
+            "format": _ => {},
+        },
         "tvmaze" : {
             "action": "gets tv episode data",
             "commands": ["tv series"],
