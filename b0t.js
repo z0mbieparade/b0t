@@ -3,6 +3,7 @@
 //require ALL OF THE THINGS
 var config   = require('./config.json'),
     pkg      = require('./package.json'),
+    ball     = require(__dirname + '/inc/8ball.js'),
     CMD      = require(__dirname + '/inc/./commands.js'),
     commands = CMD.commands,
     respond  = CMD.respond,
@@ -314,6 +315,9 @@ bot.addListener('message', function(nick, chan, text, message) {
 
             //OTHER
             switch (command) {
+                case '8ball':
+                    bot.say(chan, ball.shake());
+                    break;
                 case 'commands':
                     var cmd_arr = [];
                     for(var category in commands) {
