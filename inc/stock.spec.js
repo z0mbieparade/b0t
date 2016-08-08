@@ -42,10 +42,18 @@ describe('stock', function() {
         let msg = stock.format(testdata);
         expect(msg).toEqual("apple inc (AAPL) -> 100.35 (-0.06 -0.06%) | 52w L/H 89.47/132.97 | P/E: 11.17 | Div/yield: 2.28/2.33");
     });
-    it('does nothing on not found', () => {
+    it('does nothing on empty', () => {
         var d = {};
         let cb = v => {d = v; cb.called = true;};
         runs( () => stock.get_quote('', cb) );
+        waitsFor(() => cb.called);
+        runs( () => expect(d.err).toBeDefined()
+        );
+    });
+    it('does nothing on not found', () => {
+        var d = {};
+        let cb = v => {d = v; cb.called = true;};
+        runs( () => stock.get_quote('penis', cb) );
         waitsFor(() => cb.called);
         runs( () => expect(d.err).toBeDefined()
         );
