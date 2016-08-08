@@ -36,6 +36,7 @@ describe('stock', function() {
         expect(d.dividend).toBeDefined();
         expect(d.yield).toBeDefined();
         expect(d.name).toBeDefined();
+        expect(d.name).not.toMatch('\n');
         });
     });
     it('formats and quotes are stripped from fields', function() {
