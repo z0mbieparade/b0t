@@ -133,8 +133,8 @@ var get_url = function(url, nick, type, callback){
                 var entities = new Entities();
                 titleTag = entities.decode(titleTag);
 
-                // limit title to 40 characters
-                titleTag = titleTag.substr(0, 40);
+                // limit title to 140 characters
+                titleTag = titleTag.substr(0, 140);
 
                 // set up the message and then say it in the channel
                 callback(c.underline(titleTag));
