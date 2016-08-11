@@ -50,9 +50,9 @@ var respond = {
     "no_users_registered": function(d){
         return 'No users registered with ' + c.teal(d.label) + ' currently in the channel';
     },
-    "not_registered": function(d){
+    "not_registered": function(nick, d){
         var register_syntax = config.command_prefix + d.col + ' <' + commands[d.cat][d.col].commands.join('> <') + '>'; 
-        return 'Your ' + c.teal(d.label) + ' is not registered! Please type ' + c.teal(register_syntax) + ' to register it';
+        return nick +"'s " + c.teal(d.label) + ' is not registered! Please type ' + c.teal(register_syntax) + ' to register it';
         
     },
     "cmd_help": function(d){
