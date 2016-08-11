@@ -153,7 +153,7 @@ var get_user_data = function(chan, nick, data, callback) {
     if(user_data && user_data[data.col] && user_data[data.col] !== ''){
         callback(user_data[data.col]);
     } else {
-        bot.say(chan, respond.not_registered(data));
+        bot.say(chan, respond.not_registered(nick, data));
     }
 }
 
@@ -183,6 +183,27 @@ var get_all_users_in_chan_data = function(chan, nick, data, callback) {
     } else {
         callback(rows);
     }
+}
+
+function now_playing(chan, nick, about, bot, format) {
+    get_user_data(chan, about, {
+        label: 'last.fm username',
+        cat: 'LastFM',
+        col: 'lastfm'
+    }, function(lastfm_un){
+        lfm.getRecent(about, lastfm_un, false, function(d) {
+            if(d && d.err){
+                bot.notice(nick, format(d));
+            } else {
+                console.log("lfm.getRecent...now playing... notice ", d);
+                bot.say(chan, format(d));
+            }
+        });
+    });
+}
+
+function now_playing_per_arg(last_users, chan, nick, bot, format) {
+    last_users.forEach( last_user => now_playing(chan, nick, last_user, bot, format));
 }
 
 /* data = {
@@ -375,19 +396,11 @@ bot.addListener('message', function(nick, chan, text, message) {
                     break;
                 //LAST.FM
                 case 'np':
-                    get_user_data(chan, nick, {
-                        label: 'last.fm username',
-                        cat: 'LastFM',
-                        col: 'lastfm'
-                    }, function(lastfm_un){
-                        lfm.getRecent(nick, lastfm_un, false, function(d) {
-                            if(d && d.err){
-                                bot.notice(nick, command_data.format(d))
-                            } else {
-                                bot.say(chan, command_data.format(d));
-                            }
-                        });
-                    });
+                    if(command_args.length > 0) {
+                        now_playing_per_arg(command_args, chan, nick, bot, command_data.format);
+                        break;
+                    }
+                    now_playing(chan, nick, nick, bot, command_data.format);
                     break;
                 case 'yt':
                     get_user_data(chan, nick, {
