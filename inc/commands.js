@@ -192,6 +192,11 @@ var commands = {
                 return str;
             }
         },
+        "yts": {
+            "action": "get your last scrobbled song from last.fm and generate search url",
+            "commands": ["*user"],
+            "register": "lastfm"
+        },
         "wp" : {
             "action": "get all users in current chan w/ registered last.fm nicks last scrobbled song",
             "commands": [],

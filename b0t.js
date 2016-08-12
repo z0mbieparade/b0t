@@ -282,6 +282,34 @@ var verify_command = function(chan, nick, command, command_args, callback) {
     }
 };
 
+last_np = '';
+function youtube_search_url_for_users(users, bot, chan, nick) {
+    console.log("yt search for ", users);
+    users.forEach( user => {
+
+                    get_user_data(chan, user, {
+                        label: 'last.fm username',
+                        cat: 'LastFM',
+                        col: 'lastfm'
+                    }, function(lastfm_un){
+                        lfm.getRecent(user, lastfm_un, false, function(d) {
+                            if(d && d.err){
+                                bot.notice(nick, command_data.format(d))
+                            } else {
+                                youtube_search_url_for_last_np(bot, chan, `${d.artist} - ${d.name}`);
+                            }
+                        });
+                    });
+    });
+}
+
+function youtube_search_url_for_last_np(bot, chan, last_np) {
+    console.log("yt search for ", last_np);
+    if(last_np!=='') {
+        bot.say(chan, 'https://www.youtube.com/results?search_query=' + encodeURIComponent(last_np));
+    }
+}
+
 bot.addListener('message', function(nick, chan, text, message) {
     if(nick === config.bot_nick && chan === config.bot_nick) return;
     //var spam_chan = config.less_chan_spam || message.args[0] === config.bot_nick ? nick : chan;
@@ -385,6 +413,8 @@ bot.addListener('message', function(nick, chan, text, message) {
                                 bot.notice(nick, command_data.format(d))
                             } else {
                                 bot.say(chan, command_data.format(d));
+                                last_np = `${d.artist} - ${d.name}`;
+                                console.log("set last_np to ", last_np);
                             }
                         });
                     });
@@ -421,6 +451,14 @@ bot.addListener('message', function(nick, chan, text, message) {
                             });
                         });
                     });
+                    break;
+                case 'yts':
+                    if(command_args.length > 0){
+                        console.log("command_args.length", command_args.length, command_args);
+                        youtube_search_url_for_users(command_args, bot, chan, nick);
+                        break;
+                    }
+                    youtube_search_url_for_last_np(bot, chan, last_np);
                     break;
                 case 'wp':
                     get_all_users_in_chan_data(chan, nick, {
