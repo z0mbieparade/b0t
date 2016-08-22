@@ -60,6 +60,42 @@ TVM.prototype.getNextAirdate = function(nick, search, callback) {
             return;
           }
         );
+      } else if (t.status == "In Development") {
+	if (!t._links.nextepisode || !t._links.nextepisode.href) {
+		if (!t.summary) {
+			var data = {
+				name: t.name,
+				status: t.status,
+				summary: 'n/a'
+			}
+			callback(data);
+			return;
+		} else {
+			var data = {
+				name: t.name,
+				status: t.status,
+				summary: t.summary.replace(/<(?:.|\n)*?>/gm, '').substr(0, 140).replace(/\n/, '') + '...'
+			}
+			callback(data);
+			return;
+		}
+	} else {
+		get_url(
+			t._links.nextepisode.href,
+			function(a) {
+				if(a.err){callback(a); return;} 
+				var data = {
+					season: (a.season < 10 ? '0' + a.season : a.season),
+					episode: (a.number < 10 ? '0' + a.number : a.number),
+					name: t.name,
+					status: t.status,
+					airdate: a.airdate
+				}
+				callback(data);
+				return;
+			}
+		);
+	}
       } else {
         get_url(
           t._links.previousepisode.href,
