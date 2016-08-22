@@ -33,6 +33,7 @@ LFM.prototype.parseTrackInfo = function(track, irc_nick, lfm_nick, wp, callback)
         artist: track.artist && track.artist.name ? track.artist.name : '',
         album: track.album && track.album.title ? track.album.title : '',
         play_count: track.userplaycount || 0,
+        total_play_count: track.playcount || 0,
         tags: tag_names
     };
 

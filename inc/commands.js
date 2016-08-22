@@ -80,6 +80,11 @@ exports.respond = respond;
 
 var commands = {
     "other" : {
+        "8ball": {
+            "action": "shake the magic 8 ball",
+            "commands": [],
+            "format": _ => {},
+        },
         "commands": {
             "action": "list all of the available bot commands.",
             "commands": ["*-list"],
@@ -115,13 +120,23 @@ var commands = {
                 return str;
             }
         },
+        "stock": {
+            "action": "get stock quotes",
+            "commands": [],
+            "format": _ => {},
+        },
         "tvmaze" : {
             "action": "gets tv episode data",
             "commands": ["tv series"],
             "format": function(d){
-		log.debug('>>>>>> commands -> tvmaze -> d: ' + JSON.stringify(d));
-
-		return;
+                var str = '[' + c.teal(d.name) + ' (';
+                if(d.status === 'Running'){
+                    str += c.green(d.status) + '): ' + c.teal('S' + d.season + 'E' + d.episode) + '] Next airdate: '
+                } else {
+                    str += c.red(d.status) + '): ' + c.gray('S' + d.season + 'E' + d.episode) + '] Last airdate: '
+                }
+                str += d.airdate;
+                return str;
             }
     	},
         "updates": {
@@ -150,7 +165,7 @@ var commands = {
 
                 var str = c.teal(d.irc_nick) + ' ';
                 str += d.now_playing ? 'is now playing: ' + c.green(title_str) : 'last played: ' + c.gray(title_str); 
-                str += ' [' + d.play_count + 'x] ' + (d.loved ? c.red('♥') + ' (' : '('); 
+                str += ' [' + d.play_count + '/' + d.total_play_count + '] ' + (d.loved ? c.red('♥') + ' (' : '('); 
 
                 if(d.tags.length > 0){
                     var tags = d.tags.splice(0, 4); //max 4 tags
@@ -187,7 +202,7 @@ var commands = {
                 if(d.album !== '') title.push(d.album); 
 
                 var str = '[ ' + (d.now_playing ? c.green(d.irc_nick) : c.gray(d.irc_nick)) + ' ] ';
-                str += c.teal(title.join(' - ')) + ' [' + d.play_count + 'x] ' + (d.loved ? c.red('♥') + ' (' : '('); 
+                str += c.teal(title.join(' - ')) + ' [' + d.play_count + '/' + d.total_play_count + '] ' + (d.loved ? c.red('♥') + ' (' : '('); 
 
                 if(d.tags.length > 0){
                     var tags = d.tags.splice(0, 2); //max 2 tags
@@ -218,7 +233,7 @@ var commands = {
             "action": "get artist bio",
             "commands": ["artist"],
             "format": function(d){
-                var str =  c.teal(' Bio for ' + c.teal(d.artist) + ': ') + d.bio;
+                var str =  c.teal(' Bio for ' + c.teal(d.artist) + ': ') + d.bio.substr(0, 350);
                 return str;
             }
         },
