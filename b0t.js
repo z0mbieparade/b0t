@@ -680,6 +680,32 @@ bot.addListener('message', function(nick, chan, text, message) {
                                 		bot.say(chan, str);
                        			}
 				);
+               		} else if (tvMazeData.status == "In Development") {
+				var str = '[' + c.teal(tvMazeData.name) + ' (' + c.red(tvMazeData.status) + ')] ';
+
+				if (!tvMazeData._links.nextepisode || !tvMazeData._links.nextepisode.href) {
+					if (!tvMazeData.summary) {
+						//do nothing
+					} else {
+						Summary = tvMazeData.summary.replace(/<(?:.|\n)*?>/gm, '');
+						str += 'Summary: ' + c.teal(Summary);
+					}
+					bot.say(chan, str);
+				} else {
+                       			var d = get_url(
+                               			tvMazeData._links.nextepisode.href,
+						nick,
+                               			'json',
+                               			function(a){
+			   				//log.debug('>>> b0t -> tvmaze -> a: ' + JSON.stringify(a));
+							var SE = 'S' + (a.season < 10 ? '0' + a.season : a.season);
+							SE += 'E' + (a.number < 10 ? '0' + a.number : a.number);
+
+                                       			var str = '[' + c.teal(tvMazeData.name) + ' (' + c.red(tvMazeData.status) + '): ' + c.gray(SE) + '] Upcoming Pilot: ' + c.teal(a.airdate);
+                                			bot.say(chan, str);
+                       				}
+					);
+				}
                		} else {
                        		var d = get_url(
                                		tvMazeData._links.previousepisode.href,
