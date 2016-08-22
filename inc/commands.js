@@ -131,11 +131,16 @@ var commands = {
             "format": function(d){
                 var str = '[' + c.teal(d.name) + ' (';
                 if(d.status === 'Running'){
-                    str += c.green(d.status) + '): ' + c.teal('S' + d.season + 'E' + d.episode) + '] Next airdate: '
+                    str += c.green(d.status) + '): ' + c.teal('S' + d.season + 'E' + d.episode) + '] Next airdate: ' + d.airdate;
+		} else if(d.status === 'In Development'){
+			if (!d.summary) {
+                    		str += c.brown(d.status) + '): ' + c.teal('S' + d.season + 'E' + d.episode) + '] Upcoming pilot: ' + d.airdate;
+			} else {
+				str += c.brown(d.status) + ')] Summary: ' + c.teal(d.summary);
+			}
                 } else {
-                    str += c.red(d.status) + '): ' + c.gray('S' + d.season + 'E' + d.episode) + '] Last airdate: '
+                    str += c.red(d.status) + '): ' + c.gray('S' + d.season + 'E' + d.episode) + '] Last airdate: ' + d.airdate;
                 }
-                str += d.airdate;
                 return str;
             }
     	},
