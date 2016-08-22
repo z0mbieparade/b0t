@@ -36,7 +36,7 @@ var respond = {
             return 'link: https://github.com/z0mbieparade/b0t';
         } else {
             return 'for more info try ' + c.teal(config.bot_nick) + ' -version|-owner|-link';
-        }      
+        }
 
     },
     "err": function(d){
@@ -45,15 +45,15 @@ var respond = {
         return 'Please type ' + c.teal(d.syntax) + ' to ' + d.action;
     },
     "enter_room": function(d){  //on chat enter
-        return 'holla'; 
+        return 'holla';
     },
     "no_users_registered": function(d){
         return 'No users registered with ' + c.teal(d.label) + ' currently in the channel';
     },
     "not_registered": function(d){
-        var register_syntax = config.command_prefix + d.col + ' <' + commands[d.cat][d.col].commands.join('> <') + '>'; 
+        var register_syntax = config.command_prefix + d.col + ' <' + commands[d.cat][d.col].commands.join('> <') + '>';
         return 'Your ' + c.teal(d.label) + ' is not registered! Please type ' + c.teal(register_syntax) + ' to register it';
-        
+
     },
     "cmd_help": function(d){
         var syntax = config.command_prefix + d;
@@ -98,15 +98,15 @@ var commands = {
             "action": "set the channel topic",
             "commands": ["topic"],
             "perm": "+",
-            "format": function(d){ 
-                return "Topic set!"; 
+            "format": function(d){
+                return "Topic set!";
             }
         },
         "reg": {
             "action": "register a user for any service (lastfm, trakt, location, untappd)",
             "commands": ["service", "irc nick", "data"],
             "perm": "~",
-            "format": function(d){ 
+            "format": function(d){
                 var str = c.teal(d.irc_nick) + '\'s ' + d.label + ' has now been set';
                 return str;
             }
@@ -115,7 +115,7 @@ var commands = {
             "action": "unregister a user for any service (lastfm, trakt, location, untappd)",
             "commands": ["service", "irc nick"],
             "perm": "~",
-            "format": function(d){ 
+            "format": function(d){
                 var str = c.teal(d.irc_nick) + '\'s ' + d.label + ' has now been removed';
                 return str;
             }
@@ -143,7 +143,7 @@ var commands = {
             "action": "check for updates to b0t script",
             "commands": [],
             "perm": "@",
-            "format": function(d){ 
+            "format": function(d){
                 if(d === pkg.version) return 'I am up to date!';
 
                 return 'Please update me! My version: ' + pkg.version + ' Current version: ' + d;
@@ -164,8 +164,8 @@ var commands = {
 
 
                 var str = c.teal(d.irc_nick) + ' ';
-                str += d.now_playing ? 'is now playing: ' + c.green(title_str) : 'last played: ' + c.gray(title_str); 
-                str += ' [' + d.play_count + '/' + d.total_play_count + '] ' + (d.loved ? c.red('♥') + ' (' : '('); 
+                str += d.now_playing ? 'is now playing: ' + c.green(title_str) : 'last played: ' + c.gray(title_str);
+                str += ' [' + d.play_count + '/' + d.total_play_count + '] ' + (d.loved ? c.red('♥') + ' (' : '(');
 
                 if(d.tags.length > 0){
                     var tags = d.tags.splice(0, 4); //max 4 tags
@@ -187,7 +187,7 @@ var commands = {
             "format": function(d){
                 var str = c.teal(d.irc_nick) + ' ';
                 str += d.now_playing ? 'is now playing: ' + c.green(d.title || '') : 'last played: ' + c.gray(d.title || '');
-                str += ' ' + d.link; 
+                str += ' ' + d.link;
 
                 return str;
             }
@@ -199,10 +199,10 @@ var commands = {
                 var title = [];
                 if(d.artist !== '') title.push(d.artist);
                 if(d.name !== '') title.push(d.name);
-                if(d.album !== '') title.push(d.album); 
+                if(d.album !== '') title.push(d.album);
 
                 var str = '[ ' + (d.now_playing ? c.green(d.irc_nick) : c.gray(d.irc_nick)) + ' ] ';
-                str += c.teal(title.join(' - ')) + ' [' + d.play_count + '/' + d.total_play_count + '] ' + (d.loved ? c.red('♥') + ' (' : '('); 
+                str += c.teal(title.join(' - ')) + ' [' + d.play_count + '/' + d.total_play_count + '] ' + (d.loved ? c.red('♥') + ' (' : '(');
 
                 if(d.tags.length > 0){
                     var tags = d.tags.splice(0, 2); //max 2 tags
@@ -221,8 +221,8 @@ var commands = {
             "commands": ["artist"],
             "format": function(d){
                 var str =  c.teal(' Similar to ' + c.teal(d.artist) + ': ');
-                var sa = d.similar_artists.map(function(artist){ 
-                    return artist.name + ' ' + score(artist.match, 100, '%'); 
+                var sa = d.similar_artists.map(function(artist){
+                    return artist.name + ' ' + score(artist.match, 100, '%');
                 });
                 str += sa.join(', ');
 
@@ -256,7 +256,7 @@ var commands = {
                 str += (d.now_watching ? ' is now watching: ' + this.symbols[d.type] + ' ' + c.green(d.title) :
                  ' last watched: ' + this.symbols[d.type] + ' ' + c.gray(d.title));
                 str += (d.year !== '' ? ' (' + d.year + ')' : '');
-            
+
                 return str;
             },
             "symbols": {
@@ -272,7 +272,7 @@ var commands = {
                 str += d.now_watching ? c.green(d.irc_nick) : c.gray(d.irc_nick);
                 str += ' ] ' + this.symbols[d.type] + ' ' + c.teal(d.title) + ' ';
                 (d.year !== '' ? ' (' + d.year + ')' : '');
-            
+
                 return str;
             },
             "symbols": {
@@ -291,7 +291,7 @@ var commands = {
                 for(var i = 0; i < d.length; i++) {
                     if(i === 0){
                        str += c.teal(d[i].type + 's: ');
-                       high_watch = d[i].watchers;  
+                       high_watch = d[i].watchers;
                     }
 
                     var watch = d[i].title;
@@ -329,7 +329,7 @@ var commands = {
         			str += ' (at ' + c.green(d.venue) + ')';
         			//UntappdMsg += " on " + checkin.created_at;
         		}
-            
+
                 return str;
             },
             "symbols": {
@@ -352,7 +352,7 @@ var commands = {
         			str += ' (at ' + c.green(d.venue) + ')';
         			//UntappdMsg += " on " + checkin.created_at;
         		}
-                    
+
                 return str;
             },
             "symbols": {
@@ -381,25 +381,25 @@ var commands = {
                 return str;
             },
             "symbols": {
-                "chanceflurries": "🌨",
-                "chancerain": "🌧",
+                "chanceflurries": ":snowflake:",
+                "chancerain": ":umbrella:",
                 "chancesleet": "🌨",
-                "chancesnow": "🌨",
+                "chancesnow": ":snowflake:",
                 "chancetstorms": "⛈",
-                "clear": "🌞",
-                "flurries": "🌨",
-                "fog": "🌫",
-                "hazy": "",
+                "clear": ":sun_with_face:",
+                "flurries": ":snowflake:",
+                "fog": ":foggy:",
+                "hazy": ":foggy:",
                 "mostlycloudy": "🌥",
                 "mostlysunny": "🌤",
-                "partlycloudy": "⛅",
-                "partlysunny": "⛅",
+                "partlycloudy": ":partly_sunny:",
+                "partlysunny": ":partly_sunny:",
                 "sleet": "🌨🌧",
-                "rain": "🌧",
-                "snow": "🌨",
-                "sunny": "🌞",
-                "tstorms": "⛈",
-                "cloudy": "🌥"
+                "rain": ":umbrella:",
+                "snow": ":snowflake:",
+                "sunny": ":sun_with_face:",
+                "tstorms": ":umbrella:",
+                "cloudy": ":cloud:"
             }
         },
         "location" : {
@@ -434,7 +434,7 @@ for(var cat in respond){
     respond[cat] = verify(respond[cat])
 }
 
-//this verifies string length and such, 
+//this verifies string length and such,
 //and anything else that needs to be verified before
 //having the bot send it back.
 function verify(fn) {
@@ -464,7 +464,7 @@ function verify(fn) {
                     parse(obj[key]);
                 }
             }
-            
+
         }
         parse(arg);
 
