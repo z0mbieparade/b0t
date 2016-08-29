@@ -108,8 +108,6 @@ sa | get similar artists by percentage | all users | `!sa <artist name>`
 bio | get artist bio | all users | `!bio <artist name>`
 lastfm | register your last.fm username with your irc nick | all users | `!lastfm <last.fm username>`
 
-
-
 ###Trakt.TV Commands
 !nw and !ww require a trakt.tv account, and registration with the bot to use. Note that trakt.tv accounts must be set to PUBLIC to use with these commands.
 
@@ -119,6 +117,12 @@ nw | get your last scrobbled show/movie from trakt.tv | all users | `!nw`
 ww | get all users in current chan w/ registered trakt.tv nicks last scrobbled show/movie | all users | `!ww`
 trend | list top 5 trending movies/shows | all users | `!trend <-movies|-shows>`
 trakt | register your trakt.tv username with your irc nick | all users | `!trakt <trakt.tv username>`
+
+###TVMaze Commands
+
+command | action | default permission | syntax
+------- | ------ | ------------------ | ------
+tvmaze | gets tv episode data | all users | `!tvmaze <tv series>`
 
 ###Weather Commands
 

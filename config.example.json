@@ -15,26 +15,5 @@
 	"parse_links": true,
 	"less_chan_spam": true,
 
-	"API": {
-		"LastFM": {
-			"api_key": "",
-			"secret": "",
-			"app_name": ""
-		},
-		"YouTube": {
-			"api_key": ""
-		},
-		"TraktTV": {
-			"api_key": ""
-		},
-		"Weather": {
-			"api_key": ""
-		},
-		"UNTAPPD": {
-			"api_key": "",
-			"secret": ""
-		}
-	},
-
 	"debug": false
 }
