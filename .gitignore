@@ -5,5 +5,3 @@ lib/db.db
 node_modules/*
 logs/*
 
-plugins/*
-!plugins/default

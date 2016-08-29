@@ -1,0 +1,15 @@
+[submodule "plugins/b0t-untappd"]
+	path = plugins/b0t-untappd
+	url = https://github.com/z0mbieparade/b0t-untappd.git
+[submodule "plugins/b0t-dictionary"]
+	path = plugins/b0t-dictionary
+	url = https://github.com/z0mbieparade/b0t-dictionary.git
+[submodule "plugins/b0t-lastfm"]
+	path = plugins/b0t-lastfm
+	url = https://github.com/z0mbieparade/b0t-lastfm.git
+[submodule "plugins/b0t-weather"]
+	path = plugins/b0t-weather
+	url = https://github.com/z0mbieparade/b0t-weather.git
+[submodule "plugins/b0t-trakt"]
+	path = plugins/b0t-trakt
+	url = https://github.com/z0mbieparade/b0t-trakt.git
