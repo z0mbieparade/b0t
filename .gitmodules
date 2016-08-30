@@ -13,3 +13,6 @@
 [submodule "plugins/b0t-trakt"]
 	path = plugins/b0t-trakt
 	url = https://github.com/z0mbieparade/b0t-trakt.git
+[submodule "plugins/b0t-random"]
+	path = plugins/b0t-random
+	url = https://github.com/z0mbieparade/b0t-random.git
