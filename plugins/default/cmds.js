@@ -23,23 +23,6 @@ var respond = {
 exports.respond = respond;
 
 var cmds = {
-    test: {
-        action: 'test test 1 2 3, this thing on?',
-        params: [],
-        perms: '~',
-        func: function(action, nick, chan, args, command_string){
-
-            log.warn('NICK', nick);
-            log.warn('CHAN', chan);
-            log.warn('DB', db);
-            log.warn('ARGS', args);
-            log.warn('COMMAND STR', command_string);
-            log.warn('ACTION', action);
-
-            log.warn('SAY', action.say)
-
-        }
-    },
     commands: {
         action: 'list all of the available bot commands',
         params: ['*-list'],

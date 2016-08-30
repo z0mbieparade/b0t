@@ -15,5 +15,9 @@
 	"parse_links": true,
 	"less_chan_spam": true,
 
-	"debug": false
+	"debug": false,
+
+	"API": {
+
+	}
 }
