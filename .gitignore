@@ -4,4 +4,5 @@ config.json
 lib/db.db
 node_modules/*
 logs/*
+db.json
 

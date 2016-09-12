@@ -11,8 +11,6 @@ fs       = require('fs');
 
 commands = {},
 command_by_plugin = {},
-respond = {},
-respond_by_plugin = {},
 names = {}; // { channel : { nick: rank }}
 
 var get_plugins = function(complete) {
@@ -36,7 +34,6 @@ var get_plugins = function(complete) {
 
             var Plugin = require(plugin_dir + filename + '/cmds.js');
             var info = Plugin.info
-            var ress = Plugin.respond ? Plugin.respond : {};
             var cmds = Plugin.cmds;
 
             for(var cmd in cmds){
@@ -48,16 +45,6 @@ var get_plugins = function(complete) {
                 command_by_plugin[cmd] = info.name;
                 commands[info.name] = commands[info.name] || {info: info, cmds: {}};
                 commands[info.name].cmds[cmd] = cmds[cmd];
-            }
-
-            for(var res in ress){
-
-                if(respond_by_plugin[res] && respond_by_plugin[res] !== info.name){
-                    log.error('Duplicate response error, plugin ' + info.name + ' contains a response by the same name! Overwriting response.' )
-                }
-
-                respond_by_plugin[res] = info.name;
-                respond[res] = ress[res];
             }
 
             log.debug('Loaded Plugin', info.name) 
@@ -89,8 +76,13 @@ var setup_bot = function(){
 
     bot.addListener('join', function(chan, nick, message) {
         log.debug('JOIN', chan, nick);
+
+         action.send_tell_messages(nick);
+
         if (nick === config.bot_nick) {
-            bot.say(chan, respond.enter_room());
+            if(config.speak_on_channel_join){
+                bot.say(chan, config.speak_on_channel_join);
+            }
             bot.send('samode', chan, '+a', config.bot_nick);
         }
         bot.send('names', chan);
@@ -98,6 +90,8 @@ var setup_bot = function(){
 
     bot.addListener('names', function(chan, nicks) {
         names[chan] = nicks;
+
+        log.debug(chan, nicks);
 
         for(var nick in nicks){
             if (nick === config.owner && nicks[nick] !== '~') {
@@ -147,26 +141,46 @@ var setup_bot = function(){
 
 
     bot.addListener('message', function(nick, chan, text, message) {
+
         if(nick === config.bot_nick && chan === config.bot_nick) return;
-        var chan = message.args[0] === config.bot_nick ? nick : chan;
+        chan = message.args[0] === config.bot_nick ? nick : chan;
 
         action.chan = chan;
         action.nick = nick;
 
+        action.send_tell_messages(nick);
+
+        //parse urls
         var links = text.match(/(\b(https?|http):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig);
         if(links && links.length && links.length > 0 && config.parse_links)
         {
             for(var i = 0; i < links.length; i++) {
                 action.get_url(links[i], 'sup', function(data){
-                    action.say(data, 1);
+                    action.say(data, 1, {ignore_bot_speak: true});
                 }); 
             }
-        } else if (text.indexOf(config.bot_nick) === 0) {
+
+        //say the bots name
+        } else if (text.indexOf(config.bot_nick) > -1) { 
             var command_args_org = text.split(' ');
             command_args_org.shift();
 
-            bot.say(chan, respond.say_my_name(command_args_org));
+            var say_my_name = '';
+            if(command_args_org[0] == '-version') {
+                say_my_name = 'verson: ' + pkg.version;
+            } else if(command_args_org[0] == '-owner') {
+                say_my_name = 'owner: ' + c.rainbow(config.owner);
+            } else if(command_args_org[0] === '-link') {
+                say_my_name = 'link: https://github.com/z0mbieparade/b0t';
+            } else {
+                say_my_name = 'for more info try ' + c.teal(config.bot_nick) + ' -version|-owner|-link';
+            }   
+
+            action.say(say_my_name, 2, {ignore_bot_speak: true});
+
+        //respond to command
         } else if (text.indexOf(config.command_prefix) === 0) {
+            
             var command_args_org = text.split(' ');
             var command = command_args_org[0].slice(1);
             command_args_org.shift();
@@ -177,9 +191,19 @@ var setup_bot = function(){
                     return;
                 }
                
+                action.is_cmd = true;
                 command_data.func(action, nick, chan, command_args, command_args_org.join(' '));
 
             });
+
+        //everything else
+        } else {
+
+            //this is a message in the chan, and we're limiting bot chan speak to only when not busy
+            //so we need to log when messages are sent
+            if(message.args[0] !== config.bot_nick){
+                action.update_chan_speak('chan');
+            }
         }
     });
 } 

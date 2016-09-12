@@ -3,27 +3,8 @@ var info = {
 }
 exports.info = info;
 
-var respond = {
-    'say_my_name': function(d){
-        if(d[0] == '-version') {
-            return 'verson: ' + pkg.version;
-        } else if(d[0] == '-owner') {
-            return 'owner: ' + c.rainbow(config.owner);
-        } else if(d[0] == '-link') {
-            return 'link: https://github.com/z0mbieparade/b0t';
-        } else {
-            return 'for more info try ' + c.teal(config.bot_nick) + ' -version|-owner|-link';
-        }      
-
-    },
-    'enter_room': function(d){  //on chat enter
-        return 'holla'; 
-    }
-}
-exports.respond = respond;
-
 var cmds = {
-    commands: {
+    commands: { 
         action: 'list all of the available bot commands',
         params: ['*-list'],
         func: function(action, nick, chan, args, command_string){
@@ -58,28 +39,39 @@ var cmds = {
     reg: {
         action: 'register a user for any service (lastfm, trakt, location, untappd)',
         params: ['service', 'irc nick', 'data'],
-        perm: '~',
+        perm: '@',
         func: function(action, nick, chan, args, command_string){ 
             action.update_user(args[1], {
-                label: args[0],
                 col: args[0],
                 data: args[2]
             }, function(msg){
-                action.say(msg, 2);
+                action.say(msg.msg, 2);
             });
         }
     },
     unreg: {
         action: 'unregister a user for any service (lastfm, trakt, location, untappd)',
         params: ['service', 'irc nick'],
-        perm: '~',
+        perm: '@',
         func: function(action, nick, chan, args, command_string){ 
             action.update_user(args[1], {
-                    label: args[0],
                     col: args[0],
                     data: ''
             }, function(msg){
-                action.say(msg, 2)
+                action.say(msg.msg, 2)
+            });
+        }
+    },
+    tell: {
+        action: 'tell another user something when they they are next active',
+        params: ['irc nick', 'message'],
+        func: function(action, nick, chan, args, command_string){ 
+            action.update_user(args[0], {
+                    col: 'msg/'+nick,
+                    data: command_string
+            }, function(msg){
+                if(msg.act === 'remove') action.say('Your message has been removed', 2);
+                if(msg.act === 'add') action.say('Your message will be sent when ' + args[0] + ' is next seen', 2);
             });
         }
     },
@@ -100,6 +92,17 @@ var cmds = {
                     }
                });
         }
+    },
+    mergedb: {
+        action: 'merge old flatfile db into new json db (needed when upgrading from 0.0.* -> 0.1.*',
+        params: [],
+        perm: 'owner',
+        func: function(action, nick, chan, args, command_string){ 
+            var obj = action.export_db();
+            action.say(JSON.stringify(obj), 3, {skip_verify: true})
+        }
     }
+
+
 }
 exports.cmds = cmds;
