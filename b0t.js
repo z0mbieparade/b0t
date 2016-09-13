@@ -70,8 +70,8 @@ var setup_bot = function(){
     });
 
     bot.addListener('registered', function(message) {
-        if(config.reg_password !== '') bot.say('NickServ', 'identify ' + config.reg_password);
-        if(config.op_password !== '') bot.send('oper', config.bot_nick, config.op_password);
+        if(config.reg_password) bot.say('NickServ', 'identify ' + config.reg_password);
+        if(config.op_password) bot.send('oper', config.bot_nick, config.op_password);
     });
 
     bot.addListener('join', function(chan, nick, message) {
@@ -91,8 +91,6 @@ var setup_bot = function(){
     bot.addListener('names', function(chan, nicks) {
         names[chan] = nicks;
 
-        log.debug(chan, nicks);
-
         for(var nick in nicks){
             if (nick === config.owner && nicks[nick] !== '~') {
                 bot.send('samode', chan, '+q', config.owner);
@@ -102,9 +100,6 @@ var setup_bot = function(){
         }
     });
 
-    bot.addListener('+mode', function(chan, by, mode, argument, message)  {
-        bot.send('names', chan);
-    });
     bot.addListener('+mode', function(chan, by, mode, argument, message)  {
         bot.send('names', chan);
     });

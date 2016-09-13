@@ -2,10 +2,11 @@
 irc node bot with trakt.tv, last.fm, urban dictionary, and more functionality
 
 ## Installation
-You can either download this repository, or git clone it into the directory you want your bot installed in. After the folder is in your installation location, run:
+In the directory you want to install the b0t, run:
 ```
 cd b0t
 npm install
+git submodule foreach "npm install"
 ```
 If you run into errors durring the install try running these commands:
 ```
@@ -43,25 +44,29 @@ reg_password | NickServ registration password. You don't have to have this, but 
 op_password | if your bot is an oper on your network, set their oper password here. | "bot_oper_password"
 voice_users_on_join | will autovoice everyone in the room when they join, or the bot joins. NOTE: atheme uses, if ChanServ baby sits your room, it may de-voice. | true/false
 parse_links | parse links in chat, and say their title | true/false
-less_chan_spam | bot says more things in PMs to users, like errors, !commands, !cmd help, etc. Keeps channel feed a bit cleaner. | true/false
-API | If you would like to use a set of commands that require and API key, you must go register for that API key and copy and paste it here. DO NOT DELETE THESE SECTIONS. If you don't want to use a set of commands, just leave the api_key section blank. This will automatically disable all of the commands that require the key. | 
+less_chan_spam | action.say() level 2 messages go to notice instead of channel | true/false
+limit_bot_speak_when_busy | when true, uses busy_interval (30 sec by default) to determine if the channel is busy, and if that is the case it sends bot messages to notice instead of spamming them in the channel. | true/false
+busy_interval | (default 30 sec) If the average time between the last 5 user messages in the channel is <= busy_interval, the channel is determined to be busy. Or, if the last user mesage in the channel is 2x or greater this value, it is not busy. | milliseconds
+wait_time_between_commands_when_busy | When channel is busy, how often command output will go to the chan vs to to notice | milliseconds
 debug | Generates more logs in your console. If you're having an issue with the bot, good to set to true, otherwise just leave it as false. | true/false
-
+API | If you would like to use a set of commands that require and API key, you must go register for that API key and copy and paste it here. If you don't want to use a set of commands you can leave the key blank or delete the whole section. Commands relating to that api will be disabled | 
 
 ----------
 
 ## API Keys
 
-Currently, the bot uses 3 different api's that require a key. Here's where to get them, as of the time this readme was written:
+Currently, comes with a handful of plugins, and these are the APIs they use. Here's where to get them, as of the time this readme was written:
 
 **Last.FM** - http://www.last.fm/api/account/create
-You will need an api_key and a secret. You can enter an app_name here too, otherwise it defaults to b0t.
+You will need an api key and a secret. You can enter an app_name here too, otherwise it defaults to b0t.
+
+**Merriam-Webster** - xxx
 
 **YouTube** - https://console.developers.google.com/apis
 You will need a google account to use this. The first time you use a youtube command like !yt, the terminal console will throw an error with a link to enable your api key for youtube.
 
 **Trakt.TV** - http://docs.trakt.apiary.io/
-You will need an api_key here. The docs should have a link for creating your key.
+You will need an api key here. The docs should have a link for creating your key.
 
 **Weather** - https://www.wunderground.com/weather/api/d/pricing.html
 You can get a free key for Weather Underground here, so long as you don't go over a certain number of requests a day. 
@@ -81,105 +86,118 @@ If all goes well your bot should start up and join your network and channels. Yo
 
 ----------
 
-## Bot Commands
+## Bot Commands in plugins that come with b0t. Other plugins should have their own readme.
 A list of all of the currently available commands.
 You can also type [bot_nick] -owner to bot say it's owner, -version for the bot version, and -link for a link to this repo.
 
-###Other Commands
-general commands that don't have a specific category
+### Default Commands
 
 command | action | default permission | syntax
 ------- | ------ | ------------------ | ------
 commands | list all of the available bot commands for user's permission level | all users | `!commands <*-list>`
 set | set the channel topic | all users with voice | `!set <topic>`
-reg | register a user for any service (lastfm, trakt, location) | owner | `!reg <service> <irc nick> <data>`
-unreg | unregister a user for any service (lastfm, trakt, location) | owner | `!unreg <service> <irc nick>`
+reg | register a user for any service (lastfm, trakt, location, untappd) | ops | `!reg <service> <irc nick> <data>`
+unreg | unregister a user for any service (lastfm, trakt, location, untappd) | ops | `!unreg <service> <irc nick>`
+tell | tell another user something when they they are next active | all users | `!tell <irc nick> <message>`
+speak | allows owner to speak through bot to channel or to user | b0t owner | `!speak <to> <message>`
 updates | check for updates to b0t script | ops | `!updates`
+bug | send a bug report to the owner | all users | `!bug <explain>`
+request | send a feature request to the owner | all users | `!request <explain>`
+mergedb | merge old flatfile db into new json db (needed when upgrading from 0.0.* -> 0.1.* | b0t owner | `!mergedb`
 
-###Last.FM Commands
+### Last.FM Commands
 !np and !wp require a last.fm account, and registration with the bot to use.
 
-command | action | default permission | syntax
-------- | ------ | ------------------ | ------
-np | get your last scrobbled song from last.fm | all users | `!np`
-yt | get your last scrobbled song from last.fm and attempt to locate a youtube video of it *NOTE this command requires the YouTube API | all users | `!yt`
-wp | get all users in current chan w/ registered last.fm nicks last scrobbled song | all users | `!wp`
-sa | get similar artists by percentage | all users | `!sa <artist name>`
-bio | get artist bio | all users | `!bio <artist name>`
-lastfm | register your last.fm username with your irc nick | all users | `!lastfm <last.fm username>`
+command | action | default permission | API | syntax
+------- | ------ | ------------------ | ----| ------
+np | get last scrobbled song from last.fm | all users | lastfm | `!np <*irc nick>`
+yt | get last scrobbled song from last.fm and attempt to locate a youtube video of it | all users | lastfm, youtube | `!yt <*irc nick>`
+wp | get all users in current chan w/ registered last.fm nicks last scrobbled song | all users | lastfm | `!wp`
+sa | get similar artists by percentage | all users | lastfm | `!sa <*artist>` *uses last !np or !yt artist if none entered
+bio | get artist bio | all users | lastfm | `!bio <*artist>` *uses last !np or !yt artist if none entered
+lastfm | register your last.fm username with your irc nick | all users | lastfm | `!lastfm <last.fm username>`
 
-###Trakt.TV Commands
+### Trakt.TV Commands
 !nw and !ww require a trakt.tv account, and registration with the bot to use. Note that trakt.tv accounts must be set to PUBLIC to use with these commands.
 
+command | action | default permission | API | syntax
+------- | ------ | ------------------ | ----|------
+nw | get last scrobbled show/movie from trakt.tv | all users | trakt | `!nw <*irc nick>`
+ww | get all users in current chan w/ registered trakt.tv nicks last scrobbled show/movie | all users | trakt | `!ww`
+trend | list top 5 trending movies/shows | all users | trakt | `!trend <-movies|-shows>`
+show | get show info | all users | trakt, youtube | `!show <show name>`
+movie | get movie info | all users | trakt, youtube | `!movie <movie name`
+trakt | register your trakt.tv username with your irc nick | all users | trakt | `!trakt <trakt.tv username>`
+
+### Weather Commands
+command | action | default permission | API | syntax
+------- | ------ | ------------------ | --- | ------
+w | get current weather (if no zip or city/state is used, attempts to get weather for your registered location) | all users | wunderground | `!w <*zip/city, state>`
+location | register your location with your irc nick | all users | wunderground | `!location <zip/city, state>`
+
+### Untappd Commands
+!ut and !wu require a untappd.com account, and registration with the bot to use.
+
+command | action | default permission | API | syntax
+------- | ------ | ------------------ | --- | ------
+ut | get last beer drank from untappd.com | all users | untappd | `!ut <*irc nick>`
+wu | get all users in current chan w/ registered untappd nicks last checked in beer | all users | untappd | `!wu`
+untappd | register your untappd username with your irc nick | all users | untappd | `!untappd <untapped.com username>`
+
+### Dictionary Commands
+command | action | default permission | API | syntax
+------- | ------ | ------------------ | --- | ------
+d | get Merriam-Webster dictionary word definition | all users | Merriam-Webster | `!d <word>`
+ud | get urban dictionary term/word definition | all users | - | `!ud <term>`
+
+### Random Commands
+A spot for commands that are one-offs.
+
 command | action | default permission | syntax
 ------- | ------ | ------------------ | ------
-nw | get your last scrobbled show/movie from trakt.tv | all users | `!nw`
-ww | get all users in current chan w/ registered trakt.tv nicks last scrobbled show/movie | all users | `!ww`
-trend | list top 5 trending movies/shows | all users | `!trend <-movies|-shows>`
-trakt | register your trakt.tv username with your irc nick | all users | `!trakt <trakt.tv username>`
-
-###TVMaze Commands
-
-command | action | default permission | syntax
-------- | ------ | ------------------ | ------
-tvmaze | gets tv episode data | all users | `!tvmaze <tv series>`
-
-###Weather Commands
-
-command | action | default permission | syntax
-------- | ------ | ------------------ | ------
-w | get current weather (if no zip or city/state is used, attempts to get weather for your registered location) | all users | `!w <*zip/city, state>`
-location | register your location with your irc nick | all users | `!location <zip/city, state>`
-
-###Untappd Commands
-
-command | action | default permission | syntax
-------- | ------ | ------------------ | ------
-ut | get your last beer drank from untappd.com | all users | `!ut`
-wu | get all users in current chan w/ registered untappd nicks last checked in beer | all users | `!wu`
-untappd | register your untappd username with your irc nick | all users | `!untappd <untapped.com username>`
-
-###Urban Dictionary
-Note that urban dictionary doesn't require an api key to use.
-
-command | action | default permission | syntax
-------- | ------ | ------------------ | ------
-ud | get urban dictionary term/word definition | all users | `!ud <term>`
-
+8ball | magic 8ball answer | all users | `!8ball <*question>`
+stock | get stock info | all users | `!stock <symbol>`
 
 ----------
 
 ## Modifying Commands
-If you wish to modify any of the default command responses, other bot responses, command permissions, or manually disabled commands, you can modify the inc/commands.js file. Keep in mind if you break this file, your bot will be sad.
+If you wish to modify any of the default command responses, other bot responses, command permissions, or manually disabled commands, you can modify them in plugins/plugin-folder/cmds.js. Keep in mind if you break this file, your bot will be sad. Things might explode.
 
-The **respond** variable is for general bot responses. Formatting is done using the npm package irc-colors, which you can read about here: https://www.npmjs.com/package/irc-colors
-
-The **commands** variable is for each of the bot commands. If a command set requires an API, it's listed under that API section. If you do not enter an API, that section of commands is disabled automatically.
+The **cmds** variable is for each of the bot commands. If a command set requires an API, it's listed under that API section in the main config.json file. There should be an example of what all needs to go in that plugin's api config bit in the plugin folder under config.example.json. If you do not enter an API, that section of commands is disabled automatically.
 
 Command syntax:
 *note: commands that have an* * *next to them are optional, and do not throw errors if you do not enter them when calling the command in the channel.*
 
-    "Section/API Name from config.json" : {
-        "command" : {
-            "action": "what action this command attempts to perform",
-            "commands": ["input", "*input"],
-            "format": function(d){
-                if(d && d.err) return er(d.err); //error handling, best to leave this in here.
+## Building a Plugin
+Shown below is the most basic form of a plugin for the bot. You can look through the ones that come with it to get more of an idea.
 
-                //do some stuff with d (data) variable here, return a string for the bot to say in chan.
+    var info = {name: 'LastFM'}
+    exports.info = info;
 
-                return str;
-            },
-            "perm": "+", //if this section isn't present, all users have permission to use command. Otherwise everyone with a + and up can use it.
-            "disabled": true //if you add this it disables the command.
+    var cmds = {
+        np : { //command name
+            action: 'get last scrobbled song from last.fm', //what the command does
+            params: ['*irc nick'], //input parameters for command. * means optional.
+            register: 'lastfm', //if the command requires registration with the bot, enter the command used to register it here. delete if not needed.
+            API: ['lastfm'], //array of requred APIs (named same as in config file) needed to enable this command. delete if not needed.
+            func: function(action, nick, chan, args, command_string){
+                //action: various useful bot functions.
+                //nick: the nick of the user that typed the command
+                //chan: the channel it was typed in
+                //args: an array of all of the command parameters
+                //command_string: the un-exploded version of whatever was typed after the command.
+            
+               //do stuff here, see other plugins for examples
+            }
         }
     }
+    exports.cmds = cmds;
 
 
 ----------
 
 
-###Contributers
+### Contributers
 Thanks to everyone in oontz, but especially:
 - [jrwren](https://github.com/jrwren )
 - [plstate](https://github.com/plstate )
