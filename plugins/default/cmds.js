@@ -75,6 +75,15 @@ var cmds = {
             });
         }
     },
+    speak: {
+        action: 'allows owner to speak through bot to channel or to user',
+        params: ['to', 'message'],
+        perm: 'owner',
+        func: function(action, nick, chan, args, command_string){ 
+            if(args[0].indexOf('#') === 0){}
+            action.say(command_string.slice(args[0].length), 1, {to: args[0], skip_verify: true, ignore_bot_speak: true})
+        }
+    },
     updates: {
         action: 'check for updates to b0t script',
         params: [],
@@ -91,6 +100,61 @@ var cmds = {
                         action.say(str, 2)
                     }
                });
+        }
+    },
+    bug: {
+        action: 'send a bug report to the owner or lists current bugs',
+        params: ['*-list', 'explain'],
+        func: function(action, nick, chan, args, command_string){ 
+
+            var loop_thru = function(){
+                action.get_db_data('/bugs', function(data){
+                    var bug_count = 1;
+                    for(var un in data){
+                        for(var i = 0; i < data[un].length; i++){
+                            var str = bug_count + ') ' + c.teal(un) + ': ' + data[un][i];
+                            action.say(str, 2)
+                        }
+                    }
+                });
+            }
+
+            if(args[0] === '-list'){
+                loop_thru();
+                return;
+            }
+
+            action.update_db('/bugs/'+nick, [command_string], true, function(act){
+                var str = 'Bug added by ' + c.teal(nick) + ': ' + command_string;
+                action.say(str, 3, {to: config.owner})
+            })
+        }
+    },
+    request: {
+        action: 'send a feature request to the owner or list current requests',
+        params: ['*-list', 'explain'],
+        func: function(action, nick, chan, args, command_string){ 
+             var loop_thru = function(){
+                action.get_db_data('/requests', function(data){
+                    var bug_count = 1;
+                    for(var un in data){
+                        for(var i = 0; i < data[un].length; i++){
+                            var str = bug_count + ') ' + c.teal(un) + ': ' + data[un][i];
+                            action.say(str, 2)
+                        }
+                    }
+                });
+            }
+
+            if(args[0] === '-list'){
+                loop_thru();
+                return;
+            } 
+
+            action.update_db('/requests/'+nick, [command_string], true, function(act){
+                var str = 'Feature request added by ' + c.teal(nick) + ': ' + command_string;
+                action.say(str, 3, {to: config.owner})
+            });
         }
     },
     mergedb: {
