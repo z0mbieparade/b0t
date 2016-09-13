@@ -124,7 +124,9 @@ var cmds = {
                 return;
             }
 
-            action.update_db('/bugs/'+nick, [command_string], true, function(act){
+            var merge = {};
+            merge[nick] = [command_string];
+            action.update_db('/bugs', merge, false, function(act){
                 var str = 'Bug added by ' + c.teal(nick) + ': ' + command_string;
                 action.say(str, 3, {to: config.owner})
             })
@@ -151,7 +153,9 @@ var cmds = {
                 return;
             } 
 
-            action.update_db('/requests/'+nick, [command_string], true, function(act){
+            var merge = {};
+            merge[nick] = [command_string];
+            action.update_db('/requests', merge, false, function(act){
                 var str = 'Feature request added by ' + c.teal(nick) + ': ' + command_string;
                 action.say(str, 3, {to: config.owner})
             });
