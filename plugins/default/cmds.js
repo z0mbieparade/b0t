@@ -104,16 +104,30 @@ var cmds = {
     },
     bug: {
         action: 'send a bug report to the owner or lists current bugs',
-        params: ['*-list', 'explain'],
+        params: ['*-list', '*-delete', 'explain'],
         func: function(action, nick, chan, args, command_string){ 
-
-            var loop_thru = function(){
+             var loop_thru = function(delete_id){
                 action.get_db_data('/bugs', function(data){
                     var bug_count = 1;
                     for(var un in data){
                         for(var i = 0; i < data[un].length; i++){
+                            log.debug(data[un][i]);
                             var str = bug_count + ') ' + c.teal(un) + ': ' + data[un][i];
-                            action.say(str, 2)
+
+                            if(delete_id !== null && delete_id !== undefined){
+                                if(bug_count == delete_id){
+                                    action.delete_from_db('/bugs/' + un + '[' + i + ']', function(deleted){
+                                        if(deleted){
+                                            action.say(str + c.green(' Deleted!'), 2);
+                                        } else {
+                                            action.say({err: 'no request found for id ' + delete_id}, 2);
+                                        }
+                                    })
+                                }
+                            } else {
+                                action.say(str, 2)
+                            }
+                            bug_count++;
                         }
                     }
                 });
@@ -122,27 +136,51 @@ var cmds = {
             if(args[0] === '-list'){
                 loop_thru();
                 return;
-            }
+            } 
+
+            if(args[0] === '-delete') {
+                if(isNaN(args[1]) === false){
+                    loop_thru(args[1]);
+                } else {
+                    action.say({err: 'please also enter a bug id to delete!'}, 2);
+                }
+                return;
+            } 
 
             var merge = {};
             merge[nick] = [command_string];
             action.update_db('/bugs', merge, false, function(act){
                 var str = 'Bug added by ' + c.teal(nick) + ': ' + command_string;
                 action.say(str, 3, {to: config.owner})
-            })
+            });
         }
     },
     request: {
         action: 'send a feature request to the owner or list current requests',
-        params: ['*-list', 'explain'],
+        params: ['*-list', '*-delete', 'explain'],
         func: function(action, nick, chan, args, command_string){ 
-             var loop_thru = function(){
+             var loop_thru = function(delete_id){
                 action.get_db_data('/requests', function(data){
                     var bug_count = 1;
                     for(var un in data){
                         for(var i = 0; i < data[un].length; i++){
+                            log.debug(data[un][i]);
                             var str = bug_count + ') ' + c.teal(un) + ': ' + data[un][i];
-                            action.say(str, 2)
+
+                            if(delete_id !== null && delete_id !== undefined){
+                                if(bug_count == delete_id){
+                                    action.delete_from_db('/requests/' + un + '[' + i + ']', function(deleted){
+                                        if(deleted){
+                                            action.say(str + c.green(' Deleted!'), 2);
+                                        } else {
+                                            action.say({err: 'no request found for id ' + delete_id}, 2);
+                                        }
+                                    })
+                                }
+                            } else {
+                                action.say(str, 2)
+                            }
+                            bug_count++;
                         }
                     }
                 });
@@ -150,6 +188,15 @@ var cmds = {
 
             if(args[0] === '-list'){
                 loop_thru();
+                return;
+            } 
+
+            if(args[0] === '-delete') {
+                if(isNaN(args[1]) === false){
+                    loop_thru(args[1]);
+                } else {
+                    action.say({err: 'please also enter a request id to delete!'}, 2);
+                }
                 return;
             } 
 
