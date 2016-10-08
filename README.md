@@ -101,9 +101,10 @@ reg | register a user for any service (lastfm, trakt, location, untappd) | ops |
 unreg | unregister a user for any service (lastfm, trakt, location, untappd) | ops | `!unreg <service> <irc nick>`
 tell | tell another user something when they they are next active | all users | `!tell <irc nick> <message>`
 speak | allows owner to speak through bot to channel or to user | b0t owner | `!speak <to> <message>`
+tag | have the bot say something when a user enters the room | all users | `!tag <tagline>`
 updates | check for updates to b0t script | ops | `!updates`
-bug | send a bug report to the owner | all users | `!bug <explain>`
-request | send a feature request to the owner | all users | `!request <explain>`
+bug | send a bug report to the owner | all users | `!bug <*-list> <*-delete> <explain>`
+request | send a feature request to the owner | all users | `!request  <*-list> <*-delete> <explain>`
 mergedb | merge old flatfile db into new json db (needed when upgrading from 0.0.* -> 0.1.* | b0t owner | `!mergedb`
 
 ### Last.FM Commands
