@@ -20,6 +20,8 @@
     "limit_bot_speak_when_busy": true,
     "busy_interval": 30000,
     "wait_time_between_commands_when_busy": 600000,
+
+    "send_owner_bot_pms": true,
 	
 	"debug": false,
 

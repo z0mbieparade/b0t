@@ -15,8 +15,7 @@ names = {}; // { channel : { nick: rank }}
 
 var get_plugins = function(complete) {
 
-    var error = function(err)
-    {
+    var error = function(err){
         log.error('Error getting plugins', err);
     }
 
@@ -77,13 +76,24 @@ var setup_bot = function(){
     bot.addListener('join', function(chan, nick, message) {
         log.debug('JOIN', chan, nick);
 
-         action.send_tell_messages(nick);
+        action.send_tell_messages(nick);
 
         if (nick === config.bot_nick) {
             if(config.speak_on_channel_join){
                 bot.say(chan, config.speak_on_channel_join);
             }
             bot.send('samode', chan, '+a', config.bot_nick);
+        } else {
+            action.get_user_data(nick, {
+                label: 'tag',
+                col: 'tag',
+                ignore_err: true
+            }, function(tag){
+                log.debug(tag);
+                if(tag !== false){
+                    bot.say(chan, tag);
+                }
+            }, true);
         }
         bot.send('names', chan);
     });
@@ -142,6 +152,11 @@ var setup_bot = function(){
 
         action.chan = chan;
         action.nick = nick;
+
+        if(chan === nick && config.send_owner_bot_pms){
+            var pm = nick + ': ' + text; 
+            action.say(pm, 3, { skip_verify: true, to: config.owner, ignore_bot_speak: true });
+        } 
 
         action.send_tell_messages(nick);
 

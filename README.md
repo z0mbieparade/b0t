@@ -48,6 +48,7 @@ less_chan_spam | action.say() level 2 messages go to notice instead of channel |
 limit_bot_speak_when_busy | when true, uses busy_interval (30 sec by default) to determine if the channel is busy, and if that is the case it sends bot messages to notice instead of spamming them in the channel. | true/false
 busy_interval | (default 30 sec) If the average time between the last 5 user messages in the channel is <= busy_interval, the channel is determined to be busy. Or, if the last user mesage in the channel is 2x or greater this value, it is not busy. | milliseconds
 wait_time_between_commands_when_busy | When channel is busy, how often command output will go to the chan vs to to notice | milliseconds
+send_owner_bot_pms | If a user PM's the bot, it will send the output to the owner. If you're using the !speak command as owner, you need this to be true to see user replies. | true/false
 debug | Generates more logs in your console. If you're having an issue with the bot, good to set to true, otherwise just leave it as false. | true/false
 API | If you would like to use a set of commands that require and API key, you must go register for that API key and copy and paste it here. If you don't want to use a set of commands you can leave the key blank or delete the whole section. Commands relating to that api will be disabled | 
 

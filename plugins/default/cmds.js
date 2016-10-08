@@ -41,9 +41,12 @@ var cmds = {
         params: ['service', 'irc nick', 'data'],
         perm: '@',
         func: function(action, nick, chan, args, command_string){ 
+            var data = command_string.split(' ');
+            data.splice(0, 2);
+            var data_str = data.join(' ');
             action.update_user(args[1], {
                 col: args[0],
-                data: args[2]
+                data: data_str
             }, function(msg){
                 action.say(msg.msg, 2);
             });
@@ -82,6 +85,18 @@ var cmds = {
         func: function(action, nick, chan, args, command_string){ 
             if(args[0].indexOf('#') === 0){}
             action.say(command_string.slice(args[0].length), 1, {to: args[0], skip_verify: true, ignore_bot_speak: true})
+        }
+    },
+    tag: {
+        action: 'create a tagline for the bot to say when you enter the room',
+        params: ['tagline'],
+        func: function(action, nick, chan, args, command_string){
+            action.update_user(nick, {
+                    col: 'tag',
+                    data: command_string
+            }, function(msg){
+                action.say(msg.msg, 2);
+            });
         }
     },
     updates: {
