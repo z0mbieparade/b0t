@@ -31,10 +31,20 @@ var cmds = {
         params: ['topic'],
         perm: '+',
         func: function(action, nick, chan, args, command_string){ 
-            action.send('topic', command_string);
+            action.get_db_data('/topic', function(data){
+                prev_topics = [];
+                if(data.length > 0){
+                    prev_topics = data.slice(-2);
+                } 
 
-            action.update_db('/', {topic: [command_string]}, false, function(){
-                action.say('Topic set!', 2);
+                log.debug(prev_topics);
+
+                action.update_db('/', {topic: [command_string]}, false, function(){
+                    prev_topics.push(command_string);
+                    prev_topics.reverse();
+                    action.send('topic', prev_topics.join(' | '));
+                    action.say('Topic set!', 2);
+                });
             });
         }
     },
@@ -54,7 +64,7 @@ var cmds = {
     reg: {
         action: 'register a user for any service (lastfm, trakt, location, untappd)',
         params: ['service', 'irc nick', 'data'],
-        perm: '@',
+        perm: 'owner',
         func: function(action, nick, chan, args, command_string){ 
             var data = command_string.split(' ');
             data.splice(0, 2);
@@ -70,7 +80,7 @@ var cmds = {
     unreg: {
         action: 'unregister a user for any service (lastfm, trakt, location, untappd)',
         params: ['service', 'irc nick'],
-        perm: '@',
+        perm: 'owner',
         func: function(action, nick, chan, args, command_string){ 
             action.update_user(args[1], {
                     col: args[0],

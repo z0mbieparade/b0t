@@ -97,10 +97,10 @@ You can also type [bot_nick] -owner to bot say it's owner, -version for the bot 
 command | action | default permission | syntax
 ------- | ------ | ------------------ | ------
 commands | list all of the available bot commands for user's permission level | all users | `!commands <*-list>`
-set | set the channel topic | all users with voice | `!set <topic>`
+set | set the channel topic, chains topics based on last three | all users with voice | `!set <topic>`
 qotd | get a random topic | all users | `!qotd`
-reg | register a user for any service (lastfm, trakt, location, untappd) | ops | `!reg <service> <irc nick> <data>`
-unreg | unregister a user for any service (lastfm, trakt, location, untappd) | ops | `!unreg <service> <irc nick>`
+reg | register a user for any service (lastfm, trakt, location, untappd) | b0t owner | `!reg <service> <irc nick> <data>`
+unreg | unregister a user for any service (lastfm, trakt, location, untappd) | b0t owner | `!unreg <service> <irc nick>`
 tell | tell another user something when they they are next active | all users | `!tell <irc nick> <message>`
 speak | allows owner to speak through bot to channel or to user | b0t owner | `!speak <to> <message>`
 tag | have the bot say something when a user enters the room | all users | `!tag <tagline>`
