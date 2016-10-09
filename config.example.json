@@ -11,7 +11,7 @@
 	"reg_password": "",
 	"op_password": "",
 
-    "speak_on_channel_join": "holla",
+    "speak_on_channel_join": "qotd|holla",
 
 	"voice_users_on_join": true,
 	"parse_links": true,

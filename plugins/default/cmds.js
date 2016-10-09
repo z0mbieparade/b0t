@@ -31,9 +31,24 @@ var cmds = {
         params: ['topic'],
         perm: '+',
         func: function(action, nick, chan, args, command_string){ 
-            log.debug(action)
             action.send('topic', command_string);
-            action.say('Topic set!', 2);
+
+            action.update_db('/', {topic: [command_string]}, false, function(){
+                action.say('Topic set!', 2);
+            });
+        }
+    },
+    qotd: {
+        action: 'get random topic',
+        params: [],
+        func: function(action, nick, chan, args, command_string){ 
+            action.get_db_data('/topic', function(data){
+                if(data.length > 0){
+                    action.say(c.green(data[Math.floor(Math.random()*data.length)]), 1, {skip_verify: true});
+                } else {
+                    action.say({err: 'no topics have been set yet!'}, 2);
+                }
+            });
         }
     },
     reg: {

@@ -80,7 +80,18 @@ var setup_bot = function(){
 
         if (nick === config.bot_nick) {
             if(config.speak_on_channel_join){
-                bot.say(chan, config.speak_on_channel_join);
+                var enter_msg = config.speak_on_channel_join.split('|');
+                if(enter_msg.length > 1 && enter_msg[0].toLowerCase() === 'qotd'){
+                    action.get_db_data('/topic', function(data){
+                        if(data.length > 0){
+                            action.say(c.green(data[Math.floor(Math.random()*data.length)]), 1, {to: chan, skip_verify: true, ignore_bot_speak: true});
+                        } else {
+                            action.say(c.green(enter_msg[1]), 1, {to: chan, skip_verify: true, ignore_bot_speak: true});
+                        }
+                    });
+                } else {
+                    action.say(config.speak_on_channel_join, 1, {to: chan, skip_verify: true, ignore_bot_speak: true});
+                }
             }
             bot.send('samode', chan, '+a', config.bot_nick);
         } else {
@@ -89,9 +100,8 @@ var setup_bot = function(){
                 col: 'tag',
                 ignore_err: true
             }, function(tag){
-                log.debug(tag);
                 if(tag !== false){
-                    bot.say(chan, tag);
+                    action.say(tag, 1, {to: chan, skip_verify: true, ignore_bot_speak: true});
                 }
             }, true);
         }
@@ -153,7 +163,7 @@ var setup_bot = function(){
         action.chan = chan;
         action.nick = nick;
 
-        if(chan === nick && config.send_owner_bot_pms){
+        if(chan === nick && config.send_owner_bot_pms && nick !== config.owner){
             var pm = nick + ': ' + text; 
             action.say(pm, 3, { skip_verify: true, to: config.owner, ignore_bot_speak: true });
         } 

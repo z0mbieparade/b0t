@@ -42,6 +42,7 @@ network_name | the network name for the irc channel. if your bot is running on t
 channels | an array of channels you want your bot to join. | ["#test1", "#test2"]
 reg_password | NickServ registration password. You don't have to have this, but if your bot isn't registered it may cause problems with commands. | "bot_nickserv_pw"
 op_password | if your bot is an oper on your network, set their oper password here. | "bot_oper_password"
+speak_on_channel_join | What the bot says when it enters the chan. Can either be a string or qotd|string, in which case it will attempt to pull a random topic that was set, or if no topics have been set it will say the string. | "qotd|string"/"string"
 voice_users_on_join | will autovoice everyone in the room when they join, or the bot joins. NOTE: atheme uses, if ChanServ baby sits your room, it may de-voice. | true/false
 parse_links | parse links in chat, and say their title | true/false
 less_chan_spam | action.say() level 2 messages go to notice instead of channel | true/false
@@ -97,6 +98,7 @@ command | action | default permission | syntax
 ------- | ------ | ------------------ | ------
 commands | list all of the available bot commands for user's permission level | all users | `!commands <*-list>`
 set | set the channel topic | all users with voice | `!set <topic>`
+qotd | get a random topic | all users | `!qotd`
 reg | register a user for any service (lastfm, trakt, location, untappd) | ops | `!reg <service> <irc nick> <data>`
 unreg | unregister a user for any service (lastfm, trakt, location, untappd) | ops | `!unreg <service> <irc nick>`
 tell | tell another user something when they they are next active | all users | `!tell <irc nick> <message>`
