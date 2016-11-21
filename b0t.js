@@ -59,8 +59,11 @@ var setup_bot = function(){
         config.network_name, 
         config.bot_nick, 
         {
+            userName: config.bot_nick,
+            realName: config.bot_nick,
             debug: config.debug,
             channels: config.channels,
+            secure: config.SSL,
             port: config.port,
             password: config.server_password,
             selfSigned: true
