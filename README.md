@@ -6,6 +6,7 @@ In the directory you want to install the b0t, run:
 ```
 cd b0t
 npm install
+git submodule update --init --recursive
 git submodule foreach "npm install"
 ```
 If you run into errors durring the install try running these commands:

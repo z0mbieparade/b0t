@@ -55,10 +55,16 @@ var get_plugins = function(complete) {
 
 var setup_bot = function(){
 
-    var bot = new irc.Client(config.network_name, config.bot_nick, {
-        debug: config.debug,
-        channels: config.channels
-    });
+    var bot = new irc.Client(
+        config.network_name, 
+        config.bot_nick, 
+        {
+            debug: config.debug,
+            channels: config.channels,
+            port: config.port,
+            password: config.server_password
+        }  
+    );
 
     ACT        = require(__dirname + '/lib/action.js').ACT,
     action     = new ACT(),

@@ -7,6 +7,8 @@
 	"owner": "",
 	"network_name": "localhost",
 	"channels": ["#test"],
+    "port": "6667",
+    "server_password": "",
 
 	"reg_password": "",
 	"op_password": "",
