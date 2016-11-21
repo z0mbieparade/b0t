@@ -62,7 +62,8 @@ var setup_bot = function(){
             debug: config.debug,
             channels: config.channels,
             port: config.port,
-            password: config.server_password
+            password: config.server_password,
+            selfSigned: true
         }  
     );
 
