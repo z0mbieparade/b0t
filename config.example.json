@@ -5,6 +5,7 @@
 	"command_prefix": "!",
 
 	"owner": "",
+    "make_owner_chan_owner": false,
 
     "network_name": "localhost",
     "channels": ["#test"],

@@ -132,7 +132,7 @@ var setup_bot = function(){
         names[chan] = nicks;
 
         for(var nick in nicks){
-            if (nick === config.owner && nicks[nick] !== '~') {
+            if (config.make_owner_chan_owner && nick === config.owner && nicks[nick] !== '~') {
                 bot.send('samode', chan, '+q', config.owner);
             } else if(nicks[nick] === ''){
                 if(config.voice_users_on_join) bot.send('samode', chan, '+v', nick);
