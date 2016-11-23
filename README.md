@@ -162,6 +162,7 @@ command | action | default permission | syntax
 ------- | ------ | ------------------ | ------
 8ball | magic 8ball answer | all users | `!8ball <*question>`
 stock | get stock info | all users | `!stock <symbol>`
+insult | insult a user | all users | `!irc nick`
 
 ----------
 

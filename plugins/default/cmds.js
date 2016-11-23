@@ -22,7 +22,7 @@ var cmds = {
             } else {
                 var str = c.teal('Avaliable commands: ') + cmd_arr.join(', ');
                 str += c.red(' (for more info, you can type any command followed by help)');
-                action.say(str, 2);
+                action.say(str, 2, {skip_verify: true});
             }
         }
     },

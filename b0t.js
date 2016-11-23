@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 
 //require ALL OF THE THINGS
-config   = require('./config.json'),
-pkg      = require('./package.json'),
-irc      = require('irc'),
-c        = require('irc-colors'),
-mLog4js  = require('log4js'),
-request  = require('request'),
-fs       = require('fs');
+config          = require('./config.json'),
+pkg             = require('./package.json'),
+cmd_override    = require('./cmd_override.json'),
+irc             = require('irc'),
+c               = require('irc-colors'),
+mLog4js         = require('log4js'),
+request         = require('request'),
+fs              = require('fs');
 
 commands = {},
 command_by_plugin = {},
@@ -76,6 +77,15 @@ var setup_bot = function(){
 
     bot.addListener('error', function(message) {
         log.error('ERROR: %s: %s', message.command, message.args.join(' '));
+
+        if(config.op_password !== '' && message.command === 'err_inviteonlychan' && config.force_join_channels){
+
+            for(var i = 0; i < config.channels.length; i++){
+                bot.send('sajoin', config.bot_nick, config.channels[i]);
+            }
+        }
+
+        log.debug(message)
     });
 
     bot.addListener('registered', function(message) {
@@ -229,10 +239,18 @@ var setup_bot = function(){
         //everything else
         } else {
 
-            //this is a message in the chan, and we're limiting bot chan speak to only when not busy
-            //so we need to log when messages are sent
-            if(message.args[0] !== config.bot_nick){
-                action.update_chan_speak('chan');
+            if(chan === nick) {
+                //this is a bot PM with no recognized command
+                var str = 'Type ' + c.teal(config.command_prefix + 'commands') + ' for list of commands. For more info about a specific command, type ';
+                    str += c.teal(config.command_prefix + 'command help');
+                action.say(str , 3, {skip_verify: true});
+
+            } else {
+                //this is a message in the chan, and we're limiting bot chan speak to only when not busy
+                //so we need to log when messages are sent
+                if(message.args[0] !== config.bot_nick){
+                    action.update_chan_speak('chan');
+                }
             }
         }
     });
