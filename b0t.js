@@ -201,7 +201,7 @@ var setup_bot = function(){
             }
 
         //say the bots name
-        } else if (text.indexOf(config.bot_nick) > -1) { 
+        } else if (text.indexOf(config.bot_nick) > -1 && config.respond_to_bot_name) { 
             var command_args_org = text.split(' ');
             command_args_org.shift();
 
