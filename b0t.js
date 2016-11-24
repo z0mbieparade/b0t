@@ -3,12 +3,18 @@
 //require ALL OF THE THINGS
 config          = require('./config.json'),
 pkg             = require('./package.json'),
-cmd_override    = require('./cmd_override.json'),
 irc             = require('irc'),
 c               = require('irc-colors'),
 mLog4js         = require('log4js'),
 request         = require('request'),
 fs              = require('fs');
+
+try {
+   cmd_override = require('./cmd_override.json');
+}
+catch (e) {
+    cmd_override = {};
+}
 
 commands = {},
 command_by_plugin = {},
