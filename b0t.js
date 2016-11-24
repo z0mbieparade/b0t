@@ -202,12 +202,14 @@ var setup_bot = function(){
         {
             for(var i = 0; i < links.length; i++) {
                 action.get_url(links[i], 'sup', function(data){
-                    action.say(data, 1, {ignore_bot_speak: true});
+                    log.debug(data);
+                    action.say(c.gray(data), 1, {ignore_bot_speak: true});
                 }); 
             }
+        }
 
         //say the bots name
-        } else if (text.indexOf(config.bot_nick) > -1 && config.respond_to_bot_name) { 
+        if (text.indexOf(config.bot_nick) > -1 && config.respond_to_bot_name) { 
             var command_args_org = text.split(' ');
             command_args_org.shift();
 
