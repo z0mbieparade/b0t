@@ -55,5 +55,12 @@
         "youtube": {
             "key": ""
         }
-    } 
+    },
+
+    "plugin_settings": {
+        "potd": {
+            "imgur_album": ""
+        }
+    }
+
 }

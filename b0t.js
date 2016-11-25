@@ -169,8 +169,12 @@ var setup_bot = function(){
         })
 
         var required_commands = 0;
-        for(var i = 0; i < command_data.params.length; i++) {
-            if (command_data.params[i].indexOf('*') !== 0) required_commands++;
+
+        if(command_data.params && command_data.params.length > 0)
+        {
+            for(var i = 0; i < command_data.params.length; i++) {
+                if (command_data.params[i].indexOf('*') !== 0) required_commands++;
+            }
         }
 
         if (command_args.length < required_commands) {
