@@ -82,16 +82,18 @@ var setup_bot = function(){
     action.bot = bot
 
     bot.addListener('error', function(message) {
-        log.error('ERROR: %s: %s', message.command, message.args.join(' '));
+        log.error(message);
 
         if(config.op_password !== '' && message.command === 'err_inviteonlychan' && config.force_join_channels){
-
             for(var i = 0; i < config.channels.length; i++){
                 bot.send('sajoin', config.bot_nick, config.channels[i]);
             }
         }
 
-        log.debug(message)
+        if(config.send_errors_to_owner_pm){
+            var pm = 'ERROR: ' + message.command + ' ' + message.args.join(' '); 
+            action.say(pm, 3, { skip_verify: true, to: config.owner, ignore_bot_speak: true });
+        }
     });
 
     bot.addListener('registered', function(message) {

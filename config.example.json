@@ -27,6 +27,7 @@
     "wait_time_between_commands_when_busy": 600000,
 
     "send_owner_bot_pms": true,
+    "send_errors_to_owner_pm": true,
 	
 	"debug": false,
 
