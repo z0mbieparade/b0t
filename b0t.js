@@ -97,8 +97,8 @@ var setup_bot = function(){
     });
 
     bot.addListener('registered', function(message) {
-        if(config.reg_password) bot.say('NickServ', 'identify ' + config.reg_password);
         if(config.op_password) bot.send('oper', config.bot_nick, config.op_password);
+        if(config.reg_password) bot.say('NickServ', 'identify ' + config.reg_password);
     });
 
     bot.addListener('join', function(chan, nick, message) {
