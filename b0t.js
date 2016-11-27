@@ -73,7 +73,8 @@ var setup_bot = function(){
             secure: config.SSL,
             port: config.port,
             password: config.server_password,
-            selfSigned: true
+            selfSigned: true,
+            localAddress: config.localAddress
         }  
     );
 

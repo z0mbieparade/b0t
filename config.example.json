@@ -12,6 +12,7 @@
     "port": "6667",
     "SSL": false,
     "server_password": "",
+    "localAddress": "",
 
 	"reg_password": "",
 	"op_password": "",
