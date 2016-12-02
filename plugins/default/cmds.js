@@ -49,12 +49,43 @@ var cmds = {
         }
     },
     qotd: {
-        action: 'get random topic',
-        params: [],
+        action: 'get random topic, or enter a search term to search for a specific topic. if more than one found, will list by ID number. Enter id number to read specific topic',
+        params: ['*search term', '*id'],
         func: function(action, nick, chan, args, command_string){ 
             action.get_db_data('/topic', function(data){
                 if(data.length > 0){
-                    action.say(c.green(data[Math.floor(Math.random()*data.length)]), 1, {skip_verify: true});
+                    if(args.length > 0 && isNaN(args[0]) === false){
+                        var id = parseInt(args[0], 10);
+                        if(data[id] === undefined){
+                            action.say({err: 'no topic with that id found!'}, 2);
+                        } else {
+                            action.say(c.green(data[id]), 1, {skip_verify: true});
+                        }
+                    } else if(args.length > 0 && isNaN(args[0]) === true){
+                        var search_topics = {};
+                        var count_found = 0;
+                        var msg_found = "";
+                        for(var i = 0; i < data.length; i++){
+                            if(data[i].indexOf(command_string.trim()) > -1){
+                                count_found++;
+                                search_topics[i] = data[i];
+                                msg_found += c.olive('[' + i + '] ') + data[i] + '   ';
+                            }
+                        }
+
+                        if(count_found === 0 ){
+                            action.say({err: 'no topic with that search term found!'}, 2);
+                        } else if (count_found === 1) {
+                            for(idd in search_topics){
+                                action.say(c.green(data[idd]), 1, {skip_verify: true});
+                            }
+                        } else {
+                            action.say(c.green(count_found + " QOtD's found matching '" + command_string.trim() + "'"), 1, {skip_verify: true});
+                            action.say(msg_found, 3, {skip_verify: true});
+                        }
+                    } else {
+                        action.say(c.green(data[Math.floor(Math.random()*data.length)]), 1, {skip_verify: true});
+                    }
                 } else {
                     action.say({err: 'no topics have been set yet!'}, 2);
                 }
@@ -246,6 +277,17 @@ var cmds = {
                 var str = 'Feature request added by ' + c.teal(nick) + ': ' + command_string;
                 action.say(str, 3, {to: config.owner})
             });
+        }
+    },
+    setup: {
+        action: 'Setup the bot, or make changes to settings',
+        params: ['commands|settings'],
+        perm: 'owner',
+        func: function(action, nick, chan, args, command_string){ 
+            if(args[0] === 'commands')
+            {
+                action.update_cmd_override();
+            }
         }
     },
     mergedb: {
