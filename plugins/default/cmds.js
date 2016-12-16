@@ -64,12 +64,12 @@ var cmds = {
                     } else if(args.length > 0 && isNaN(args[0]) === true){
                         var search_topics = {};
                         var count_found = 0;
-                        var msg_found = "";
+                        var msg_found = [];
                         for(var i = 0; i < data.length; i++){
-                            if(data[i].indexOf(command_string.trim()) > -1){
+                            if(data[i].toLowerCase().indexOf(command_string.toLowerCase().trim()) > -1){
                                 count_found++;
                                 search_topics[i] = data[i];
-                                msg_found += c.olive('[' + i + '] ') + data[i] + '   ';
+                                msg_found.push(c.olive('[' + i + '] ') + data[i]);
                             }
                         }
 
@@ -81,7 +81,8 @@ var cmds = {
                             }
                         } else {
                             action.say(c.green(count_found + " QOtD's found matching '" + command_string.trim() + "'"), 1, {skip_verify: true});
-                            action.say(msg_found, 3, {skip_verify: true});
+                            //action.say(msg_found, 3, {skip_verify: true});
+                            action.add_to_buffer(msg_found)
                         }
                     } else {
                         action.say(c.green(data[Math.floor(Math.random()*data.length)]), 1, {skip_verify: true});
@@ -277,6 +278,28 @@ var cmds = {
                 var str = 'Feature request added by ' + c.teal(nick) + ': ' + command_string;
                 action.say(str, 3, {to: config.owner})
             });
+        }
+    },
+    next: {
+        action: 'Page next thru avaliable buffer, lines is 5 by default, join is a new line by default',
+        params: ['*lines', '*join'],
+        perm: '',
+        func: function(action, nick, chan, args, command_string){ 
+            var lines = 5;
+            var join = '\n';
+
+            log.warn(args)
+
+            if(args.length > 0){
+                if(isNaN(args[0]) === false){
+                    lines = +args[0];
+                    join = args[1] ? args[1] : join;
+                } else {
+                    join = args[0];
+                }
+            }
+
+            action.page_buffer(lines, join);
         }
     },
     setup: {
