@@ -158,7 +158,7 @@ var cmds = {
         params: [],
         perm: '@',
         func: function(action, nick, chan, args, command_string){ 
-            var data = action.get_url(
+            action.get_url(
                 'https://raw.githubusercontent.com/z0mbieparade/b0t/master/package.json', 
                 'json',
                 function(data){
@@ -301,7 +301,28 @@ var cmds = {
             action.say(null, 2, opt)
         }
     },
-    setup: {
+    ip: {
+        action: 'Lookup ip address of user',
+        params: ['irc nick'],
+        perm: 'owner',
+        func: function(action, nick, chan, args, command_string){ 
+            action.bot.whois(args[0], function(){  
+                log.warn('ip', action.whois);
+                if(action.whois[args[0]] && action.whois[args[0]].host){
+                    action.get_url(
+                        'http://ip-api.com/json/' + action.whois[args[0]].host,
+                        'json',
+                        function(data){
+                            action.say(data, 3, {to: config.owner});
+                       });
+                } else {
+                    action.say({'err': 'No IP found'});
+                }
+            });
+        }
+    },
+    //TODO: this
+    /*setup: {
         action: 'Setup the bot, or make changes to settings',
         params: ['commands|settings'],
         perm: 'owner',
@@ -311,7 +332,7 @@ var cmds = {
                 action.update_cmd_override();
             }
         }
-    },
+    }, */
     mergedb: {
         action: 'merge old flatfile db into new json db (needed when upgrading from 0.0.* -> 0.1.*',
         params: [],

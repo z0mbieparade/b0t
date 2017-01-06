@@ -149,6 +149,10 @@ var setup_bot = function(){
         }
     });
 
+    bot.addListener('whois', function(info) {
+        action.whois[info.nick] = info;
+    });
+
     bot.addListener('+mode', function(chan, by, mode, argument, message)  {
         bot.send('names', chan);
     });
