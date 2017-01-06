@@ -18,7 +18,7 @@ var cmds = {
             }
 
             if(list) {
-                action.say(cmd_arr.join('\n'), 3, {skip_verify: true});
+                action.say(cmd_arr, 3, {skip_verify: true, join: '\n'});
             } else {
                 var str = c.teal('Avaliable commands: ') + cmd_arr.join(', ');
                 str += c.red(' (for more info, you can type any command followed by help)');
@@ -36,8 +36,6 @@ var cmds = {
                 if(data.length > 0){
                     prev_topics = data.slice(-2);
                 } 
-
-                log.debug(prev_topics);
 
                 action.update_db('/', {topic: [command_string]}, false, function(){
                     prev_topics.push(command_string);
@@ -284,21 +282,23 @@ var cmds = {
         params: ['*lines', '*join'],
         perm: '',
         func: function(action, nick, chan, args, command_string){ 
-            var lines = 5;
-            var join = '\n';
-
-            log.warn(args)
+            var opt = {
+                to: chan,
+                skip_buffer: true,
+                skip_verify: true,
+                page_buffer: true,
+                copy_buffer_to_user: true
+            };
 
             if(args.length > 0){
                 if(isNaN(args[0]) === false){
-                    lines = +args[0];
-                    join = args[1] ? args[1] : join;
+                    opt = {lines: +args[0], join: args[1] ? args[1] : undefined};
                 } else {
-                    join = args[0];
+                    opt = {join: args[0]};
                 }
             }
 
-            action.page_buffer(lines, join);
+            action.say(null, 2, opt)
         }
     },
     setup: {
