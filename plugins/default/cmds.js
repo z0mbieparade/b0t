@@ -79,7 +79,7 @@ var cmds = {
                             }
                         } else {
                             action.say(c.green(count_found + " QOtD's found matching '" + command_string.trim() + "'"), 1, {skip_verify: true});
-                            action.add_to_buffer(msg_found);
+                            action.say(msg_found, 3, {skip_verify: true, join: '\n'});
                         }
                     } else {
                         action.say(c.green(data[Math.floor(Math.random()*data.length)]), 1, {skip_verify: true});
