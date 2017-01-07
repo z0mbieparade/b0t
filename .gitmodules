@@ -9,7 +9,7 @@
 	url = https://github.com/z0mbieparade/b0t-lastfm.git
 [submodule "plugins/b0t-location"]
 	path = plugins/b0t-location
-	url = git@github.com:z0mbieparade/b0t-location.git
+	url = https://github.com/z0mbieparade/b0t-location.git
 [submodule "plugins/b0t-trakt"]
 	path = plugins/b0t-trakt
 	url = https://github.com/z0mbieparade/b0t-trakt.git
