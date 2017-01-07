@@ -125,14 +125,14 @@ var setup_bot = function(){
             bot.send('samode', chan, '+a', config.bot_nick);
         } else {
             action.get_user_data(nick, {
-                label: 'tag',
                 col: 'tag',
-                ignore_err: true
+                ignore_err: true,
+                skip_say: true
             }, function(tag){
                 if(tag !== false){
                     action.say(tag, 1, {to: chan, skip_verify: true, ignore_bot_speak: true});
                 }
-            }, true);
+            });
         }
         bot.send('names', chan);
     });
@@ -166,7 +166,7 @@ var setup_bot = function(){
             return;
         }
         
-        var cmd = action.verify_command(command_data.category, command, true);
+        var cmd = action.verify_command(command, true);
         if(cmd === false) return;
 
         //remove blank commands
