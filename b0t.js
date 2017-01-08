@@ -249,9 +249,14 @@ var setup_bot = function(){
                     action.say(usage, 2, {skip_verify: true});
                     return;
                 }
+
+                var command_str = command_args_org.join(' ');
+                if(command_data.colors){
+                    command_str = action.format(command_str);
+                }
                
                 action.is_cmd = true;
-                command_data.func(action, nick, chan, command_args, command_args_org.join(' '));
+                command_data.func(action, nick, chan, command_args, command_str);
 
             });
 

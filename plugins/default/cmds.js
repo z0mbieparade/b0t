@@ -30,6 +30,7 @@ var cmds = {
         action: 'set the channel topic',
         params: ['topic'],
         perm: '+',
+        colors: true,
         func: function(action, nick, chan, args, command_string){ 
             action.get_db_data('/topic', function(data){
                 prev_topics = [];
@@ -37,9 +38,7 @@ var cmds = {
                     prev_topics = data.slice(-2);
                 } 
 
-                var new_topic = action.format(command_string);
-
-                action.update_db('/', {topic: [new_topic]}, false, function(){
+                action.update_db('/', {topic: [command_string]}, false, function(){
                     prev_topics.push(command_string);
                     prev_topics.reverse();
                     action.send('topic', prev_topics.join(' | '));
@@ -146,11 +145,11 @@ var cmds = {
     tag: {
         action: 'create a tagline for the bot to say when you enter the room',
         params: ['tagline'],
+        colors: true,
         func: function(action, nick, chan, args, command_string){
-            var new_tag = action.format(command_string);
             action.update_user(nick, {
                     col: 'tag',
-                    data: new_tag
+                    data: command_string
             }, function(msg){
                 action.say(msg.msg, 2);
             });
