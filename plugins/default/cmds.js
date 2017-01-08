@@ -37,7 +37,9 @@ var cmds = {
                     prev_topics = data.slice(-2);
                 } 
 
-                action.update_db('/', {topic: [command_string]}, false, function(){
+                var new_topic = action.format(command_string);
+
+                action.update_db('/', {topic: [new_topic]}, false, function(){
                     prev_topics.push(command_string);
                     prev_topics.reverse();
                     action.send('topic', prev_topics.join(' | '));
@@ -145,9 +147,10 @@ var cmds = {
         action: 'create a tagline for the bot to say when you enter the room',
         params: ['tagline'],
         func: function(action, nick, chan, args, command_string){
+            var new_tag = action.format(command_string);
             action.update_user(nick, {
                     col: 'tag',
-                    data: command_string
+                    data: new_tag
             }, function(msg){
                 action.say(msg.msg, 2);
             });
