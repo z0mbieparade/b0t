@@ -93,7 +93,7 @@ var setup_bot = function(){
 
         if(config.send_errors_to_owner_pm){
             var pm = 'ERROR: ' + message.command + ' ' + message.args.join(' '); 
-            action.say(pm, 3, { skip_verify: true, to: config.owner, ignore_bot_speak: true });
+            action.say(pm, 3, { skip_verify: true, to: config.owner, ignore_bot_speak: true, skip_buffer: true });
         }
     });
 
@@ -113,24 +113,24 @@ var setup_bot = function(){
                 if(enter_msg.length > 1 && enter_msg[0].toLowerCase() === 'qotd'){
                     action.get_db_data('/topic', function(data){
                         if(data.length > 0){
-                            action.say(c.green(data[Math.floor(Math.random()*data.length)]), 1, {to: chan, skip_verify: true, ignore_bot_speak: true});
+                            action.say(c.green(data[Math.floor(Math.random()*data.length)]), 1, {to: chan, skip_verify: true, ignore_bot_speak: true, skip_buffer: true});
                         } else {
-                            action.say(c.green(enter_msg[1]), 1, {to: chan, skip_verify: true, ignore_bot_speak: true});
+                            action.say(c.green(enter_msg[1]), 1, {to: chan, skip_verify: true, ignore_bot_speak: true, skip_buffer: true});
                         }
                     });
                 } else {
-                    action.say(config.speak_on_channel_join, 1, {to: chan, skip_verify: true, ignore_bot_speak: true});
+                    action.say(config.speak_on_channel_join, 1, {to: chan, skip_verify: true, ignore_bot_speak: true, skip_buffer: true});
                 }
             }
             bot.send('samode', chan, '+a', config.bot_nick);
         } else {
             action.get_user_data(nick, {
-                col: 'tag',
+                col: 'tags',
                 ignore_err: true,
                 skip_say: true
-            }, function(tag){
-                if(tag !== false){
-                    action.say(tag, 1, {to: chan, skip_verify: true, ignore_bot_speak: true});
+            }, function(tags){
+                if(tags !== false && tags.length && tags.length > 0){
+                    action.say(tags[Math.floor(Math.random()*tags.length)], 1, {to: chan, skip_verify: true, ignore_bot_speak: true, skip_buffer: true});
                 }
             });
         }
@@ -256,7 +256,7 @@ var setup_bot = function(){
                 }
                
                 action.is_cmd = true;
-                command_data.func(action, nick, chan, command_args, command_str);
+                command_data.func(action, nick, chan, command_args, command_str, usage);
 
             });
 

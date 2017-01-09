@@ -26,6 +26,40 @@ var cmds = {
             }
         }
     },
+    help: { 
+        action: 'help the user',
+        params: ['*topic'],
+        func: function(action, nick, chan, args, command_string){
+
+            var help_topics = {
+                'colors': [
+                    'If a command accepts colors, you can use various short cuts to format text preceded by an &:',
+                    '\u0002b bold\u000f | \u0016i italic\u000f | \u001fu\u000f \u001funderline\u000f | r reset | ' + c.white.bgblack(' 0 ')+c.black.bgwhite(' 1 ')+c.navy(' 2 ')+c.green(' 3 ')+c.red(' 4 ')+c.brown(' 5 ')+c.purple(' 6 ')+c.olive(' 7 ')+c.yellow(' 8 ')+c.lime(' 9 ')+c.teal(' 10 ')+c.cyan(' 11 ')+c.blue(' 12 ')+c.pink(' 13 ')+c.grey(' 14 ')+c.silver(' 15 '), 
+                    'color codes are 0-15 see https://github.com/z0mbieparade/b0t/wiki/Colors for a complete list of color names',
+                    'typing `&lime>green text here` or `&9>green text here` will return \u00039>green text here'
+                ],
+                'commands': [
+                    'For any command, you can type ' + c.teal(config.command_prefix + 'command help') + ' to receive full usage instructions.',
+                    'To view all commands and their help syntax, you can type ' + c.teal(config.command_prefix + 'commands -list'),
+                    'For example, typing ' + c.teal(config.command_prefix + 'tag help') + ' will return the following syntax:',
+                    action.cmd_syntax('tag'),
+                    'To break this down, that means there are 3 things you can do with the tag command: ',
+                    '1. ' + c.teal(config.command_prefix + 'tag -list') + ' will return a list of all taglines currently for your user account',
+                    '2. ' + c.teal(config.command_prefix + 'tag -delete 4') + ' will delete the 4th tagline (which you know the id of because you did list first)',
+                    '3. ' + c.teal(config.command_prefix + 'tag &lime>i feel pretty, oh so pretty') + ' will add ' + c.lime('>i feel pretty, oh so pretty') + ' as a tagline when you enter the room. (for more info about colors, type ' + config.command_prefix + 'help colors)'
+                ]
+            }
+
+            if(args.length > 0 || help_topics[args[0]] !== undefined){
+                action.say(help_topics[args[0]] , 3, {skip_verify: true, skip_buffer: true, join: '\n'});
+            } else {
+                var str = 'What do you need help with? You can say ' + c.teal(action.cmd_syntax('help', true, true)) + ' with any of the following topics: \n';
+                    str += (Object.keys(help_topics)).join(', ');
+
+                action.say(str, 3, {skip_verify: true, skip_buffer: true});
+            }
+        }
+    },
     set: {
         action: 'set the channel topic',
         params: ['topic'],
@@ -123,6 +157,7 @@ var cmds = {
     tell: {
         action: 'tell another user something when they they are next active',
         params: ['irc nick', 'message'],
+        colors: true,
         func: function(action, nick, chan, args, command_string){ 
             action.update_user(args[0], {
                     col: 'msg/'+nick,
@@ -137,6 +172,7 @@ var cmds = {
         action: 'allows owner to speak through bot to channel or to user',
         params: ['to', 'message'],
         perm: 'owner',
+        colors: true,
         func: function(action, nick, chan, args, command_string){ 
             if(args[0].indexOf('#') === 0){}
             action.say(command_string.slice(args[0].length), 1, {to: args[0], skip_verify: true, ignore_bot_speak: true})
@@ -144,15 +180,60 @@ var cmds = {
     },
     tag: {
         action: 'create a tagline for the bot to say when you enter the room',
-        params: ['tagline'],
+        params: ['*-list', '*-delete (id)', '*tagline'],
         colors: true,
-        func: function(action, nick, chan, args, command_string){
-            action.update_user(nick, {
-                    col: 'tag',
-                    data: command_string
-            }, function(msg){
-                action.say(msg.msg, 2);
-            });
+        func: function(action, nick, chan, args, command_string, usage){
+            var loop_thru = function(id, callback){
+                action.get_db_data('/nicks/'+nick+'/tags', function(data){
+                    if(!data || !data.length || data.length === 0){
+                        callback({err: 'No taglines to list'});
+                    } else {
+                        var msg = [];
+                        for(var i = 0; i < data.length; i++){
+                            var str = c.olive((i+1) + ') ') + data[i];
+                            if(id === undefined){
+                                msg.push(str); 
+                            } else if(i == (id - 1)){
+                                msg = null;
+                                action.delete_from_db('/nicks/'+nick+'/tags[' + i + ']', function(deleted){
+                                    if(deleted){
+                                        callback(str + c.green(' Deleted!'));
+                                        return;
+                                    } else {
+                                        callback({err: 'no tag found for id ' + delete_id});
+                                        return;
+                                    }
+                                })
+                            }
+                        }
+                        if(msg !== null) callback(msg);
+                    }
+                });
+            }
+
+            if(args.length > 0){
+                if(args[0] === '-list'){
+                    loop_thru(undefined, function(str1){
+                        action.say(str1, 3, {skip_verify: true});
+                    });
+                } else if (args[0] === '-delete') {
+                    if(args.length < 2){
+                        action.say({'err': 'tagline id required to delete'})
+                    } else {
+                        loop_thru(+args[1], function(str2){
+                            action.say(str2, 3, {skip_verify: true});
+                        });
+                    }
+                } else {
+                    action.update_db('/nicks/'+nick+'/tags[]', command_string, false, function(act){
+                        action.say('tagline added!', 2);
+                    });
+                }
+            } else {
+
+                log.debug(usage);
+                action.say(usage, 2, {skip_verify: true});
+            }
         }
     },
     updates: {
@@ -175,7 +256,8 @@ var cmds = {
     },
     bug: {
         action: 'send a bug report to the owner or lists current bugs',
-        params: ['*-list', '*-delete', 'explain'],
+        params: ['*-list', '*-delete (id)', '*explain'],
+        colors: true,
         func: function(action, nick, chan, args, command_string){ 
              var loop_thru = function(delete_id){
                 action.get_db_data('/bugs', function(data){
@@ -228,7 +310,8 @@ var cmds = {
     },
     request: {
         action: 'send a feature request to the owner or list current requests',
-        params: ['*-list', '*-delete', 'explain'],
+        params: ['*-list', '*-delete (id)', '*explain'],
+        colors: true,
         func: function(action, nick, chan, args, command_string){ 
              var loop_thru = function(delete_id){
                 action.get_db_data('/requests', function(data){
