@@ -161,15 +161,24 @@ var cmds = {
         perm: 'owner',
         discord: false,
         func: function(action, nick, chan, args, command_string){ 
-            var data = command_string.split(' ');
-            data.splice(0, 2);
-            var data_str = data.join(' ');
-            action.update_user(args[1], {
-                col: args[0],
-                data: data_str
-            }, function(msg){
-                action.say(msg.msg, 2);
-            });
+            if(args[0] === 'tags' || args[0] === 'tag'){
+                var match = command_string.match(/^[\w]+\s[\w]+\s(.+)$/);
+                if(match.length && match.length > 0){
+                    action.manage_arr('/nicks/'+args[1]+'/tags', args.slice(2), match[1]);
+                } else {
+                    action.say({err: 'nothing to match'});
+                }
+            } else {
+                var data = command_string.split(' ');
+                data.splice(0, 2);
+                var data_str = data.join(' ');
+                action.update_user(args[1], {
+                    col: args[0],
+                    data: data_str
+                }, function(msg){
+                    action.say(msg.msg, 2);
+                });
+            }
         }
     },
     unreg: {
@@ -178,12 +187,16 @@ var cmds = {
         perm: 'owner',
         discord: false,
         func: function(action, nick, chan, args, command_string){ 
-            action.update_user(args[1], {
-                    col: args[0],
-                    data: ''
-            }, function(msg){
-                action.say(msg.msg, 2)
-            });
+            if(args[0] === 'tags' || args[0] === 'tag'){
+                action.say({err: 'use reg command to modify user tags'});
+            } else {
+                action.update_user(args[1], {
+                        col: args[0],
+                        data: ''
+                }, function(msg){
+                    action.say(msg.msg, 2)
+                });
+            }
         }
     },
     tell: {
@@ -217,55 +230,7 @@ var cmds = {
         colors: true,
         discord: false,
         func: function(action, nick, chan, args, command_string, usage){
-            var loop_thru = function(id, callback){
-                action.get_db_data('/nicks/'+nick+'/tags', function(data){
-                    if(!data || !data.length || data.length === 0){
-                        callback({err: 'No taglines to list'});
-                    } else {
-                        var msg = [];
-                        for(var i = 0; i < data.length; i++){
-                            var str = c.olive((i+1) + ') ') + data[i];
-                            if(id === undefined){
-                                msg.push(str); 
-                            } else if(i == (id - 1)){
-                                msg = null;
-                                action.delete_from_db('/nicks/'+nick+'/tags[' + i + ']', function(deleted){
-                                    if(deleted){
-                                        callback(str + c.green(' Deleted!'));
-                                        return;
-                                    } else {
-                                        callback({err: 'no tag found for id ' + delete_id});
-                                        return;
-                                    }
-                                })
-                            }
-                        }
-                        if(msg !== null) callback(msg);
-                    }
-                });
-            }
-
-            if(args.length > 0){
-                if(args[0] === '-list'){
-                    loop_thru(undefined, function(str1){
-                        action.say(str1, 3, {skip_verify: true});
-                    });
-                } else if (args[0] === '-delete') {
-                    if(args.length < 2){
-                        action.say({'err': 'tagline id required to delete'})
-                    } else {
-                        loop_thru(+args[1], function(str2){
-                            action.say(str2, 3, {skip_verify: true});
-                        });
-                    }
-                } else {
-                    action.update_db('/nicks/'+nick+'/tags[]', command_string, false, function(act){
-                        action.say('tagline added!', 2);
-                    });
-                }
-            } else {
-                action.say(usage, 2, {skip_verify: true});
-            }
+            action.manage_arr('/nicks/'+nick+'/tags', args, command_string);
         }
     },
     updates: {
@@ -292,61 +257,7 @@ var cmds = {
         params: ['*-list', '*-delete (id)', '*explain'],
         colors: true,
         func: function(action, nick, chan, args, command_string){ 
-             var loop_thru = function(delete_id){
-                action.get_db_data('/bugs', function(data){
-                    var bug_count = 1;
-                    for(var un in data){
-                        for(var i = 0; i < data[un].length; i++){
-                            log.debug(data[un][i]);
-                            var str = bug_count + ') ' + c.teal(un) + ': ' + data[un][i];
-
-                            if(delete_id !== null && delete_id !== undefined){
-                                if(bug_count == delete_id){
-                                    action.delete_from_db('/bugs/' + un + '[' + i + ']', function(deleted){
-                                        if(deleted){
-                                            action.say(str + c.green(' Deleted!'), 2);
-                                        } else {
-                                            action.say({err: 'no request found for id ' + delete_id}, 2);
-                                        }
-                                    })
-                                }
-                            } else {
-                                action.say(str, 2)
-                            }
-                            bug_count++;
-                        }
-                    }
-                });
-            }
-
-            if(args[0] === '-list'){
-                if(action.is_discord_user){
-                    action.say({err: 'Discord users cannot use the -list param.'});
-                } else {
-                    loop_thru();
-                }
-                return;
-            } 
-
-            if(args[0] === '-delete') {
-                if(action.is_discord_user){
-                    action.say({err: 'Discord users cannot use the -delete param.'});
-                } else {
-                    if(isNaN(args[1]) === false){
-                        loop_thru(args[1]);
-                    } else {
-                        action.say({err: 'please also enter a bug id to delete!'}, 2);
-                    }
-                }
-                return;
-            } 
-
-            var merge = {};
-            merge[nick] = [command_string];
-            action.update_db('/bugs', merge, false, function(act){
-                var str = 'Bug added by ' + c.teal(nick) + ': ' + command_string;
-                action.say(str, 3, {to: config.owner})
-            });
+            action.manage_arr('/bugs', args, command_string);
         }
     },
     request: {
@@ -354,61 +265,7 @@ var cmds = {
         params: ['*-list', '*-delete (id)', '*explain'],
         colors: true,
         func: function(action, nick, chan, args, command_string){ 
-             var loop_thru = function(delete_id){
-                action.get_db_data('/requests', function(data){
-                    var bug_count = 1;
-                    for(var un in data){
-                        for(var i = 0; i < data[un].length; i++){
-                            log.debug(data[un][i]);
-                            var str = bug_count + ') ' + c.teal(un) + ': ' + data[un][i];
-
-                            if(delete_id !== null && delete_id !== undefined){
-                                if(bug_count == delete_id){
-                                    action.delete_from_db('/requests/' + un + '[' + i + ']', function(deleted){
-                                        if(deleted){
-                                            action.say(str + c.green(' Deleted!'), 2);
-                                        } else {
-                                            action.say({err: 'no request found for id ' + delete_id}, 2);
-                                        }
-                                    })
-                                }
-                            } else {
-                                action.say(str, 2)
-                            }
-                            bug_count++;
-                        }
-                    }
-                });
-            }
-
-            if(args[0] === '-list'){
-                if(action.is_discord_user){
-                    action.say({err: 'Discord users cannot use the -list param.'});
-                } else {
-                    loop_thru();
-                }
-                return;
-            } 
-
-            if(args[0] === '-delete') {
-                if(action.is_discord_user){
-                    action.say({err: 'Discord users cannot use the -delete param.'});
-                } else {
-                    if(isNaN(args[1]) === false){
-                        loop_thru(args[1]);
-                    } else {
-                        action.say({err: 'please also enter a request id to delete!'}, 2);
-                    }
-                }
-                return;
-            } 
-
-            var merge = {};
-            merge[nick] = [command_string];
-            action.update_db('/requests', merge, false, function(act){
-                var str = 'Feature request added by ' + c.teal(nick) + ': ' + command_string;
-                action.say(str, 3, {to: config.owner})
-            });
+             action.manage_arr('/requests', args, command_string);
         }
     },
     next: {
