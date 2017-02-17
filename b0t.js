@@ -113,9 +113,17 @@ var setup_bot = function(){
                 if(enter_msg.length > 1 && enter_msg[0].toLowerCase() === 'qotd'){
                     action.get_db_data('/topic', function(data){
                         if(data.length > 0){
-                            action.say(c.green(data[Math.floor(Math.random()*data.length)]), 1, {to: chan, skip_verify: true, ignore_bot_speak: true, skip_buffer: true});
+                            if(config.discord_relay_channels && config.discord_relay_channels.indexOf(chan) > -1){
+                                action.say(data[Math.floor(Math.random()*data.length)], 1, {to: chan, skip_verify: true, ignore_bot_speak: true, skip_buffer: true});
+                            } else {
+                                action.say(c.green(data[Math.floor(Math.random()*data.length)]), 1, {to: chan, skip_verify: true, ignore_bot_speak: true, skip_buffer: true});
+                            }
                         } else {
-                            action.say(c.green(enter_msg[1]), 1, {to: chan, skip_verify: true, ignore_bot_speak: true, skip_buffer: true});
+                            if(config.discord_relay_channels && config.discord_relay_channels.indexOf(chan) > -1){
+                                action.say(enter_msg[1], 1, {to: chan, skip_verify: true, ignore_bot_speak: true, skip_buffer: true});
+                            } else {
+                                action.say(c.green(enter_msg[1]), 1, {to: chan, skip_verify: true, ignore_bot_speak: true, skip_buffer: true});
+                            }
                         }
                     });
                 } else {
@@ -193,12 +201,10 @@ var setup_bot = function(){
 
 
     bot.addListener('message', function(nick, chan, text, message) {
-        action.is_discord = false;
         action.is_discord_user = false;
 
         if(config.discord_relay_channels && config.discord_relay_channels.indexOf(chan) > -1)
         {
-            action.is_discord = true;
             if(nick === config.discord_relay_bot){
                 action.is_discord_user = true;
                 var discord_arr = text.match(/^<(.+)> (.+)$/);
