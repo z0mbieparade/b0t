@@ -384,6 +384,14 @@ var cmds = {
             action.say(null, 2, opt)
         }
     },
+    list: {
+        action: 'List all users in channel (useful with discord relay mostly)',
+        func: function(action, nick, chan, args, command_string){ 
+            action.get_all_users_in_chan_data(null, function(data){
+                action.say(data, 1, {skip_verify: true, join: ', ', skip_buffer: true});
+            });
+        }
+    },
     ip: {
         action: 'Lookup ip address of user',
         params: ['irc nick'],
