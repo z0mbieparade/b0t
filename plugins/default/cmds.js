@@ -81,6 +81,24 @@ var cmds = {
             });
         }
     },
+    updatetopic: {
+        action: 'update channel topic from qotd',
+        perm: 'owner',
+        func: function(action, nick, chan, args, command_string){ 
+            action.get_db_data('/topic', function(data){
+                action.get_db_data('/topic', function(data){
+                    prev_topics = [];
+                    if(data.length > 0){
+                        prev_topics = data.slice(-3);
+                    } 
+
+                    prev_topics.reverse();
+                    action.send('topic', prev_topics.join(' | '));
+                    action.say('Topic updated!', 2);
+                });
+            });
+        }
+    },
     qotd: {
         action: 'get random topic, or enter a search term to search for a specific topic. if more than one found, will list by ID number. Enter id number to read specific topic',
         params: ['*search term', '*id'],
