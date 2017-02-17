@@ -18,7 +18,11 @@ var cmds = {
             }
 
             if(list) {
-                action.say(cmd_arr, 3, {skip_verify: true, join: '\n'});
+                if(action.is_discord_user){
+                    action.say({err: 'Discord users cannot use the -list param.'});
+                } else {
+                    action.say(cmd_arr, 3, {skip_verify: true, join: '\n'});
+                }
             } else {
                 var str = c.teal('Avaliable commands: ') + cmd_arr.join(', ');
                 str += c.red(' (for more info, you can type any command followed by help)');
@@ -29,6 +33,8 @@ var cmds = {
     help: { 
         action: 'help the user',
         params: ['*topic'],
+        perms: '+',
+        discord: false,
         func: function(action, nick, chan, args, command_string){
 
             var help_topics = {
@@ -64,6 +70,7 @@ var cmds = {
         action: 'set the channel topic',
         params: ['topic'],
         perm: '+',
+        discord: false,
         colors: true,
         func: function(action, nick, chan, args, command_string){ 
             action.get_db_data('/topic', function(data){
@@ -84,6 +91,7 @@ var cmds = {
     updatetopic: {
         action: 'update channel topic from qotd',
         perm: 'owner',
+        discord: false,
         func: function(action, nick, chan, args, command_string){ 
             action.get_db_data('/topic', function(data){
                 action.get_db_data('/topic', function(data){
@@ -113,26 +121,30 @@ var cmds = {
                             action.say(c.green(data[id]), 1, {skip_verify: true});
                         }
                     } else if(args.length > 0 && isNaN(args[0]) === true){
-                        var search_topics = {};
-                        var count_found = 0;
-                        var msg_found = [];
-                        for(var i = 0; i < data.length; i++){
-                            if(data[i].toLowerCase().indexOf(command_string.toLowerCase().trim()) > -1){
-                                count_found++;
-                                search_topics[i] = data[i];
-                                msg_found.push(c.olive('[' + i + '] ') + data[i]);
-                            }
-                        }
-
-                        if(count_found === 0 ){
-                            action.say({err: 'no topic with that search term found!'}, 2);
-                        } else if (count_found === 1) {
-                            for(idd in search_topics){
-                                action.say(c.green(data[idd]), 1, {skip_verify: true});
-                            }
+                       if(action.is_discord_user){
+                            action.say({err: 'Discord users cannot search for topics.'});
                         } else {
-                            action.say(c.green(count_found + " QOtD's found matching '" + command_string.trim() + "'"), 1, {skip_verify: true});
-                            action.say(msg_found, 3, {skip_verify: true, join: '\n'});
+                            var search_topics = {};
+                            var count_found = 0;
+                            var msg_found = [];
+                            for(var i = 0; i < data.length; i++){
+                                if(data[i].toLowerCase().indexOf(command_string.toLowerCase().trim()) > -1){
+                                    count_found++;
+                                    search_topics[i] = data[i];
+                                    msg_found.push(c.olive('[' + i + '] ') + data[i]);
+                                }
+                            }
+
+                            if(count_found === 0 ){
+                                action.say({err: 'no topic with that search term found!'}, 2);
+                            } else if (count_found === 1) {
+                                for(idd in search_topics){
+                                    action.say(c.green(data[idd]), 1, {skip_verify: true});
+                                }
+                            } else {
+                                action.say(c.green(count_found + " QOtD's found matching '" + command_string.trim() + "'"), 1, {skip_verify: true});
+                                action.say(msg_found, 3, {skip_verify: true, join: '\n'});
+                            }
                         }
                     } else {
                         action.say(c.green(data[Math.floor(Math.random()*data.length)]), 1, {skip_verify: true});
@@ -147,6 +159,7 @@ var cmds = {
         action: 'register a user for any service (lastfm, trakt, location, untappd)',
         params: ['service', 'irc nick', 'data'],
         perm: 'owner',
+        discord: false,
         func: function(action, nick, chan, args, command_string){ 
             var data = command_string.split(' ');
             data.splice(0, 2);
@@ -163,6 +176,7 @@ var cmds = {
         action: 'unregister a user for any service (lastfm, trakt, location, untappd)',
         params: ['service', 'irc nick'],
         perm: 'owner',
+        discord: false,
         func: function(action, nick, chan, args, command_string){ 
             action.update_user(args[1], {
                     col: args[0],
@@ -191,6 +205,7 @@ var cmds = {
         params: ['to', 'message'],
         perm: 'owner',
         colors: true,
+        discord: false,
         func: function(action, nick, chan, args, command_string){ 
             if(args[0].indexOf('#') === 0){}
             action.say(command_string.slice(args[0].length), 1, {to: args[0], skip_verify: true, ignore_bot_speak: true})
@@ -200,6 +215,7 @@ var cmds = {
         action: 'create a tagline for the bot to say when you enter the room',
         params: ['*-list', '*-delete (id)', '*tagline'],
         colors: true,
+        discord: false,
         func: function(action, nick, chan, args, command_string, usage){
             var loop_thru = function(id, callback){
                 action.get_db_data('/nicks/'+nick+'/tags', function(data){
@@ -256,6 +272,7 @@ var cmds = {
         action: 'check for updates to b0t script',
         params: [],
         perm: '@',
+        discord: false,
         func: function(action, nick, chan, args, command_string){ 
             action.get_url(
                 'https://raw.githubusercontent.com/z0mbieparade/b0t/master/package.json', 
@@ -303,15 +320,23 @@ var cmds = {
             }
 
             if(args[0] === '-list'){
-                loop_thru();
+                if(action.is_discord_user){
+                    action.say({err: 'Discord users cannot use the -list param.'});
+                } else {
+                    loop_thru();
+                }
                 return;
             } 
 
             if(args[0] === '-delete') {
-                if(isNaN(args[1]) === false){
-                    loop_thru(args[1]);
+                if(action.is_discord_user){
+                    action.say({err: 'Discord users cannot use the -delete param.'});
                 } else {
-                    action.say({err: 'please also enter a bug id to delete!'}, 2);
+                    if(isNaN(args[1]) === false){
+                        loop_thru(args[1]);
+                    } else {
+                        action.say({err: 'please also enter a bug id to delete!'}, 2);
+                    }
                 }
                 return;
             } 
@@ -357,15 +382,23 @@ var cmds = {
             }
 
             if(args[0] === '-list'){
-                loop_thru();
+                if(action.is_discord_user){
+                    action.say({err: 'Discord users cannot use the -list param.'});
+                } else {
+                    loop_thru();
+                }
                 return;
             } 
 
             if(args[0] === '-delete') {
-                if(isNaN(args[1]) === false){
-                    loop_thru(args[1]);
+                if(action.is_discord_user){
+                    action.say({err: 'Discord users cannot use the -delete param.'});
                 } else {
-                    action.say({err: 'please also enter a request id to delete!'}, 2);
+                    if(isNaN(args[1]) === false){
+                        loop_thru(args[1]);
+                    } else {
+                        action.say({err: 'please also enter a request id to delete!'}, 2);
+                    }
                 }
                 return;
             } 
@@ -381,7 +414,7 @@ var cmds = {
     next: {
         action: 'Page next thru avaliable buffer, lines is 5 by default, join is a new line by default',
         params: ['*lines', '*join'],
-        perm: '',
+        discord: false,
         func: function(action, nick, chan, args, command_string){ 
             var opt = {
                 to: chan,
@@ -415,6 +448,7 @@ var cmds = {
         action: 'Lookup ip address of user',
         params: ['irc nick'],
         perm: 'owner',
+        discord: false,
         func: function(action, nick, chan, args, command_string){ 
             action.bot.whois(args[0], function(){  
                 log.warn('ip', action.whois);
@@ -447,6 +481,7 @@ var cmds = {
         action: 'merge old flatfile db into new json db (needed when upgrading from 0.0.* -> 0.1.*',
         params: [],
         perm: 'owner',
+        discord: false,
         func: function(action, nick, chan, args, command_string){ 
             var obj = action.export_db();
             action.say(JSON.stringify(obj), 3, {skip_verify: true})

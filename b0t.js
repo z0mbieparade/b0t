@@ -193,14 +193,22 @@ var setup_bot = function(){
 
 
     bot.addListener('message', function(nick, chan, text, message) {
+        action.is_discord = false;
+        action.is_discord_user = false;
 
-        var is_discord = false;
         if(config.discord_relay_channels && config.discord_relay_channels.indexOf(chan) > -1)
         {
-            is_discord = true;
-
+            action.is_discord = true;
             if(nick === config.discord_relay_bot){
+                action.is_discord_user = true;
                 var discord_arr = text.match(/^<(.+)> (.+)$/);
+
+                if(discord_arr === null || discord_arr.length < 2)
+                {
+                    log.error('Invalid discord bot relay input!', discord_arr);
+                    return;
+                }
+
                 nick = c.stripColorsAndStyle(discord_arr[1]);
                 nick = nick.replace('\u000f', '');
                 text = discord_arr[2];
@@ -212,7 +220,6 @@ var setup_bot = function(){
 
         action.chan = chan;
         action.nick = nick;
-        action.is_discord = is_discord;
 
         if(chan === nick && config.send_owner_bot_pms && nick !== config.owner){
             var pm = nick + ': ' + text; 
