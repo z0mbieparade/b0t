@@ -9,6 +9,7 @@
 
     "network_name": "localhost",
     "channels": ["#test"],
+
     "port": "6667",
     "SSL": false,
     "server_password": "",
@@ -52,6 +53,9 @@
             "secret": ""
         },
         "weather": {
+            "key": ""
+        },
+        "wolfram": {
             "key": ""
         },
         "youtube": {
