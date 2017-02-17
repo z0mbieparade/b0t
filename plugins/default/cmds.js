@@ -50,7 +50,7 @@ var cmds = {
                 ]
             }
 
-            if(args.length > 0 || help_topics[args[0]] !== undefined){
+            if(args.length > 0 && help_topics[args[0]] !== undefined){
                 action.say(help_topics[args[0]] , 3, {skip_verify: true, skip_buffer: true, join: '\n'});
             } else {
                 var str = 'What do you need help with? You can say ' + c.teal(action.cmd_syntax('help', true, true)) + ' with any of the following topics: \n';
@@ -230,8 +230,6 @@ var cmds = {
                     });
                 }
             } else {
-
-                log.debug(usage);
                 action.say(usage, 2, {skip_verify: true});
             }
         }
