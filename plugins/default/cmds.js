@@ -160,6 +160,7 @@ var cmds = {
         params: ['service', 'irc nick', 'data'],
         perm: 'owner',
         discord: false,
+        colors: true,
         func: function(action, nick, chan, args, command_string){ 
             if(args[0] === 'tags' || args[0] === 'tag'){
                 var match = command_string.match(/^[\w]+\s[\w]+\s(.+)$/);
@@ -226,7 +227,7 @@ var cmds = {
     },
     tag: {
         action: 'create a tagline for the bot to say when you enter the room',
-        params: ['*-list', '*-delete (id)', '*tagline'],
+        params: ['*-list|*-delete (id)|*-edit (id)', '*tagline'],
         colors: true,
         discord: false,
         func: function(action, nick, chan, args, command_string, usage){
@@ -254,7 +255,7 @@ var cmds = {
     },
     bug: {
         action: 'send a bug report to the owner or lists current bugs',
-        params: ['*-list', '*-delete (id)', '*explain'],
+        params: ['*-list|*-delete (id)|*-edit (id)', '*explain'],
         colors: true,
         func: function(action, nick, chan, args, command_string){ 
             action.manage_arr('/bugs', args, command_string);
@@ -262,7 +263,7 @@ var cmds = {
     },
     request: {
         action: 'send a feature request to the owner or list current requests',
-        params: ['*-list', '*-delete (id)', '*explain'],
+        params: ['*-list|*-delete (id)|*-edit (id)', '*explain'],
         colors: true,
         func: function(action, nick, chan, args, command_string){ 
              action.manage_arr('/requests', args, command_string);
