@@ -10,6 +10,9 @@
     "network_name": "localhost",
     "channels": ["#test"],
 
+    "discord_relay_channels": [],
+    "discord_relay_bot": "",
+
     "port": "6667",
     "SSL": false,
     "server_password": "",

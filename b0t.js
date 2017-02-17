@@ -194,11 +194,24 @@ var setup_bot = function(){
 
     bot.addListener('message', function(nick, chan, text, message) {
 
+        var is_discord = false;
+        if(config.discord_relay_channels && config.discord_relay_channels.indexOf(chan) > -1)
+        {
+            is_discord = true;
+
+            if(nick === config.discord_relay_bot){
+                var discord_arr = text.match(/^<(.+)> (.+)$/);
+                nick = c.stripColorsAndStyle(discord_arr[1]);
+                text = discord_arr[2];
+            }
+        }
+
         if(nick === config.bot_nick && chan === config.bot_nick) return;
         chan = message.args[0] === config.bot_nick ? nick : chan;
 
         action.chan = chan;
         action.nick = nick;
+        action.is_discord = is_discord;
 
         if(chan === nick && config.send_owner_bot_pms && nick !== config.owner){
             var pm = nick + ': ' + text; 
