@@ -202,6 +202,7 @@ var setup_bot = function(){
             if(nick === config.discord_relay_bot){
                 var discord_arr = text.match(/^<(.+)> (.+)$/);
                 nick = c.stripColorsAndStyle(discord_arr[1]);
+                nick = nick.replace('\u000f', '');
                 text = discord_arr[2];
             }
         }
