@@ -53,6 +53,14 @@ var cmds = {
                     '1. ' + c.teal(config.command_prefix + 'tag -list') + ' will return a list of all taglines currently for your user account',
                     '2. ' + c.teal(config.command_prefix + 'tag -delete 4') + ' will delete the 4th tagline (which you know the id of because you did list first)',
                     '3. ' + c.teal(config.command_prefix + 'tag &lime>i feel pretty, oh so pretty') + ' will add ' + c.lime('>i feel pretty, oh so pretty') + ' as a tagline when you enter the room. (for more info about colors, type ' + config.command_prefix + 'help colors)'
+                ],
+                'infobot': [
+                    'Based on this old bot script http://www.infobot.org/guide-0.43.x.html Basic usage:',
+                    'setting: `X is/are Y`, `no, X is/are Y`',
+                    'accessing: `What is/are X`, `X?`',
+                    'appending: `X is/are also Z`',
+                    'erasing: `forget X`',
+                    'locking: `lock X` (only works for ~ users, if set, non-~ users cannot change, delete, or append to factoid.)'
                 ]
             }
 
