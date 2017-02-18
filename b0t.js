@@ -82,6 +82,12 @@ var setup_bot = function(){
     action     = new ACT(),
     action.bot = bot
 
+    if(config.info_bot){
+        INFO    = require(__dirname + '/lib/infobot.js').INFO,
+        infobot = new INFO();
+        log.debug('Info bot activated!')
+    }
+
     bot.addListener('error', function(message) {
         log.error(message);
 
@@ -116,13 +122,13 @@ var setup_bot = function(){
                             if(config.discord_relay_channels && config.discord_relay_channels.indexOf(chan) > -1){
                                 action.say(data[Math.floor(Math.random()*data.length)], 1, {to: chan, skip_verify: true, ignore_bot_speak: true, skip_buffer: true});
                             } else {
-                                action.say(c.green(data[Math.floor(Math.random()*data.length)]), 1, {to: chan, skip_verify: true, ignore_bot_speak: true, skip_buffer: true});
+                                action.say(action.rand_color(data[Math.floor(Math.random()*data.length)]), 1, {to: chan, skip_verify: true, ignore_bot_speak: true, skip_buffer: true});
                             }
                         } else {
                             if(config.discord_relay_channels && config.discord_relay_channels.indexOf(chan) > -1){
                                 action.say(enter_msg[1], 1, {to: chan, skip_verify: true, ignore_bot_speak: true, skip_buffer: true});
                             } else {
-                                action.say(c.green(enter_msg[1]), 1, {to: chan, skip_verify: true, ignore_bot_speak: true, skip_buffer: true});
+                                action.say(action.rand_color(enter_msg[1]), 1, {to: chan, skip_verify: true, ignore_bot_speak: true, skip_buffer: true});
                             }
                         }
                     });
@@ -339,6 +345,11 @@ var setup_bot = function(){
                 //so we need to log when messages are sent
                 if(message.args[0] !== config.bot_nick){
                     action.update_chan_speak('chan');
+                }
+
+                //if this is enabled it does a basic replication of an infobot
+                if(config.info_bot){
+                    infobot.check_message(text, (names[chan] && names[chan][nick] && names[chan][nick] === '~' ? true : false));
                 }
             }
         }

@@ -31,6 +31,8 @@
     "busy_interval": 30000,
     "wait_time_between_commands_when_busy": 600000,
 
+    "info_bot": false,
+
     "send_owner_bot_pms": true,
     "send_errors_to_owner_pm": true,
 	
