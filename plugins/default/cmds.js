@@ -81,18 +81,42 @@ var cmds = {
         discord: false,
         colors: true,
         func: function(action, nick, chan, args, command_string){ 
-            action.get_db_data('/topic', function(data){
-                prev_topics = [];
-                if(data.length > 0){
-                    prev_topics = data.slice(-2);
-                } 
-
-                action.update_db('/', {topic: [command_string]}, false, function(){
-                    prev_topics.push(command_string);
-                    prev_topics.reverse();
-                    action.send('topic', prev_topics.join(' | '));
-                    action.say('Topic set!', 2);
-                });
+            action.update_db('/', {topic: [command_string]}, false, function(){
+                action.update_topic(chan);
+            });
+        }
+    },
+    pin: {
+        action: 'pin the last topic, or a topic by id',
+        params: ['*id'],
+        perm: '~',
+        discord: false,
+        func: function(action, nick, chan, args, command_string){ 
+            action.search_arr('/topic', args, command_string, false, function(data, found){
+                if(found && found > 1){
+                    action.say(c.green(found + " items found matching '" + command_string.trim() + "'"), 2, {skip_verify: true});
+                    action.say(data, 3, {skip_verify: true, join: '\n'});
+                } else if(found && found === 1){
+                    action.update_db('/pinned/' + chan, data, true, function(act){
+                        action.update_topic(chan);
+                    });
+                } else {
+                    action.say(data, 2, {skip_verify: true});
+                }
+            });
+        }
+    },
+    unpin: {
+        action: 'unpin the channel topic',
+        perm: '~',
+        discord: false,
+        func: function(action, nick, chan, args, command_string){ 
+            action.delete_from_db('/pinned/' + chan, function(act){
+                if(act){
+                    action.update_topic(chan);
+                } else {
+                    action.say({err: 'unable to unpin topic'});
+                }
             });
         }
     },
@@ -101,64 +125,21 @@ var cmds = {
         perm: 'owner',
         discord: false,
         func: function(action, nick, chan, args, command_string){ 
-            action.get_db_data('/topic', function(data){
-                action.get_db_data('/topic', function(data){
-                    prev_topics = [];
-                    if(data.length > 0){
-                        prev_topics = data.slice(-3);
-                    } 
-
-                    prev_topics.reverse();
-                    action.send('topic', prev_topics.join(' | '));
-                    action.say('Topic updated!', 2);
-                });
-            });
+            action.update_topic(chan);
         }
     },
     qotd: {
         action: 'get random topic, or enter a search term to search for a specific topic. if more than one found, will list by ID number. Enter id number to read specific topic',
         params: ['*search term', '*id'],
         func: function(action, nick, chan, args, command_string){ 
-            action.get_db_data('/topic', function(data){
-                if(data.length > 0){
-                    if(args.length > 0 && isNaN(args[0]) === false){
-                        var id = parseInt(args[0], 10);
-                        if(data[id] === undefined){
-                            action.say({err: 'no topic with that id found!'}, 2);
-                        } else {
-                            action.say(c.green(data[id]), 1, {skip_verify: true});
-                        }
-                    } else if(args.length > 0 && isNaN(args[0]) === true){
-                       if(action.is_discord_user){
-                            action.say({err: 'Discord users cannot search for topics.'});
-                        } else {
-                            var search_topics = {};
-                            var count_found = 0;
-                            var msg_found = [];
-                            for(var i = 0; i < data.length; i++){
-                                if(data[i].toLowerCase().indexOf(command_string.toLowerCase().trim()) > -1){
-                                    count_found++;
-                                    search_topics[i] = data[i];
-                                    msg_found.push(c.olive('[' + i + '] ') + data[i]);
-                                }
-                            }
-
-                            if(count_found === 0 ){
-                                action.say({err: 'no topic with that search term found!'}, 2);
-                            } else if (count_found === 1) {
-                                for(idd in search_topics){
-                                    action.say(c.green(data[idd]), 1, {skip_verify: true});
-                                }
-                            } else {
-                                action.say(c.green(count_found + " QOtD's found matching '" + command_string.trim() + "'"), 1, {skip_verify: true});
-                                action.say(msg_found, 3, {skip_verify: true, join: '\n'});
-                            }
-                        }
-                    } else {
-                        action.say(c.green(data[Math.floor(Math.random()*data.length)]), 1, {skip_verify: true});
-                    }
+            action.search_arr('/topic', args, command_string, true, function(data, found){
+                if(found && found > 1){
+                    action.say(c.green(found + " items found matching '" + command_string.trim() + "'"), 2, {skip_verify: true});
+                    action.say(data, 3, {skip_verify: true, join: '\n'});
+                } else if(found && found === 1){
+                    action.say(c.green(data), 1, {skip_verify: true});
                 } else {
-                    action.say({err: 'no topics have been set yet!'}, 2);
+                    action.say(data, 2, {skip_verify: true});
                 }
             });
         }
