@@ -284,7 +284,6 @@ var cmds = {
     },
     list: {
         action: 'List all users in channel (useful with discord relay mostly)',
-        perm: 'owner',
         func: function(action, nick, chan, args, command_string){ 
             action.get_all_users_in_chan_data(null, function(data){
                 data = data.map(action.no_highlight);
