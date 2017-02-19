@@ -145,7 +145,7 @@ var setup_bot = function(){
             }, function(tags){
                 if(tags !== false && tags.length && tags.length > 0){
                     if(config.discord_relay_channels && config.discord_relay_channels.indexOf(chan) > -1){
-                        action.say(nick + ' has joined', 1, {to: chan, skip_verify: true, ignore_bot_speak: true, skip_buffer: true});
+                        action.say(action.no_highlight(nick)  + ' has joined', 1, {to: chan, skip_verify: true, ignore_bot_speak: true, skip_buffer: true, ignore_discord_formatting: true});
                     }
 
                     action.say(tags[Math.floor(Math.random()*tags.length)], 1, {to: chan, skip_verify: true, ignore_bot_speak: true, skip_buffer: true});
@@ -161,7 +161,7 @@ var setup_bot = function(){
         log.debug(chan, nick, reason, message);
 
         if(config.discord_relay_channels && config.discord_relay_channels.indexOf(chan) > -1){
-            action.say(nick + ' has left' + (reason ? ' (' + reason + ')' : ''), 1, {to: chan, skip_verify: true, ignore_bot_speak: true, skip_buffer: true});
+            action.say(action.no_highlight(nick) + ' has left' + (reason ? ' (' + reason + ')' : ''), 1, {to: chan, skip_verify: true, ignore_bot_speak: true, skip_buffer: true, ignore_discord_formatting: true});
         }
     });
 
