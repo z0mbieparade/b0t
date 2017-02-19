@@ -281,10 +281,11 @@ var setup_bot = function(){
                     }); 
 
                 } else {
-                    action.get_url(links[i], 'sup', function(data){
-                        log.debug(data);
-                        action.say(c.gray(data), 1, {ignore_bot_speak: true});
-                    }); 
+                    if(config.discord_relay_channels && config.discord_relay_channels.indexOf(chan) < 0){
+                        action.get_url(links[i], 'sup', function(data){
+                            action.say(c.gray(data), 1, {ignore_bot_speak: true});
+                        }); 
+                    }
                 }
             }
         }
