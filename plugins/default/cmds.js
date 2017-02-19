@@ -288,7 +288,7 @@ var cmds = {
         func: function(action, nick, chan, args, command_string){ 
             action.get_all_users_in_chan_data(null, function(data){
                 data = data.map(action.no_highlight);
-                action.say(data, 1, {skip_verify: true, join: ', ', skip_buffer: true});
+                action.say(data, 1, {skip_verify: true, join: ', ', skip_buffer: true, ignore_discord_formatting: true});
             });
         }
     },
