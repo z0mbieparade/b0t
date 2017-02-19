@@ -1,0 +1,11 @@
+{
+	"noun": ["taco", "dog", "mountain"],
+	"adjective": ["evanescent","evasive","damaging"],
+	"verb": ["yearningly","kiddingly","offensively"],
+	"preposition": ["round","off","underneath"],
+
+	"other": {
+		"yes": ["si", "ja", "ya", "yes"],
+		"no": ["nowai", "never gonna happen", "nope", "nein"]
+	}
+}

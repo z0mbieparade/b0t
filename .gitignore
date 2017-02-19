@@ -5,4 +5,5 @@ cmd_override.json
 lib/db.db
 node_modules/*
 db.json
+infobot_vars.json
 
