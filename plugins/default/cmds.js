@@ -130,7 +130,7 @@ var cmds = {
     },
     qotd: {
         action: 'get random topic, or enter a search term to search for a specific topic. if more than one found, will list by ID number. Enter id number to read specific topic',
-        params: ['*search term', '*id'],
+        params: ['*<search term> | <id>'],
         func: function(action, nick, chan, args, command_string){ 
             action.search_arr('/topic', args, command_string, true, function(data, found){
                 if(found && found > 1){
