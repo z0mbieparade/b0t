@@ -154,7 +154,7 @@ var cmds = {
             if(args[0] === 'tags' || args[0] === 'tag'){
                 var match = command_string.match(/^[\w]+\s[\w]+\s(.+)$/);
                 if(match.length && match.length > 0){
-                    action.manage_arr('/nicks/'+args[1]+'/tags', args.slice(2), match[1]);
+                    action.manage_arr('/nicks/'+args[1]+'/tags', args.slice(2), match[1], 'reg');
                 } else {
                     action.say({err: 'nothing to match'});
                 }
@@ -216,16 +216,15 @@ var cmds = {
     },
     tag: {
         action: 'create a tagline for the bot to say when you enter the room',
-        params: ['*-list|*-delete (id)|*-edit (id)', '*tagline'],
+        params: ['-list | -delete <id> | -edit <id> | <tagline>'],
         colors: true,
         discord: false,
         func: function(action, nick, chan, args, command_string, usage){
-            action.manage_arr('/nicks/'+nick+'/tags', args, command_string);
+            action.manage_arr('/nicks/'+nick+'/tags', args, command_string, 'tag');
         }
     },
     updates: {
         action: 'check for updates to b0t script',
-        params: [],
         perm: '@',
         discord: false,
         func: function(action, nick, chan, args, command_string){ 
@@ -244,18 +243,18 @@ var cmds = {
     },
     bug: {
         action: 'send a bug report to the owner or lists current bugs',
-        params: ['*-list|*-delete (id)|*-edit (id)', '*explain'],
+        params: ['-list | -delete <id> | -edit <id> | <bug>'],
         colors: true,
         func: function(action, nick, chan, args, command_string){ 
-            action.manage_arr('/bugs', args, command_string);
+            action.manage_arr('/bugs', args, command_string, 'bug');
         }
     },
     request: {
         action: 'send a feature request to the owner or list current requests',
-        params: ['*-list|*-delete (id)|*-edit (id)', '*explain'],
+        params: ['-list | -delete <id> | -edit <id> | <request>'],
         colors: true,
         func: function(action, nick, chan, args, command_string){ 
-             action.manage_arr('/requests', args, command_string);
+             action.manage_arr('/requests', args, command_string, 'request');
         }
     },
     next: {
@@ -326,7 +325,6 @@ var cmds = {
     }, */
     mergedb: {
         action: 'merge old flatfile db into new json db (needed when upgrading from 0.0.* -> 0.1.*',
-        params: [],
         perm: 'owner',
         discord: false,
         func: function(action, nick, chan, args, command_string){ 
