@@ -342,7 +342,12 @@ var setup_bot = function(){
                 }
                
                 action.is_cmd = true;
-                command_data.func(action, nick, chan, command_args, command_str, usage);
+
+                try {
+                    command_data.func(action, nick, chan, command_args, command_str, usage);
+                } catch(e) {
+                    action.say({'err': 'Something went wrong'});
+                }
 
             });
 
