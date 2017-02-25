@@ -1,9 +1,6 @@
 [submodule "plugins/b0t-untappd"]
 	path = plugins/b0t-untappd
 	url = https://github.com/z0mbieparade/b0t-untappd.git
-[submodule "plugins/b0t-dictionary"]
-	path = plugins/b0t-dictionary
-	url = https://github.com/z0mbieparade/b0t-dictionary.git
 [submodule "plugins/b0t-lastfm"]
 	path = plugins/b0t-lastfm
 	url = https://github.com/z0mbieparade/b0t-lastfm.git
@@ -16,3 +13,6 @@
 [submodule "plugins/b0t-random"]
 	path = plugins/b0t-random
 	url = https://github.com/z0mbieparade/b0t-random.git
+[submodule "plugins/b0t-getinfo"]
+	path = plugins/b0t-getinfo
+	url = git@github.com:z0mbieparade/b0t-getinfo.git
