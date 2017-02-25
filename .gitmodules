@@ -15,4 +15,4 @@
 	url = https://github.com/z0mbieparade/b0t-random.git
 [submodule "plugins/b0t-getinfo"]
 	path = plugins/b0t-getinfo
-	url = git@github.com:z0mbieparade/b0t-getinfo.git
+	url = https://github.com/z0mbieparade/b0t-getinfo.git
