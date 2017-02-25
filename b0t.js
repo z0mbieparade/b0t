@@ -346,6 +346,7 @@ var setup_bot = function(){
                 try {
                     command_data.func(action, nick, chan, command_args, command_str, usage);
                 } catch(e) {
+                    log.error(e);
                     action.say({'err': 'Something went wrong'});
                 }
 
