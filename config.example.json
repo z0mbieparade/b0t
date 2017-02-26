@@ -5,74 +5,89 @@
 	"command_prefix": "!",
 
 	"owner": "",
-    "make_owner_chan_owner": false,
+	"make_owner_chan_owner": false,
 
-    "network_name": "localhost",
-    "channels": ["#test"],
+	"network_name": "localhost",
+	"channels": ["#test"],
 
-    "discord_relay_channels": [],
-    "discord_relay_bot": "",
+	"discord_relay_channels": [],
+	"discord_relay_bot": "",
 
-    "port": "6667",
-    "SSL": false,
-    "server_password": "",
-    "localAddress": "",
+	"port": "6667",
+	"SSL": false,
+	"server_password": "",
+	"localAddress": "",
 
 	"reg_password": "",
 	"op_password": "",
 
-    "speak_on_channel_join": "qotd|holla",
-    "force_join_channels": false,
-    "voice_users_on_join": false,
-    "parse_links": true,
+	"speak_on_channel_join": "qotd|holla",
+	"force_join_channels": false,
+	"voice_users_on_join": false,
+	"parse_links": true,
 	"less_chan_spam": true,
-    "respond_to_bot_name": true,
-    "limit_bot_speak_when_busy": true,
-    "busy_interval": 30000,
-    "wait_time_between_commands_when_busy": 600000,
+	"respond_to_bot_name": true,
+	"limit_bot_speak_when_busy": true,
+	"busy_interval": 30000,
+	"wait_time_between_commands_when_busy": 600000,
 
-    "info_bot": false,
+	"info_bot": false,
 
-    "send_owner_bot_pms": true,
-    "send_errors_to_owner_pm": true,
+	"send_owner_bot_pms": true,
+	"send_errors_to_owner_pm": true,
 	
 	"debug": false,
 
+	"disable_colors": false,
+	"theme": {
+		"text_blocks": "",
+		"username": "",
+		"highlight": "teal",
+		"term": "underline",
+		"success": "green",
+		"waiting": "blue",
+		"considering": "purple",
+		"warn": "olive",
+		"fail": "red",
+		"null": "gray",
+		"errors": "red"
+	},
+
 	"API": {
 		"lastfm": {
-            "key": "",
-            "secret": "",
-            "app_name": ""
-        },
+			"key": "",
+			"secret": "",
+			"app_name": ""
+		},
 		"mwdictionary": {
-            "key": ""
-        },
+			"key": ""
+		},
 		"mwthesaurus": {
-            "key": ""
-        },
+			"key": ""
+		},
 		"trakt": {
-            "key": ""
-        },
+			"key": ""
+		},
 		"untappd": {
-            "key": "",
-            "secret": ""
-        },
-        "weather": {
-            "key": ""
-        },
-        "wolfram": {
-            "key": ""
-        },
-        "youtube": {
-            "key": ""
-        }
-    },
+			"key": "",
+			"secret": ""
+		},
+		"weather": {
+			"key": ""
+		},
+		"wolfram": {
+			"key": ""
+		},
+		"youtube": {
+			"key": ""
+		}
+	},
 
-    "plugin_settings": {
-        "potd": {
-            "imgur_album": ""
-        },
-        "creed": []
-    }
+	"plugin_settings": {
+		"potd": {
+			"imgur_album": ""
+		},
+		"creed": []
+	}
 
 }

@@ -5,14 +5,14 @@ config          = require('./config.json'),
 pkg             = require('./package.json'),
 irc             = require('irc'),
 c               = require('irc-colors'),
+t               = require(__dirname + '/lib/colortheme.js'),
 mLog4js         = require('log4js'),
 request         = require('request'),
 fs              = require('fs');
 
 try {
    cmd_override = require('./cmd_override.json');
-}
-catch (e) {
+} catch (e) {
     cmd_override = {};
 }
 
@@ -89,7 +89,7 @@ var setup_bot = function(){
     }
 
     bot.addListener('error', function(message) {
-        log.error(message);
+        log.error('error listener', message);
 
         if(config.op_password !== '' && message.command === 'err_inviteonlychan' && config.force_join_channels){
             for(var i = 0; i < config.channels.length; i++){
@@ -101,6 +101,17 @@ var setup_bot = function(){
             var pm = 'ERROR: ' + message.command + ' ' + message.args.join(' '); 
             action.say(pm, 3, { skip_verify: true, to: config.owner, ignore_bot_speak: true, skip_buffer: true});
         }
+
+        if(message.command === 'err_cannotsendtochan' && message.args && message.args.length)
+        {
+            var disable_colors = false;
+            for(var i = 0; i < message.args.length; i++){
+                if(message.args[i].match(/\+c set/)) disable_colors = true;
+            }
+            log.warn('+c set in chan, disabling colors');
+            if(config.send_errors_to_owner_pm) action.say('Disabling colors', 3, { skip_verify: true, to: config.owner, ignore_bot_speak: true, skip_buffer: true});
+            config.disable_colors = true;
+        }
     });
 
     bot.addListener('registered', function(message) {
@@ -109,7 +120,7 @@ var setup_bot = function(){
     });
 
     bot.addListener('join', function(chan, nick, message) {
-        log.debug('JOIN', chan, nick);
+        log.debug('JOIN', chan, nick, message);
 
         action.send_tell_messages(nick);
 
@@ -265,8 +276,8 @@ var setup_bot = function(){
                 //this is a youtube link
                 if(is_yt && is_yt.length && is_yt[1]){
                      action.get_url(is_yt[1], 'youtube', function(data){
-                        var str =  c.teal(data.title) + c.gray(' | Uploader: ') + c.teal(data.owner);
-                            str += c.gray(' | Time: ') + c.teal(action.ms_to_time(data.duration * 1000, false)) + c.gray(' | Views: ') + c.teal(data.views);  
+                        var str =  t.highlight(data.title) + t.null(' | Uploader: ') + t.highlight(data.owner);
+                            str += t.null(' | Time: ') + t.highlight(action.ms_to_time(data.duration * 1000, false)) + t.null(' | Views: ') + t.highlight(data.views);  
                         action.say(str, 1, {ignore_bot_speak: true});
                     });
 
@@ -278,17 +289,17 @@ var setup_bot = function(){
                         var str_arr = [];
                         for(var j = 0; j < data.length; j++){
                             if(data[j].tag === 'title' &&  data[j].text !== 'Imgur: The most awesome images on the Internet'){
-                                str_arr.push(c.teal(data[j].text));
+                                str_arr.push(t.highlight(data[j].text));
                             } else if (data[j].tag === 'meta' && data[j].attr && data[j].attr.property && 
                                 data[j].attr.property === 'og:description' &&  data[j].attr.content !== 'Imgur: The most awesome images on the Internet.' &&
                                 data[j].attr.content) {
-                                str_arr.push(c.teal(data[j].attr.content));
+                                str_arr.push(t.highlight(data[j].attr.content));
                             }
                         }
 
                         if(str_arr.length < 1) str_arr.push('Imgur: The most awesome images on the Internet');
 
-                        var str = str_arr.join(c.gray(' | '));
+                        var str = str_arr.join(t.null(' | '));
                         action.say(str, 1, {ignore_bot_speak: true});
                     },{
                         only_return_nodes: {tag: ['title', 'meta']}
@@ -297,7 +308,7 @@ var setup_bot = function(){
                 } else {
                     if(config.discord_relay_channels && config.discord_relay_channels.indexOf(chan) < 0){
                         action.get_url(links[i], 'sup', function(data){
-                            action.say(c.gray(data), 1, {ignore_bot_speak: true});
+                            action.say(t.null(data), 1, {ignore_bot_speak: true});
                         }); 
                     }
                 }
@@ -317,7 +328,7 @@ var setup_bot = function(){
             } else if(command_args_org[0] === '-link') {
                 say_my_name = 'link: https://github.com/z0mbieparade/b0t';
             } else {
-                say_my_name = 'for more info try ' + c.teal(config.bot_nick) + ' -version|-owner|-link';
+                say_my_name = 'for more info try ' + t.highlight(config.bot_nick) + ' -version|-owner|-link';
             }   
 
             action.say(say_my_name, 2, {ignore_bot_speak: true});
@@ -357,8 +368,8 @@ var setup_bot = function(){
 
             if(chan === nick) {
                 //this is a bot PM with no recognized command
-                var str = 'Type ' + c.teal(config.command_prefix + 'commands') + ' for list of commands. For more info about a specific command, type ';
-                    str += c.teal(config.command_prefix + 'command help');
+                var str = 'Type ' + t.highlight(config.command_prefix + 'commands') + ' for list of commands. For more info about a specific command, type ';
+                    str += t.highlight(config.command_prefix + 'command help');
                 action.say(str , 3, {skip_verify: true});
 
             } else {

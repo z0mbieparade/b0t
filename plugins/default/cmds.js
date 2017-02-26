@@ -24,8 +24,8 @@ var cmds = {
                     action.say(cmd_arr, 3, {skip_verify: true, join: '\n'});
                 }
             } else {
-                var str = c.teal('Avaliable commands: ') + cmd_arr.join(', ');
-                str += c.red(' (for more info, you can type any command followed by help)');
+                var str = t.highlight('Avaliable commands: ') + cmd_arr.join(', ');
+                str += t.fail(' (for more info, you can type any command followed by help)');
                 action.say(str, 2, {skip_verify: true});
             }
         }
@@ -45,14 +45,14 @@ var cmds = {
                     'typing `&lime>green text here` or `&9>green text here` will return \u00039>green text here'
                 ],
                 'commands': [
-                    'For any command, you can type ' + c.teal(config.command_prefix + 'command help') + ' to receive full usage instructions.',
-                    'To view all commands and their help syntax, you can type ' + c.teal(config.command_prefix + 'commands -list'),
-                    'For example, typing ' + c.teal(config.command_prefix + 'tag help') + ' will return the following syntax:',
+                    'For any command, you can type ' + t.highlight(config.command_prefix + 'command help') + ' to receive full usage instructions.',
+                    'To view all commands and their help syntax, you can type ' + t.highlight(config.command_prefix + 'commands -list'),
+                    'For example, typing ' + t.highlight(config.command_prefix + 'tag help') + ' will return the following syntax:',
                     action.cmd_syntax('tag'),
                     'To break this down, that means there are 3 things you can do with the tag command: ',
-                    '1. ' + c.teal(config.command_prefix + 'tag -list') + ' will return a list of all taglines currently for your user account',
-                    '2. ' + c.teal(config.command_prefix + 'tag -delete 4') + ' will delete the 4th tagline (which you know the id of because you did list first)',
-                    '3. ' + c.teal(config.command_prefix + 'tag &lime>i feel pretty, oh so pretty') + ' will add ' + c.lime('>i feel pretty, oh so pretty') + ' as a tagline when you enter the room. (for more info about colors, type ' + config.command_prefix + 'help colors)'
+                    '1. ' + t.highlight(config.command_prefix + 'tag -list') + ' will return a list of all taglines currently for your user account',
+                    '2. ' + t.highlight(config.command_prefix + 'tag -delete 4') + ' will delete the 4th tagline (which you know the id of because you did list first)',
+                    '3. ' + t.highlight(config.command_prefix + 'tag &lime>i feel pretty, oh so pretty') + ' will add ' + c.lime('>i feel pretty, oh so pretty') + ' as a tagline when you enter the room. (for more info about colors, type ' + config.command_prefix + 'help colors)'
                 ],
                 'infobot': [
                     'Based on this old bot script http://www.infobot.org/guide-0.43.x.html Basic usage:',
@@ -67,7 +67,7 @@ var cmds = {
             if(args.length > 0 && help_topics[args[0]] !== undefined){
                 action.say(help_topics[args[0]] , 3, {skip_verify: true, skip_buffer: true, join: '\n'});
             } else {
-                var str = 'What do you need help with? You can say ' + c.teal(action.cmd_syntax('help', true, true)) + ' with any of the following topics: \n';
+                var str = 'What do you need help with? You can say ' + t.highlight(action.cmd_syntax('help', true, true)) + ' with any of the following topics: \n';
                     str += (Object.keys(help_topics)).join(', ');
 
                 action.say(str, 3, {skip_verify: true, skip_buffer: true});
@@ -94,7 +94,7 @@ var cmds = {
         func: function(action, nick, chan, args, command_string){ 
             action.search_arr('/topic', args, command_string, false, function(data, found){
                 if(found && found > 1){
-                    action.say(c.green(found + " items found matching '" + command_string.trim() + "'"), 2, {skip_verify: true});
+                    action.say(t.success(found + " items found matching '" + command_string.trim() + "'"), 2, {skip_verify: true});
                     action.say(data, 3, {skip_verify: true, join: '\n'});
                 } else if(found && found === 1){
                     action.update_db('/pinned/' + chan, data, true, function(act){
@@ -134,10 +134,10 @@ var cmds = {
         func: function(action, nick, chan, args, command_string){ 
             action.search_arr('/topic', args, command_string, true, function(data, found){
                 if(found && found > 1){
-                    action.say(c.green(found + " items found matching '" + command_string.trim() + "'"), 2, {skip_verify: true});
+                    action.say(t.success(found + " items found matching '" + command_string.trim() + "'"), 2, {skip_verify: true});
                     action.say(data, 3, {skip_verify: true, join: '\n'});
                 } else if(found && found === 1){
-                    action.say(c.green(data), 1, {skip_verify: true});
+                    action.say(t.success(data), 1, {skip_verify: true});
                 } else {
                     action.say(data, 2, {skip_verify: true});
                 }
