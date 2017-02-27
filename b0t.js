@@ -381,7 +381,7 @@ var setup_bot = function(){
 
                 //if this is enabled it does a basic replication of an infobot
                 if(config.info_bot){
-                    infobot.check_message(text, (names[chan] && names[chan][nick] && names[chan][nick] === '~' ? true : false));
+                    infobot.check_message(text, (names[chan] && names[chan][nick] && names[chan][nick] === '~' ? true : false), nick);
                 }
             }
         }
