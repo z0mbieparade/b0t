@@ -1,0 +1,46 @@
+{
+	"properties": {
+		"bot_nick": {
+			"description": "Nickname of your b0t. Must be a valid IRC nickname (varies per server, but usually 1-16 char, alphanumeric or _-\\^{}|` and doesn't start with a number)",
+			"default": "b0t",
+			"required": true
+		},
+		"owner": {
+			"description": "Owner of the b0t. Must be a valid IRC nickname (varies per server, but usually 1-16 char, alphanumeric or _-\\^{}|` and doesn't start with a number)",
+			"required": true
+		},
+		"network_name": {
+			"description": "Network name, (irc.example.com or localhost)",
+			"default": "localhost",
+			"required": true
+		},
+		"port": {
+			"description": "Port to join on",
+			"type": "integer",
+			"default": 6667,
+			"required": true
+		},
+		"secure": {
+			"description": "Use SSL?",
+			"type": "boolean",
+			"default": false
+		},
+		"channels": {
+			"description": "Channels to join i.e: #test, #test2",
+			"maxItems": 3
+		},
+		"nickserv_password": {
+			"description": "Password used to register your b0t with NickServ",
+			"hidden": true
+		},
+		"ircop_password": {
+			"description": "Password used to op-up with the server, needed if b0t needs to force join (sajoin) or (samode)",
+			"hidden": true
+		},
+		"start": {
+			"description": "Attempt to start b0t now? If you say false, your config will be saved and bot will shut down. You can make more in-depth changes to your config by modifying the newly created config.json file in your b0t directory.",
+			"type": "boolean",
+			"default": true
+		}
+	}
+}
