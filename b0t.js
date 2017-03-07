@@ -154,8 +154,9 @@ function init_bot(){
     //we use raw messages instead
     bot.addListener('error', function(message){});
     bot.addListener('raw', function(message){
-        var ignore = ['MODE','JOIN','NOTICE','PRIVMSG','001','002','003','004','005','042','422','251','254',
-                      '255','265','266','396','311','378','313','312','317','318','353','366','329','332','333','379'];
+        var ignore = ['MODE','JOIN','NOTICE','PRIVMSG','001','002','003','004','005','042','422','251','252','254',
+                      '255','265','266','396','311','378','313','312','317','318','353','366','329','332','333',
+                      '372','373','375','376','379'];
         if(ignore.indexOf(message.rawCommand) > -1) return;
 
         switch(message.rawCommand){
