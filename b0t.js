@@ -7,6 +7,7 @@ var irc                 = require('irc'),
     JsonDB              = require('node-json-db'),
     merge               = require('merge'),
     Use                 = require(__dirname + '/lib/useful.js'),
+    dateWithOffset      = require("date-with-offset"),
 
     config_default      = require(__dirname + '/config/./config_default.json'),
     config_custom       = {},
@@ -317,7 +318,7 @@ function queue_run(){
 
 function get_date(){
     //create date for logs
-    var today = new Date();
+    var today = new dateWithOffset(0);
     var month = today.getUTCMonth() + 1; //months from 1-12
     var day = today.getUTCDate();
     var year = today.getUTCFullYear();

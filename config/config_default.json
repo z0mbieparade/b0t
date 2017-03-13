@@ -1,6 +1,7 @@
 {
 	"debug_level": "INFO",
 	
+	"bot_nick": "b0t",
 	"owner": "",
 	"network_name": "localhost",
 	"nickserv_password": "",
@@ -9,7 +10,7 @@
 	"permissions": ["", "+", "-", "@", "%", "&", "~"],
 	"command_prefix": "!",
 
-	"send_errors_to_owner_pm": true,
+	"send_errors_to_owner_pm": false,
 	"send_owner_bot_pms": true,
 
 	"bot_config": {
@@ -66,14 +67,17 @@
 			"potd": {
 				"imgur_album": ""
 			},
-			"creed": []
+			"creed": [
+				"A robot may not injure a human being or, through inaction, allow a human being to come to harm.",
+				"A robot must obey the orders given it by human beings except where such orders would conflict with the First Law.",
+				"A robot must protect its own existence as long as such protection does not conflict with the First or Second Laws."
+			]
 		},
 
 		"cmd_override": {
 			"wp": "+",
-			"bug": "~",
-			"request": "%",
-			"mergedb": "disabled"
+			"bug": "disabled",
+			"request": "disabled"
 		}
 	},
 

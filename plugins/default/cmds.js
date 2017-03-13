@@ -182,11 +182,11 @@ var cmds = {
             } else {
                 var data = command_string.split(' ');
                 data.splice(0, 2);
-                var data_str = data.join(' ');
-                USER.update_user({
-                    col: args[0],
-                    data: data_str
-                }, function(msg){
+
+                var data_obj = {};
+                data_obj[args[0]] = data.join(' ');
+
+                USER.update_user(data_obj, function(msg){
                     say(msg, 2);
                 });
             }
@@ -194,19 +194,20 @@ var cmds = {
     },
     unreg: {
         action: 'unregister a user for any service (lastfm, trakt, location, untappd)',
-        params: ['service', 'irc USER.nick'],
+        params: ['service', 'irc nick'],
         perm: 'owner',
         discord: false,
         func: function(CHAN, USER, say, args, command_string){ 
             if(args[0] === 'tags' || args[0] === 'tag'){
                 say({err: 'use reg command to modify user tags'});
             } else {
-                USER.update_user({
-                        col: args[0],
-                        data: ''
-                }, function(msg){
-                    say(msg, 2)
-                });
+                db.delete_from_db('/nicks/' + args[1] + '/' + args[0], function(act){
+                    if(act === true){
+                        say({succ: args[1] + '\'s ' + args[0] + ' has now been removed'});
+                    } else {
+                        say({err: 'Unable to delete'});
+                    }
+                })
             }
         }
     },
@@ -215,10 +216,10 @@ var cmds = {
         params: ['irc nick', 'message'],
         colors: true,
         func: function(CHAN, USER, say, args, command_string){ 
-            USER.update_user({
-                    col: 'msg/'+USER.nick,
-                    data: command_string
-            }, function(msg){
+            var data_obj = {};
+                data_obj['msg/'+USER.nick] = command_string;
+            
+            USER.update_user(data_obj, function(msg){
                 if(msg.act === 'remove') say('Your message has been removed', 2);
                 if(msg.act === 'add') say('Your message will be sent when ' + args[0] + ' is next seen', 2);
             });
@@ -351,9 +352,15 @@ var cmds = {
                             break;
                     }
 
-                    str += ' ' + seen.chan + ' (' + seen.where + ') on ' + x.epoc_to_date(seen.date, 'date') + ' at ' + x.epoc_to_date(seen.date, 'time');
-
-                    say({succ: str});
+                    x.get_user_data(USER.nick, {
+                        label: 'timezone offset',
+                        col: 'offset',
+                        ignore_err: true,
+                        skip_say: true
+                    }, function(d){
+                        str += ' ' + seen.chan + ' (' + seen.where + ') on ' + x.epoc_to_date(seen.date, (!d ? 0 : x.convert_offset_to_min(d)));
+                        say({succ: str});
+                    });
                 }
             });
         }
