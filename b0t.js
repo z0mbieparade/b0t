@@ -173,9 +173,10 @@ function init_bot(){
             case 'PONG':
                 queue_run();
                 break;
-           // case 'NICK': //user changes nickname
-
-            ///    break;
+            case 'NICK': //user changes nickname
+                //TODO update channel or something idk
+                b.log.warn('changed nick', message.nick, '->', message.args[0]);
+                break;
             case '491': //Permission Denied - You do not have the required operator privileges
             case '481':
                 b.is_op = false;
@@ -195,7 +196,7 @@ function init_bot(){
                 if (b.channels[message[1]]) b.channels[message[1]].disable_colors(true);
                 break;
             default: 
-                b.log.warn(message);
+                b.log.warn(message.rawCommand, message.args);
                 break;
         }
     });
@@ -210,6 +211,44 @@ function init_bot(){
 
     bot.addListener('-mode', function(chan, by, mode, argument, message)  {
         bot.send('names', chan);
+    });
+
+    bot.addListener('action', function(nick, chan, text, message){
+       if(nick === config.bot_nick && chan === config.bot_nick) return; //ignore bot messages in pms
+
+        if(chan === config.bot_nick){ //this is a pm to the bot
+
+            if(config.send_owner_bot_pms && nick !== config.owner){ //send pms to bot to owner
+               bot.say(config.owner, '*' + nick + text + '*');
+            } 
+
+            x.update_last_seen(nick, chan, 'pm');
+
+        } else { //this is a message in a chan
+
+            /*if(b.channels[chan].config.discord_relay_channel && nick === b.channels[chan].config.discord_relay_bot)
+            {
+                var discord_arr = text.match(/^<(.+)> (.+)$/);
+                if(discord_arr === null || discord_arr.length < 2)
+                {
+                    b.log.error('Invalid discord bot relay input!', discord_arr);
+                    return;
+                }
+
+                nick = c.stripColorsAndStyle(discord_arr[1]);
+                nick = nick.replace('\u000f', '');
+                text = discord_arr[2];
+
+
+                x.update_last_seen(nick, chan, 'speak', 'discord');
+                b.channels[chan].message(nick, text, true);
+            } else {*/
+
+                x.update_last_seen(nick, chan, 'speak');
+                b.channels[chan].action(nick, text);
+           // }
+        }
+
     });
 
     bot.addListener('message', function(nick, chan, text, message) {
