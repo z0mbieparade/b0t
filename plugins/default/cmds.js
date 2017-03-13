@@ -207,7 +207,7 @@ var cmds = {
                     } else {
                         say({err: 'Unable to delete'});
                     }
-                })
+                });
             }
         }
     },
@@ -238,7 +238,7 @@ var cmds = {
     },
     tag: {
         action: 'create a tagline for the bot to say when you enter the room',
-        params: ['-list | -delete <id> | -edit <id> | <tagline>'],
+        params: ['-list | -delete <id> | -edit <id> <new tagline> | <tagline>'],
         colors: true,
         discord: false,
         func: function(CHAN, USER, say, args, command_string){
@@ -265,7 +265,7 @@ var cmds = {
     },
     bug: {
         action: 'send a bug report to the owner or lists current bugs',
-        params: ['-list | -delete <id> | -edit <id> | <bug>'],
+        params: ['-list | -delete <id> | -edit <id> <new bug> | <bug>'],
         colors: true,
         func: function(CHAN, USER, say, args, command_string){ 
             x.manage_arr(USER, '/bugs', args, command_string, 'bug', say);
@@ -273,7 +273,7 @@ var cmds = {
     },
     request: {
         action: 'send a feature request to the owner or list current requests',
-        params: ['-list | -delete <id> | -edit <id> | <request>'],
+        params: ['-list | -delete <id> | -edit <id> <new request> | <request>'],
         colors: true,
         func: function(CHAN, USER, say, args, command_string){ 
              x.manage_arr(USER, '/requests', args, command_string, 'request', say);
