@@ -173,6 +173,9 @@ function init_bot(){
             case 'PONG':
                 queue_run();
                 break;
+           // case 'NICK': //user changes nickname
+
+            ///    break;
             case '491': //Permission Denied - You do not have the required operator privileges
             case '481':
                 b.is_op = false;
@@ -192,7 +195,7 @@ function init_bot(){
                 if (b.channels[message[1]]) b.channels[message[1]].disable_colors(true);
                 break;
             default: 
-                b.log.warn(message.rawCommand, message.args);
+                b.log.warn(message);
                 break;
         }
     });
