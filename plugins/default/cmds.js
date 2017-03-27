@@ -4,6 +4,9 @@ var info = {
 }
 exports.info = info;
 
+var DEFAULT = require(__dirname + '/func.js').DEF,
+    def = new DEFAULT();
+
 var cmds = {
     commands: { 
         action: 'list all of the available bot commands',
@@ -365,6 +368,66 @@ var cmds = {
             });
         }
     },
+    config: {
+        action: 'Update config on the fly',
+        params: ['*#chan', '*setting', '*value', '*-save'],
+        perm: 'owner',
+        discord: false,
+        func: function(CHAN, USER, say, args, command_string){ 
+            var arr = [];
+            var err = '';
+            var succ = '';
+
+            if(args.length > 0 && args[0] === '-save'){
+                x.update_config(config);
+                return;
+            } else if (args.length > 1 && args[0].match(/^#/) !== null && args[1] === '-save'){
+                if(b.channels[args[0]] && b.channels[args[0]].config){
+                    x.update_config(b.channels[args[0]].config, args[0]);
+                    return;
+                } else {
+                    say({err: 'No channel by that name'}, 3);
+                    return;
+                }
+            }
+
+            if(args.length === 0){      
+                arr = x.input_object(config, {
+                    ignore: ['network_name', 'nickserv_password', 'ircop_password', 'bot_config', 'debug_level']
+                });
+            } else if(args.length === 1 && args[0].match(/^#/) !== null){
+                if(b.channels[args[0]] && b.channels[args[0]].config){
+                    arr = x.input_object(b.channels[args[0]].config);
+                } else {
+                    say({err: 'No channel by that name'}, 3);
+                    return;
+                }
+            } else {
+                if(args[0].match(/^#/) !== null){   
+                    var new_arg = command_string.match(/^#\w+ (.*)$/);
+
+                    def.set_config(b.channels[args[0]].config, [args[0]], args, command_string, function(response, conf){
+                        say(response, 3, {join: '\n', lines: 15});
+                        if(conf) config = conf;
+                    });
+                } else {
+                    //this is a main config setting
+                    def.set_config(config, [args[0]], args, command_string, function(response, key_arr, conf){
+                        say(response, 3, {join: '\n', lines: 15});
+                        if(conf) config = conf;
+
+                        //TODO: prolly need to have a few more actions here when specific settings are updated.
+                        if(key_arr[0] === 'bot_nick'){
+                            bot.send('nick', conf['bot_nick']);
+                        } 
+                    });
+                    
+                }
+            } 
+
+            say(arr, 3, {join: '\n', lines: 15});
+        }
+    }
 
 }
 exports.cmds = cmds;

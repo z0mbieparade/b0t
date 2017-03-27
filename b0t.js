@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-__plugindir             = __dirname;
+__botdir                = __dirname;
 
 var irc                 = require('irc'),
     fs                  = require('fs'),
@@ -11,11 +11,11 @@ var irc                 = require('irc'),
 
     config_default      = require(__dirname + '/config/./config_default.json'),
     config_custom       = {},
-
     part_queue          = {};
+
     c                   = require('irc-colors'),
     Theme               = require(__dirname + '/lib/colortheme.js'),
-    b                   = { is_op: false, log_date: get_date(), channels: {} },
+    b                   = { is_op: false, log_date: get_date(), channels: {}, cbs: {} },
     Say                 = require(__dirname + '/lib/say.js');
 
     commands            = {},
@@ -171,6 +171,7 @@ function init_bot(){
                 x.update_last_seen(nick, chan, message.rawCommand.toLowerCase());
                 break;
             case 'PONG':
+                x.pong();
                 queue_run();
                 break;
             case 'NICK': //user changes nickname
@@ -203,6 +204,13 @@ function init_bot(){
 
     bot.addListener('names', function(chan, nicks) {
         b.channels[chan].update_nick_list(nicks);
+
+        for(var user in b.channels[chan].users){
+            if((Object.keys(nicks)).indexOf(user) < 0){
+                part_queue[chan] = part_queue[chan] || [];
+                part_queue[chan].push(user);
+            }
+        }
     });
 
     bot.addListener('+mode', function(chan, by, mode, argument, message)  {
@@ -226,27 +234,8 @@ function init_bot(){
 
         } else { //this is a message in a chan
 
-            /*if(b.channels[chan].config.discord_relay_channel && nick === b.channels[chan].config.discord_relay_bot)
-            {
-                var discord_arr = text.match(/^<(.+)> (.+)$/);
-                if(discord_arr === null || discord_arr.length < 2)
-                {
-                    b.log.error('Invalid discord bot relay input!', discord_arr);
-                    return;
-                }
-
-                nick = c.stripColorsAndStyle(discord_arr[1]);
-                nick = nick.replace('\u000f', '');
-                text = discord_arr[2];
-
-
-                x.update_last_seen(nick, chan, 'speak', 'discord');
-                b.channels[chan].message(nick, text, true);
-            } else {*/
-
-                x.update_last_seen(nick, chan, 'speak');
-                b.channels[chan].action(nick, text);
-           // }
+            x.update_last_seen(nick, chan, 'speak');
+            b.channels[chan].action(nick, text);
         }
 
     });
@@ -266,11 +255,10 @@ function init_bot(){
 
         } else { //this is a message in a chan
 
-            if(b.channels[chan].config.discord_relay_channel && nick === b.channels[chan].config.discord_relay_bot)
-            {
+            //if this is a discord channel
+            if(b.channels[chan].config.discord_relay_channel && nick === b.channels[chan].config.discord_relay_bot){
                 var discord_arr = text.match(/^<(.+)> (.+)$/);
-                if(discord_arr === null || discord_arr.length < 2)
-                {
+                if(discord_arr === null || discord_arr.length < 2){
                     b.log.error('Invalid discord bot relay input!', discord_arr);
                     return;
                 }
@@ -279,9 +267,15 @@ function init_bot(){
                 nick = nick.replace('\u000f', '');
                 text = discord_arr[2];
 
-
                 x.update_last_seen(nick, chan, 'speak', 'discord');
-                b.channels[chan].message(nick, text, true);
+
+                var is_action = text.match(/^_(.*?)_$/);
+
+                if(is_action !== null){
+                    b.channels[chan].action(nick, is_action[1], true);
+                } else {
+                    b.channels[chan].message(nick, text, true);
+                }
             } else {
 
                 x.update_last_seen(nick, chan, 'speak');
@@ -345,16 +339,21 @@ function queue_run(){
         //if the bot left, delete the whole channel
         if(part_queue[chan].indexOf(config.bot_nick) > -1){
             b.log.debug(config.bot_nick, 'left channel, deleting', chan);
-            delete b.channels[chan];
+            b.channels[chan].uninit_chan();
             delete part_queue[chan];
+
+            b.log.debug(Object.keys(b.channels));
         } else {
             part_queue[chan].forEach(function(nick){
                 b.log.debug(nick, 'left channel', chan, 'deleting');
                 delete b.channels[chan].users[nick];
                 delete part_queue[chan].splice(part_queue[chan].indexOf(nick), 1);
+
+                b.log.debug(Object.keys(b.channels[chan].users));
             });
         }
     }
+
     
 }
 
