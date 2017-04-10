@@ -156,7 +156,7 @@ function init_bot(){
     bot.addListener('error', function(message){});
     bot.addListener('raw', function(message){
         var ignore = ['MODE','JOIN','NOTICE','PRIVMSG','001','002','003','004','005','042','422','251','252','254',
-                      '255','265','266','396','311','378','313','312','317','318','353','366','329','332','333',
+                      '255','265','266','396','311','378','313','312','317','318','319','353','366','329','332','333',
                       '372','373','375','376','379'];
         if(ignore.indexOf(message.rawCommand) > -1) return;
 
@@ -257,7 +257,7 @@ function init_bot(){
 
             //if this is a discord channel
             if(b.channels[chan].config.discord_relay_channel && nick === b.channels[chan].config.discord_relay_bot){
-                var discord_arr = text.match(/^<(.+)> (.+)$/);
+                var discord_arr = text.match(/^<(.+?)> (.+)$/);
                 if(discord_arr === null || discord_arr.length < 2){
                     b.log.error('Invalid discord bot relay input!', discord_arr);
                     return;
