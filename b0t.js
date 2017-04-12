@@ -147,13 +147,14 @@ function init_bot(){
 
     bot.addListener('registered', function(message) {
         b.log.trace(message);
+        b.log.info('b0t registered on network:', message.args[1]);
         if(config.ircop_password){
             b.is_op = true;
             bot.send('oper', config.bot_nick, config.ircop_password);
         }
         if(config.nickserv_password) bot.say('NickServ', 'identify ' + config.nickserv_password);
     });
-    
+
     //we use raw messages instead
     bot.addListener('error', function(message){});
     bot.addListener('netError', function(exception) {
@@ -193,7 +194,7 @@ function init_bot(){
                 b.log.info(config.bot_nick, 'opped up!');
                 break;
             case '324': //get chan modes
-                if (b.channels[message[1]]) b.channels[message[1]].set_modes(message.args[2]);
+                if (b.channels[message.args[1]]) b.channels[message.args[1]].set_modes(message.args[2]);
                 break;
             case '401':
                 b.log.warn('No such nick:', message.args[1]);
