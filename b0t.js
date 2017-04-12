@@ -119,6 +119,7 @@ function init_bot(){
     b.pm = new PM();
         
     bot.addListener('join', function(chan, nick, message) {
+
         //check for part_queue entry, remove if exists
         if(part_queue[chan] && part_queue[chan].indexOf(nick) > -1){
             delete part_queue[chan].splice(part_queue[chan].indexOf(nick), 1);
@@ -145,15 +146,19 @@ function init_bot(){
     });
 
     bot.addListener('registered', function(message) {
+        b.log.trace(message);
         if(config.ircop_password){
             b.is_op = true;
             bot.send('oper', config.bot_nick, config.ircop_password);
         }
         if(config.nickserv_password) bot.say('NickServ', 'identify ' + config.nickserv_password);
     });
-
+    
     //we use raw messages instead
     bot.addListener('error', function(message){});
+    bot.addListener('netError', function(exception) {
+        b.log.error(exception);
+    });
     bot.addListener('raw', function(message){
         var ignore = ['MODE','JOIN','NOTICE','PRIVMSG','001','002','003','004','005','042','422','251','252','254',
                       '255','265','266','396','311','378','313','312','317','318','319','353','366','329','332','333',
