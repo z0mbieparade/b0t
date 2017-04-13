@@ -18,4 +18,4 @@ npm install && git submodule foreach "npm install"
 Thanks to everyone in oontz, but especially:
 - [jrwren](https://github.com/jrwren )
 - [plstate](https://github.com/plstate )
-- [thegleek](https://github.com/thegleek )
+- [thegleck](https://github.com/thegleek )
