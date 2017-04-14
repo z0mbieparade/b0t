@@ -318,6 +318,17 @@ var cmds = {
             });
         }
     },
+    whois: {
+        action: 'whois info about a user',
+        params: ['irc nick'],
+        perm: 'owner',
+        no_pm: true,
+        func: function(CHAN, USER, say, args, command_string){ 
+            bot.whois(args[0], function(info){
+                CHAN.log.debug('whois', info);
+            });
+        }
+    },
     seen: {
         action: 'Check when a user was last seen',
         params: ['irc nick'],

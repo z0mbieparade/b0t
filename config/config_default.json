@@ -46,6 +46,8 @@
 		"busy_interval": 30000,
 		"wait_time_between_commands_when_busy": 600000,
 
+		"limit_spammy_commands": 300000,
+
 		"info_bot": false,
 
 		"disable_colors": false,
