@@ -13,45 +13,47 @@ var cmds = {
         params: ['*-list'],
         func: function(CHAN, USER, say, args, command_string){
             var list = (args.length > 0 && args[0] === '-list');
-            var cmd_obj = x.verify_commands(USER, list, true, CHAN.is_pm);
+            x.verify_commands(USER, list, true, CHAN.is_pm, function(cmd_obj){
 
-            if(Object.keys(cmd_obj).length === 0)
-            {
-                say({'err': 'No commands avaliable'});
-                return;
-            }
+                if(Object.keys(cmd_obj).length === 0)
+                {
+                    say({'err': 'No commands avaliable'});
+                    return;
+                }
 
-            if(list) {
-                if(USER.is_discord_user){
-                    say({err: 'Discord users cannot use the -list param.'});
+                if(list) {
+                    if(USER.is_discord_user){
+                        say({err: 'Discord users cannot use the -list param.'});
+                    } else {
+                        var cmd_arr = [];
+
+                        if(USER.nick !== config.owner && CHAN.is_pm) cmd_arr.push(CHAN.t.fail('Note: When using in a PM, only shows base privileges'));
+
+                        for(var plugin in cmd_obj){
+                            cmd_arr.push(CHAN.t.warn('--- ' + CHAN.t.term(plugin + ': ' + (commands[plugin].info.about ? commands[plugin].info.about : '')) + ' ---'));
+                            cmd_arr = cmd_arr.concat(cmd_obj[plugin]);
+                        }
+
+                        say(cmd_arr, 3, {skip_verify: true, join: '\n'});
+                    }
                 } else {
                     var cmd_arr = [];
 
                     if(USER.nick !== config.owner && CHAN.is_pm) cmd_arr.push(CHAN.t.fail('Note: When using in a PM, only shows base privileges'));
 
                     for(var plugin in cmd_obj){
-                        cmd_arr.push(CHAN.t.warn('--- ' + CHAN.t.term(plugin + ': ' + (commands[plugin].info.about ? commands[plugin].info.about : '')) + ' ---'));
-                        cmd_arr = cmd_arr.concat(cmd_obj[plugin]);
+                        cmd_arr.push(CHAN.t.warn(plugin + ':') + ' ' + cmd_obj[plugin].join(', '));
                     }
 
-                    say(cmd_arr, 3, {skip_verify: true, join: '\n'});
-                }
-            } else {
-                var cmd_arr = [];
+                    var str = cmd_arr.join(CHAN.t.highlight(' | '));
+                    str += CHAN.t.fail(' (for more info, you can type any command followed by help)');
 
-                if(USER.nick !== config.owner && CHAN.is_pm) cmd_arr.push(CHAN.t.fail('Note: When using in a PM, only shows base privileges'));
+                    if(CHAN.is_pm) str += CHAN.t.null(' (cannot be used in a PM)');
 
-                for(var plugin in cmd_obj){
-                    cmd_arr.push(CHAN.t.warn(plugin + ':') + ' ' + cmd_obj[plugin].join(', '));
+                    say(str, 2, {skip_verify: true});
                 }
 
-                var str = cmd_arr.join(CHAN.t.highlight(' | '));
-                str += CHAN.t.fail(' (for more info, you can type any command followed by help)');
-
-                if(CHAN.is_pm) str += CHAN.t.null(' (cannot be used in a PM)');
-
-                say(str, 2, {skip_verify: true});
-            }
+            });
         }
     },
     help: { 
