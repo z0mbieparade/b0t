@@ -161,7 +161,7 @@ function init_bot(){
         b.log.error(exception);
     });
     bot.addListener('raw', function(message){
-        var ignore = ['MODE','JOIN','NOTICE','PRIVMSG','001','002','003','004','005','042','422','251','252','254',
+        var ignore = ['PING','MODE','JOIN','NOTICE','PRIVMSG','001','002','003','004','005','042','422','251','252','254',
                       '255','265','266','396','311','378','313','312','317','318','319','353','366','329','332','333',
                       '372','373','375','376','379'];
         if(ignore.indexOf(message.rawCommand) > -1) return;
@@ -170,6 +170,7 @@ function init_bot(){
             case 'PART': //when a user leaves, we want to add them to the queue to be deleted on next PONG
             case 'KICK':
             case 'KILL':
+            case 'QUIT':
                 var nick = message.args[1] ? message.args[1] : message.nick;
                 var chan = message.args[0];
                 part_queue[chan] = part_queue[chan] || [];
@@ -203,7 +204,7 @@ function init_bot(){
                 if (b.channels[message[1]]) b.channels[message[1]].disable_colors(true);
                 break;
             default: 
-                b.log.warn(message.rawCommand, message.args);
+                b.log.warn(message.rawCommand, message);
                 break;
         }
     });

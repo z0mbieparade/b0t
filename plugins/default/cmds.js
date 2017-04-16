@@ -324,10 +324,10 @@ var cmds = {
         action: 'whois info about a user',
         params: ['irc nick'],
         perm: 'owner',
-        no_pm: true,
         func: function(CHAN, USER, say, args, command_string){ 
             bot.whois(args[0], function(info){
                 CHAN.log.debug('whois', info);
+                say(info, 3, {to: config.owner});
             });
         }
     },
