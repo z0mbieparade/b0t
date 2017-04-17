@@ -363,6 +363,9 @@ var cmds = {
                         case 'kill':
                             str += 'was last killed from'; 
                             break;
+                        case 'quit':
+                            str += 'last quit the server'; 
+                            break;
                         default: 
                             str += 'last ' + seen.action + 'ed in';
                             break;
@@ -374,7 +377,10 @@ var cmds = {
                         ignore_err: true,
                         skip_say: true
                     }, function(d){
-                        str += ' ' + seen.chan + ' (' + seen.where + ') on ' + x.epoc_to_date(seen.date, (!d ? 0 : x.convert_offset_to_min(d)));
+                        if(seen.chan !== null){
+                            str += ' ' + seen.chan + ' (' + seen.where + ')';
+                        } 
+                        str += ' on ' + x.epoc_to_date(seen.date, (!d ? 0 : x.convert_offset_to_min(d)));
                         say({succ: str});
                     });
                 }

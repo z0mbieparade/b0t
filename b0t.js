@@ -161,21 +161,28 @@ function init_bot(){
         b.log.error(exception);
     });
     bot.addListener('raw', function(message){
-        var ignore = ['PING','MODE','JOIN','NOTICE','PRIVMSG','001','002','003','004','005','042','422','251','252','254',
-                      '255','265','266','396','311','378','313','312','317','318','319','353','366','329','332','333',
-                      '372','373','375','376','379'];
+        var ignore = ['PING','MODE','JOIN','NOTICE','PRIVMSG','001','002','003','004','005','042','251','252','254',
+                      '255','265','266','307','311','313','312','317','318','319','329','330','332','333','353','366',
+                      '372','373','375','376','378','379','396','422'];
         if(ignore.indexOf(message.rawCommand) > -1) return;
 
         switch(message.rawCommand){
             case 'PART': //when a user leaves, we want to add them to the queue to be deleted on next PONG
             case 'KICK':
             case 'KILL':
-            case 'QUIT':
                 var nick = message.args[1] ? message.args[1] : message.nick;
                 var chan = message.args[0];
                 part_queue[chan] = part_queue[chan] || [];
                 part_queue[chan].push(nick);
                 x.update_last_seen(nick, chan, message.rawCommand.toLowerCase());
+                break;
+            case 'QUIT':
+                var nick = message.nick;
+                for(var chan in b.channels){
+                    part_queue[chan] = part_queue[chan] || [];
+                    part_queue[chan].push(nick);
+                    x.update_last_seen(nick, null, message.rawCommand.toLowerCase());
+                }
                 break;
             case 'PONG':
                 x.pong();
@@ -351,12 +358,10 @@ function queue_run(){
 
             b.log.debug(Object.keys(b.channels));
         } else {
-            part_queue[chan].forEach(function(nick){
+            part_queue[chan].forEach(function(nick){\
                 b.log.debug(nick, 'left channel', chan, 'deleting');
                 delete b.channels[chan].users[nick];
                 delete part_queue[chan].splice(part_queue[chan].indexOf(nick), 1);
-
-                b.log.debug(Object.keys(b.channels[chan].users));
             });
         }
     }
