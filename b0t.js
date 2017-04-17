@@ -358,7 +358,7 @@ function queue_run(){
 
             b.log.debug(Object.keys(b.channels));
         } else {
-            part_queue[chan].forEach(function(nick){\
+            part_queue[chan].forEach(function(nick){
                 b.log.debug(nick, 'left channel', chan, 'deleting');
                 delete b.channels[chan].users[nick];
                 delete part_queue[chan].splice(part_queue[chan].indexOf(nick), 1);
