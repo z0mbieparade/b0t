@@ -10,12 +10,11 @@ var irc                 = require('irc'),
     dateWithOffset      = require("date-with-offset"),
 
     config_default      = require(__dirname + '/config/./config_default.json'),
-    config_custom       = {},
-    part_queue          = {};
+    config_custom       = {};
 
     c                   = require('irc-colors'),
     Theme               = require(__dirname + '/lib/colortheme.js'),
-    b                   = { is_op: false, log_date: get_date(), channels: {}, cbs: {} },
+    b                   = { is_op: false, log_date: get_date(), channels: {}, users: {}, cbs: {}, whois_queue: []},
     Say                 = require(__dirname + '/lib/say.js');
 
     commands            = {},
@@ -119,14 +118,8 @@ function init_bot(){
     b.pm = new PM();
         
     bot.addListener('join', function(chan, nick, message) {
-
-        //check for part_queue entry, remove if exists
-        if(part_queue[chan] && part_queue[chan].indexOf(nick) > -1){
-            delete part_queue[chan].splice(part_queue[chan].indexOf(nick), 1);
-        }
-
         //bot joins channel
-        if(nick === config.bot_nick){
+        if(nick === bot.nick){
             b.channels[chan] = b.channels[chan] || new CHAN(chan);
             b.channels[chan].init_chan();
         } else { //user joins channel
@@ -140,14 +133,14 @@ function init_bot(){
                 b.channels[chan].update_nick_list(nicks, true);
             }
 
-            b.channels[chan].users[nick].say_tagline();
+            b.users[nick].say_tagline(chan);
             x.update_last_seen(nick, chan, 'join');
         }
     });
 
     bot.addListener('registered', function(message) {
         b.log.trace(message);
-        b.log.info('b0t registered on network:', message.args[1]);
+        b.log.info(bot.nick, 'registered on network:', message.args[1]);
         if(config.ircop_password){
             b.is_op = true;
             bot.send('oper', config.bot_nick, config.ircop_password);
@@ -161,45 +154,83 @@ function init_bot(){
         b.log.error(exception);
     });
     bot.addListener('raw', function(message){
-        var ignore = ['PING','MODE','JOIN','NOTICE','PRIVMSG','001','002','003','004','005','042','251','252','254',
+        var ignore = ['TOPIC','PING','MODE','JOIN','NOTICE','PRIVMSG','001','002','003','004','005','042','251','252','254',
                       '255','265','266','307','311','313','312','317','318','319','329','330','332','333','353','366',
                       '372','373','375','376','378','379','396','422'];
         if(ignore.indexOf(message.rawCommand) > -1) return;
 
         switch(message.rawCommand){
-            case 'PART': //when a user leaves, we want to add them to the queue to be deleted on next PONG
+            case 'PART': //when a user leaves, delete them from the channels
             case 'KICK':
-            case 'KILL':
-                var nick = message.args[1] ? message.args[1] : message.nick;
+
+                if(message.rawCommand === 'PART') var nick = message.nick;
+                if(message.rawCommand === 'KICK') var nick = message.args[1];
+
                 var chan = message.args[0];
-                part_queue[chan] = part_queue[chan] || [];
-                part_queue[chan].push(nick);
                 x.update_last_seen(nick, chan, message.rawCommand.toLowerCase());
+
+                if(b.channels[chan].config.discord_relay_channel){
+                    b.channels[chan].SAY.say(x.no_highlight(nick) + ' has left', 1, {skip_verify: true, ignore_bot_speak: true, skip_buffer: true});
+                }
+
+                //if the bot left, delete the whole channel
+                if(nick === bot.nick){
+                    b.log.debug(bot.nick, 'left channel, deleting', chan);
+                    b.channels[chan].uninit_chan();
+                    b.log.debug('channels:', Object.keys(b.channels));
+                } else {
+                    b.log.debug(nick, 'left channel', chan, 'deleting');
+                    delete b.channels[chan].users[nick];
+                }
+                
                 break;
+            case 'KILL':
             case 'QUIT':
                 var nick = message.nick;
                 for(var chan in b.channels){
-                    part_queue[chan] = part_queue[chan] || [];
-                    part_queue[chan].push(nick);
                     x.update_last_seen(nick, null, message.rawCommand.toLowerCase());
+
+                    //if the bot left, delete the whole channel
+                    if(nick === bot.nick){
+                        b.log.debug(bot.nick, 'quit server, deleting channels');
+                        for(chan in b.channels){
+                            if(b.channels[chan].config.discord_relay_channel){
+                                b.channels[chan].SAY.say(x.no_highlight(nick) + ' has quit', 1, {skip_verify: true, ignore_bot_speak: true, skip_buffer: true});
+                            }
+
+                            b.channels[chan].uninit_chan();
+                        }
+                        b.log.debug('channels:', Object.keys(b.channels));
+                    } else {
+                        b.log.debug(nick, 'quit server, deleting from all channels');
+                        delete b.users[nick];
+                        for(chan in b.channels){
+                            if(b.channels[chan].users[nick] && b.channels[chan].config.discord_relay_channel){
+                                b.channels[chan].SAY.say(x.no_highlight(nick) + ' has quit', 1, {skip_verify: true, ignore_bot_speak: true, skip_buffer: true});
+                            }
+
+                            delete b.channels[chan].users[nick];
+                        }
+                    }
                 }
                 break;
             case 'PONG':
                 x.pong();
-                queue_run();
                 break;
             case 'NICK': //user changes nickname
-                //TODO update channel or something idk
                 b.log.warn('changed nick', message.nick, '->', message.args[0]);
+                for(chan in b.channels){
+                    b.channels[chan].nick_change(message.nick, message.args[0]);
+                }
                 break;
             case '491': //Permission Denied - You do not have the required operator privileges
             case '481':
                 b.is_op = false;
-                b.log.error(config.bot_nick, 'does not have required operator privileges, disabling oper commands.');
+                b.log.error(bot.nick, 'does not have required operator privileges, disabling oper commands.');
                 break;
             case '381': //opper up
                 b.is_op = true;
-                b.log.info(config.bot_nick, 'opped up!');
+                b.log.info(bot.nick, 'opped up!');
                 break;
             case '324': //get chan modes
                 if (b.channels[message.args[1]]) b.channels[message.args[1]].set_modes(message.args[2]);
@@ -221,8 +252,8 @@ function init_bot(){
 
         for(var user in b.channels[chan].users){
             if((Object.keys(nicks)).indexOf(user) < 0){
-                part_queue[chan] = part_queue[chan] || [];
-                part_queue[chan].push(user);
+                b.log.debug(user, 'left channel', chan, 'deleting (names)');
+                delete b.channels[chan].users[user];
             }
         }
     });
@@ -236,16 +267,17 @@ function init_bot(){
     });
 
     bot.addListener('action', function(nick, chan, text, message){
-       if(nick === config.bot_nick && chan === config.bot_nick) return; //ignore bot messages in pms
+       if(nick === bot.nick && chan === config.bot_nick) return; //ignore bot messages in pms
 
-        if(chan === config.bot_nick){ //this is a pm to the bot
+        if(chan === bot.nick){ //this is a pm to the bot
+            x.owner_nick(false, function(owner_nick){
 
-            if(config.send_owner_bot_pms && nick !== config.owner){ //send pms to bot to owner
-               bot.say(config.owner, '*' + nick + text + '*');
-            } 
+                if(config.send_owner_bot_pms && nick !== owner_nick && owner_nick !== null){ //send pms to bot to owner
+                   bot.say(owner_nick, '*' + nick + text + '*');
+                } 
 
-            x.update_last_seen(nick, chan, 'pm');
-
+                x.update_last_seen(nick, chan, 'pm');
+            });
         } else { //this is a message in a chan
 
             x.update_last_seen(nick, chan, 'speak');
@@ -255,18 +287,19 @@ function init_bot(){
     });
 
     bot.addListener('message', function(nick, chan, text, message) {
-        if(nick === config.bot_nick && chan === config.bot_nick) return; //ignore bot messages in pms
+        if(nick === bot.nick && chan === bot.nick) return; //ignore bot messages in pms
 
-        if(chan === config.bot_nick){ //this is a pm to the bot
+        if(chan === bot.nick){ //this is a pm to the bot
+            x.owner_nick(false, function(owner_nick){
+                b.log.debug('owner_nick', owner_nick);
+                if(config.send_owner_bot_pms && nick !== owner_nick && owner_nick !== null){ //send pms to bot to owner
+                   bot.say(owner_nick, nick + ': ' + text);
+                } 
 
-            if(config.send_owner_bot_pms && nick !== config.owner){ //send pms to bot to owner
-               bot.say(config.owner, nick + ': ' + text);
-            } 
 
-
-            x.update_last_seen(nick, chan, 'pm');
-            b.pm.message(nick, text);
-
+                x.update_last_seen(nick, chan, 'pm');
+                b.pm.message(nick, text);
+            });
         } else { //this is a message in a chan
 
             //if this is a discord channel
@@ -344,29 +377,6 @@ function init_plugins(complete){
 
         complete();
     });
-}
-
-//when a user leaves the channel, we wait for the next PONG event
-//before we delete chan/user objects just in case they rejoin quickly
-function queue_run(){
-    for(var chan in part_queue){
-        //if the bot left, delete the whole channel
-        if(part_queue[chan].indexOf(config.bot_nick) > -1){
-            b.log.debug(config.bot_nick, 'left channel, deleting', chan);
-            b.channels[chan].uninit_chan();
-            delete part_queue[chan];
-
-            b.log.debug(Object.keys(b.channels));
-        } else {
-            part_queue[chan].forEach(function(nick){
-                b.log.debug(nick, 'left channel', chan, 'deleting');
-                delete b.channels[chan].users[nick];
-                delete part_queue[chan].splice(part_queue[chan].indexOf(nick), 1);
-            });
-        }
-    }
-
-    
 }
 
 function get_date(){

@@ -27,7 +27,7 @@ var cmds = {
                     } else {
                         var cmd_arr = [];
 
-                        if(USER.nick !== config.owner && CHAN.is_pm) cmd_arr.push(CHAN.t.fail('Note: When using in a PM, only shows base privileges'));
+                        if(!b.users[USER.nick].bot_owner && CHAN.is_pm) cmd_arr.push(CHAN.t.fail('Note: When using in a PM, only shows base privileges'));
 
                         for(var plugin in cmd_obj){
                             cmd_arr.push(CHAN.t.warn('--- ' + CHAN.t.term(plugin + ': ' + (commands[plugin].info.about ? commands[plugin].info.about : '')) + ' ---'));
@@ -39,7 +39,7 @@ var cmds = {
                 } else {
                     var cmd_arr = [];
 
-                    if(USER.nick !== config.owner && CHAN.is_pm) cmd_arr.push(CHAN.t.fail('Note: When using in a PM, only shows base privileges'));
+                    if(!USER.is_discord_user && !b.users[USER.nick].bot_owner && CHAN.is_pm) cmd_arr.push(CHAN.t.fail('Note: When using in a PM, only shows base privileges'));
 
                     for(var plugin in cmd_obj){
                         cmd_arr.push(CHAN.t.warn(plugin + ':') + ' ' + cmd_obj[plugin].join(', '));
@@ -191,8 +191,12 @@ var cmds = {
                 var data_obj = {};
                 data_obj[args[0]] = data.join(' ');
 
-                USER.update_user(data_obj, function(msg){
-                    say(msg, 2);
+                db.update_db("/nicks/" + args[1], data_obj, false, function(act){
+                    if(act === 'remove'){
+                        say({succ: args[1] + '\'s ' + args[0] + ' has now been removed'}, 2);
+                    } else {
+                        say({succ: args[1] + '\'s ' + args[0] + ' has now been set'}, 2);
+                    }
                 });
             }
         }
@@ -221,12 +225,13 @@ var cmds = {
         params: ['irc nick', 'message'],
         colors: true,
         func: function(CHAN, USER, say, args, command_string){ 
-            var data_obj = {};
-                data_obj['msg/'+USER.nick] = command_string;
-            
-            USER.update_user(data_obj, function(msg){
-                if(msg.act === 'remove') say('Your message has been removed', 2);
-                if(msg.act === 'add') say('Your message will be sent when ' + args[0] + ' is next seen', 2);
+            command_string = command_string.replace(/^.*?\s/i, '');
+            db.update_db('/nicks/' + args[0] + '/msg/' + USER.nick + '[]', command_string, true, function(act){
+                if(act === 'remove'){
+                    say({succ: 'Your message has been removed'}, 2)
+                } else {
+                    say({succ: 'Your message will be sent when ' + args[0] + ' is next seen'}, 2);
+                }
             });
         }
     },
@@ -314,7 +319,7 @@ var cmds = {
         no_pm: true,
         func: function(CHAN, USER, say, args, command_string){ 
             CHAN.get_all_users_in_chan_data(null, function(data){
-                data = data.filter(function(val){ return val !== config.bot_nick && (!CHAN.config.discord_relay_bot || val !== CHAN.config.discord_relay_bot) });
+                data = data.filter(function(val){ return val !== bot.nick && (!CHAN.config.discord_relay_bot || val !== CHAN.config.discord_relay_bot) });
                 data = data.map(x.no_highlight);
                 say(data, 1, {skip_verify: true, join: ', ', skip_buffer: true, ignore_discord_formatting: true});
             });
@@ -325,10 +330,22 @@ var cmds = {
         params: ['irc nick'],
         perm: 'owner',
         func: function(CHAN, USER, say, args, command_string){ 
-            bot.whois(args[0], function(info){
-                CHAN.log.debug('whois', info);
-                say(info, 3, {to: config.owner});
-            });
+            x.whois(args[0], function(whois, whois_short){
+                if(whois !== null){
+                    CHAN.log.debug(whois_short, whois);
+                    x.owner_nick(false, function(owner_nick){
+                        if(owner_nick !== null){
+                            say(whois, 3, {to: owner_nick});
+                        }
+                    });
+                } else {
+                    x.owner_nick(false, function(owner_nick){
+                        if(owner_nick !== null){
+                             say({err: args[0] + ' not on server'}, 3, {to: owner_nick});
+                        }
+                    });
+                }
+            }, {force: true});
         }
     },
     seen: {
@@ -385,6 +402,76 @@ var cmds = {
                     });
                 }
             });
+        }
+    },
+    nicks: {
+        action: 'Update nicks on server',
+        params: ['-revert | -set'],
+        perm: 'owner',
+        discord: false,
+        func: function(CHAN, USER, say, args, command_string){ 
+            if(args[0] === '-revert'){
+                if(b.is_op){
+                    function test_nick(new_nick, callback){
+                        x.whois(new_nick, function(whois, whois_short){
+                            if(whois !== null){ //there is a user on the server with this nick
+                                test_nick('user' + x.rand_number_between(0, 1000), callback);
+                            } else {
+                                callback(new_nick);
+                            }
+                        }, {user_on_whois: true});
+                    }
+
+                    var repeat = 0;
+                    var revert_nicks = {};
+
+                    function revert(){
+
+                        let requests = (Object.keys(b.users)).map((user) => {
+                            return new Promise((resolve) => {
+
+                                var nick = b.users[user].nick;
+                                var orginal_nick = b.users[user].nick_org;
+
+                                if(nick !== orginal_nick){
+                                    test_nick(orginal_nick, function(new_nick){
+                                        revert_nicks[nick] = new_nick; 
+                                        if(new_nick !== orginal_nick) repeat++;
+                                        resolve();
+                                    });
+                                } else {
+                                    resolve();
+                                }
+                            });
+                        });
+
+                        Promise.all(requests).then(() => { 
+                            //CHAN.log.debug(revert_nicks);
+                            for(var user in revert_nicks){
+                                bot.send('sanick', user, revert_nicks[user]);
+                            }
+ 
+                            if(repeat > 0){
+                                repeat = 0;
+                                revert_nicks = {};
+                                revert();
+                            } else {
+                                say({succ: 'Nicks reverted!'});
+                            }
+                        });
+                    }
+
+                    revert();
+
+                } else {
+                    say({err: bot.nick + ' is not opper'}, 3);
+                }
+            } else if (args[0] === '-set'){
+                for(var user in b.users){
+                    b.users[user].update_org_to_current();
+                }
+                say({succ: 'Original nicks updated!'});
+            } 
         }
     },
     config: {
