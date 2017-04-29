@@ -14,7 +14,7 @@ var irc                 = require('irc'),
 
     c                   = require('irc-colors'),
     Theme               = require(__dirname + '/lib/colortheme.js'),
-    b                   = { is_op: false, log_date: get_date(), channels: {}, users: {}, cbs: {}, whois_queue: []},
+    b                   = { is_op: false, waiting_for_pong: [], log_date: get_date(), channels: {}, users: {}, cbs: {}, whois_queue: []},
     Say                 = require(__dirname + '/lib/say.js');
 
     commands            = {},
@@ -215,6 +215,10 @@ function init_bot(){
                 }
                 break;
             case 'PONG':
+                for(var i = b.waiting_for_pong.length; i--;){
+                    bot.say(b.waiting_for_pong[i], 'pong');
+                    b.waiting_for_pong.splice(i, 1)
+                }
                 x.pong();
                 break;
             case 'NICK': //user changes nickname

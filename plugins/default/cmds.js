@@ -109,6 +109,16 @@ var cmds = {
             });
         }
     },
+    ping: {
+        action: 'Send ping and get pong',
+        discord: false,
+        colors: true,
+        no_pm: true,
+        func: function(CHAN, USER, say, args, command_string){ 
+            if(b.waiting_for_pong.indexOf(CHAN.chan) < 0) b.waiting_for_pong.push(CHAN.chan);
+            bot.send('ping', config.network_name);
+        }
+    },
     pin: {
         action: 'pin the last topic, or a topic by id',
         params: ['*id'],
