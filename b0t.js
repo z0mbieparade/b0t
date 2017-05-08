@@ -170,7 +170,7 @@ function init_bot(){
                 x.update_last_seen(nick, chan, message.rawCommand.toLowerCase());
 
                 if(b.channels[chan].config.discord_relay_channel){
-                    b.channels[chan].SAY.say(x.no_highlight(nick) + ' has left', 1, {skip_verify: true, ignore_bot_speak: true, skip_buffer: true});
+                    b.channels[chan].SAY.say('← ' + x.no_highlight(nick) + ' left', 1, {skip_verify: true, ignore_bot_speak: true, skip_buffer: true});
                 }
 
                 //if the bot left, delete the whole channel
@@ -195,7 +195,7 @@ function init_bot(){
                         b.log.debug(bot.nick, 'quit server, deleting channels');
                         for(chan in b.channels){
                             if(b.channels[chan].config.discord_relay_channel){
-                                b.channels[chan].SAY.say(x.no_highlight(nick) + ' has quit', 1, {skip_verify: true, ignore_bot_speak: true, skip_buffer: true});
+                                b.channels[chan].SAY.say('← ' + x.no_highlight(nick) + ' quit', 1, {skip_verify: true, ignore_bot_speak: true, skip_buffer: true});
                             }
 
                             b.channels[chan].uninit_chan();
@@ -206,7 +206,7 @@ function init_bot(){
                         delete b.users[nick];
                         for(chan in b.channels){
                             if(b.channels[chan].users[nick] && b.channels[chan].config.discord_relay_channel){
-                                b.channels[chan].SAY.say(x.no_highlight(nick) + ' has quit', 1, {skip_verify: true, ignore_bot_speak: true, skip_buffer: true});
+                                b.channels[chan].SAY.say('← ' + x.no_highlight(nick) + ' quit', 1, {skip_verify: true, ignore_bot_speak: true, skip_buffer: true});
                             }
 
                             delete b.channels[chan].users[nick];
