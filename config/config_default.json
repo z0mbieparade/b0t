@@ -105,9 +105,9 @@
 		"weather": {
 			"key": ""
 		},
-		"wolfram": {
-			"key": ""
-		},
+        "wolframalpha": {
+            "key": ""
+        },
 		"youtube": {
 			"key": ""
 		}
