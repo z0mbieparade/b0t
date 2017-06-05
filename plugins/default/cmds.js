@@ -592,7 +592,7 @@ var cmds = {
                 type: 'flag'
             }]
         }],
-        perm: 'owner',
+        perm: '~',
         discord: false,
         func: function(CHAN, USER, say, args, command_string){ 
             if(args.flag === '-revert'){
