@@ -55,6 +55,7 @@
 			"text_blocks": "",
 			"username": "",
 			"highlight": "teal",
+			"highlight2": "fuchsia",
 			"term": "underline",
 			"success": "green",
 			"waiting": "blue",

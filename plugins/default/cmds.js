@@ -10,10 +10,14 @@ var DEFAULT = require(__dirname + '/func.js').DEF,
 var cmds = {
     commands: { 
         action: 'list all of the available bot commands',
-        params: ['*-list'],
+        params: [{
+            optional: true,
+            discord: false,
+            name: 'list',
+            type: 'flag'
+        }],
         func: function(CHAN, USER, say, args, command_string){
-            var list = (args.length > 0 && args[0] === '-list');
-            x.verify_commands(USER, list, true, CHAN.is_pm, function(cmd_obj){
+            x.verify_commands(USER, {help: (args.list !== undefined), is_pm: CHAN.is_pm, by_plugin: true, ignore_spammy: true}, function(cmd_obj){
 
                 if(Object.keys(cmd_obj).length === 0)
                 {
@@ -21,21 +25,17 @@ var cmds = {
                     return;
                 }
 
-                if(list) {
-                    if(USER.is_discord_user){
-                        say({err: 'Discord users cannot use the -list param.'});
-                    } else {
-                        var cmd_arr = [];
+                if(args.list !== undefined) {
+                    var cmd_arr = [];
 
-                        if(!b.users[USER.nick].bot_owner && CHAN.is_pm) cmd_arr.push(CHAN.t.fail('Note: When using in a PM, only shows base privileges'));
+                    if(!b.users[USER.nick].bot_owner && CHAN.is_pm) cmd_arr.push(CHAN.t.fail('Note: When using in a PM, only shows base privileges'));
 
-                        for(var plugin in cmd_obj){
-                            cmd_arr.push(CHAN.t.warn('--- ' + CHAN.t.term(plugin + ': ' + (commands[plugin].info.about ? commands[plugin].info.about : '')) + ' ---'));
-                            cmd_arr = cmd_arr.concat(cmd_obj[plugin]);
-                        }
-
-                        say(cmd_arr, 3, {skip_verify: true, join: '\n'});
+                    for(var plugin in cmd_obj){
+                        cmd_arr.push(CHAN.t.warn('--- ' + CHAN.t.term(plugin + ': ' + (commands[plugin].info.about ? commands[plugin].info.about : '')) + ' ---'));
+                        cmd_arr = cmd_arr.concat(cmd_obj[plugin]);
                     }
+
+                    say(cmd_arr, 3, {skip_verify: true, join: '\n'});
                 } else {
                     var cmd_arr = [];
 
@@ -58,53 +58,64 @@ var cmds = {
     },
     help: { 
         action: 'help the user',
-        params: ['*topic'],
+        params: [{
+            or: [{
+                    name: 'colors',
+                    type: 'flag',
+                    key: 'topic'
+                },{
+                    name: 'commands',
+                    type: 'flag',
+                    key: 'topic'
+                },{
+                    name: 'infobot',
+                    type: 'flag',
+                    key: 'topic'
+                }
+            ]
+        }],
         perms: '+',
         discord: false,
         func: function(CHAN, USER, say, args, command_string){
 
             var help_topics = {
-                'colors': [
+                '-colors': [
                     'If a command accepts colors, you can use various short cuts to format text preceded by an &:',
                     '\u0002b bold\u000f | \u0016i italic\u000f | \u001fu\u000f \u001funderline\u000f | r reset | ' + c.white.bgblack(' 0 ')+c.black.bgwhite(' 1 ')+c.navy(' 2 ')+c.green(' 3 ')+c.red(' 4 ')+c.brown(' 5 ')+c.purple(' 6 ')+c.olive(' 7 ')+c.yellow(' 8 ')+c.lime(' 9 ')+c.teal(' 10 ')+c.cyan(' 11 ')+c.blue(' 12 ')+c.pink(' 13 ')+c.grey(' 14 ')+c.silver(' 15 '), 
                     'color codes are 0-15 see https://github.com/z0mbieparade/b0t/wiki/Colors for a complete list of color names',
                     'typing `&lime>green text here` or `&9>green text here` will return \u00039>green text here'
                 ],
-                'commands': [
+                '-commands': [
                     'For any command, you can type ' + CHAN.t.highlight(config.command_prefix + 'command help') + ' to receive full usage instructions.',
                     'To view all commands and their help syntax, you can type ' + CHAN.t.highlight(config.command_prefix + 'commands -list'),
                     'For example, typing ' + CHAN.t.highlight(config.command_prefix + 'tag help') + ' will return the following syntax:',
-                    x.cmd_syntax('tag', {t: CHAN.t}),
+                    x.cmd_syntax(USER, 'tag'),
                     'To break this down, that means there are 4 things you can do with the tag command: ',
                     '1. ' + CHAN.t.highlight(config.command_prefix + 'tag -list') + ' will return a list of all taglines currently for your user account',
                     '2. ' + CHAN.t.highlight(config.command_prefix + 'tag -delete 4') + ' will delete the 4th tagline (which you know the id of because you did list first)',
                     '3. ' + CHAN.t.highlight(config.command_prefix + 'tag -edit 3 new tagline') + ' will edit the 2nd tagline (which you know the id of because you did list first)',
                     '4. ' + CHAN.t.highlight(config.command_prefix + 'tag &lime>i feel pretty, oh so pretty') + ' will add ' + c.lime('>i feel pretty, oh so pretty') + ' as a tagline when you enter the room. (for more info about colors, type ' + config.command_prefix + 'help colors)'
                 ],
-                'infobot': [
+                '-infobot': [
                     'See https://github.com/z0mbieparade/b0t/wiki/Info-Bot for more info.'
                 ]
             }
 
-            if(args.length > 0 && help_topics[args[0]] !== undefined){
-                say(help_topics[args[0]] , 3, {skip_verify: true, skip_buffer: true, join: '\n'});
-            } else {
-                var str = 'What do you need help with? You can say ' + CHAN.t.highlight(x.cmd_syntax('help', {short: true, micro: true, t: CHAN.t})) + ' with any of the following topics: \n';
-                    str += (Object.keys(help_topics)).join(', ');
-
-                say(str, 3, {skip_verify: true, skip_buffer: true});
-            }
+            say(help_topics[args.topic] , 3, {skip_verify: true, skip_buffer: true, join: '\n'});
         }
     },
     set: {
         action: 'set the channel topic',
-        params: ['topic'],
+        params: [{
+            name: 'topic',
+            type: 'string',
+            colors: true
+        }],
         perm: '+',
         discord: false,
-        colors: true,
         no_pm: true,
         func: function(CHAN, USER, say, args, command_string){ 
-            db.update_db('/', {topic: [command_string]}, false, function(){
+            db.update_db('/', {topic: [args.topic]}, false, function(){
                 CHAN.update_topic();
             });
         }
@@ -117,13 +128,25 @@ var cmds = {
         }
     },
     pin: {
-        action: 'pin the last topic, or a topic by id',
-        params: ['*id'],
+        action: 'pin a topic',
+        params: [{
+            optional: true,
+            or: [{
+                    name: 'topic id',
+                    type: 'number',
+                    key: 'id'
+                },{
+                    name: 'search term',
+                    type: 'text',
+                    key: 'query'
+                }
+            ]
+        }],
         perm: '~',
         discord: false,
         no_pm: true,
         func: function(CHAN, USER, say, args, command_string){ 
-            x.search_arr(USER, '/topic', args, command_string, false, function(data, found){
+            x.search_arr(USER, '/topic', args, false, function(data, found){
                 if(found && found > 1){
                     say({succ: found + " items found matching '" + command_string.trim() + "'"}, 2, {skip_verify: true});
                     say(data, 3, {skip_verify: true, join: '\n'});
@@ -163,9 +186,21 @@ var cmds = {
     },
     qotd: {
         action: 'get random topic, or enter a search term to search for a specific topic. if more than one found, will list by ID number. Enter id number to read specific topic',
-        params: ['*<search term> | <id>'],
+        params: [{
+            optional: true,
+            or: [{
+                    name: 'topic id',
+                    type: 'number',
+                    key: 'id'
+                },{
+                    name: 'search term',
+                    type: 'text',
+                    key: 'query'
+                }
+            ]
+        }],
         func: function(CHAN, USER, say, args, command_string){ 
-            x.search_arr(USER, '/topic', args, command_string, true, function(data, found){
+            x.search_arr(USER, '/topic', args, true, function(data, found){
                 if(found && found > 1){
                     say({succ: found + " items found matching '" + command_string.trim() + "'"}, 2, {skip_verify: true});
                     say(data, 3, {skip_verify: true, join: '\n'});
@@ -179,10 +214,23 @@ var cmds = {
     },
     reg: {
         action: 'register a user for any service (lastfm, trakt, location, untappd)',
-        params: ['service', 'irc nick', 'data'],
+        params: [
+            {
+                name: 'service',
+                type: 'string'
+            },
+            {
+                name: 'irc nick',
+                type: 'string'
+            },
+            {
+                name: 'data',
+                type: 'text',
+                colors: true
+            }
+        ],
         perm: 'owner',
         discord: false,
-        colors: true,
         func: function(CHAN, USER, say, args, command_string){ 
             if(args[0] === 'tags' || args[0] === 'tag'){
                 var match = command_string.match(/^[\w]+\s[\w]+\s(.+)$/);
@@ -210,8 +258,17 @@ var cmds = {
     },
     unreg: {
         action: 'unregister a user for any service (lastfm, trakt, location, untappd)',
-        params: ['service', 'irc nick'],
-        perm: 'owner',
+        params: [
+            {
+                name: 'service',
+                type: 'string'
+            },
+            {
+                name: 'irc nick',
+                type: 'string'
+            }
+        ],
+        perm: '~',
         discord: false,
         func: function(CHAN, USER, say, args, command_string){ 
             if(args[0] === 'tags' || args[0] === 'tag'){
@@ -229,8 +286,17 @@ var cmds = {
     },
     tell: {
         action: 'tell another user something when they they are next active',
-        params: ['irc nick', 'message'],
-        colors: true,
+        params: [
+            {
+                name: 'irc nick',
+                type: 'string'
+            },
+            {
+                name: 'message',
+                type: 'text',
+                colors: true
+            }
+        ],
         func: function(CHAN, USER, say, args, command_string){ 
             command_string = command_string.replace(/^.*?\s/i, '');
             db.update_db('/nicks/' + args[0] + '/msg/' + USER.nick + '[]', command_string, true, function(act){
@@ -244,9 +310,18 @@ var cmds = {
     },
     speak: {
         action: 'allows owner to speak through bot to channel or to user',
-        params: ['to', 'message'],
+        params: [
+            {
+                name: 'to',
+                type: 'string'
+            },
+            {
+                name: 'message',
+                type: 'text',
+                colors: true
+            }
+        ],
         perm: 'owner',
-        colors: true,
         discord: false,
         func: function(CHAN, USER, say, args, command_string){ 
             if(args[0].indexOf('#') === 0){}
@@ -255,11 +330,39 @@ var cmds = {
     },
     tag: {
         action: 'create a tagline for the bot to say when you enter the room',
-        params: ['-list | -delete <id> | -edit <id> <new tagline> | <tagline>'],
-        colors: true,
+        params: [{
+            or: [
+                {
+                    name: 'list',
+                    perm: '~',
+                    type: 'flag',
+                    key: 'flag',
+                },
+                {
+                    name: 'delete',
+                    type: 'flag',
+                    key: 'flag',
+                    and: [ { name: 'id', type: 'number' } ]
+                },
+                {
+                    name: 'edit',
+                    type: 'flag',
+                    key: 'flag',
+                    and: [ { name: 'id', type: 'number' }, { name: 'new tagline', type: 'text', key: 'new_val', colors: true } ]
+                },
+                {
+                    name: 'new tagline',
+                    type: 'text',
+                    key: 'new_val',
+                    colors: true,
+                    fake: {flag: '-add'}
+                }
+
+            ]
+        }],
         discord: false,
         func: function(CHAN, USER, say, args, command_string){
-            x.manage_arr(USER, '/nicks/' + USER.nick + '/tags', args, command_string, 'tag', say);
+            x.manage_arr(USER, '/nicks/' + USER.nick + '/tags', args, 'tag', say);
         }
     },
     updates: {
@@ -282,23 +385,90 @@ var cmds = {
     },
     bug: {
         action: 'send a bug report to the owner or lists current bugs',
-        params: ['-list | -delete <id> | -edit <id> <new bug> | <bug>'],
-        colors: true,
+        params: [{
+            or: [
+                {
+                    name: 'list',
+                    perm: '~',
+                    type: 'flag',
+                    key: 'flag',
+                },
+                {
+                    name: 'delete',
+                    type: 'flag',
+                    key: 'flag',
+                    and: [ { name: 'id', type: 'number' } ]
+                },
+                {
+                    name: 'edit',
+                    type: 'flag',
+                    key: 'flag',
+                    and: [ { name: 'id', type: 'number' }, { name: 'new bug', type: 'text', key: 'new_val', colors: true } ]
+                },
+                {
+                    name: 'new bug',
+                    type: 'text',
+                    key: 'new_val',
+                    colors: true,
+                    fake: {flag: '-add'}
+                }
+
+            ]
+        }],
         func: function(CHAN, USER, say, args, command_string){ 
-            x.manage_arr(USER, '/bugs', args, command_string, 'bug', say);
+            x.manage_arr(USER, '/bugs', args, 'bug', say);
         }
     },
     request: {
         action: 'send a feature request to the owner or list current requests',
-        params: ['-list | -delete <id> | -edit <id> <new request> | <request>'],
-        colors: true,
+        params: [{
+            or: [
+                {
+                    name: 'list',
+                    perm: '~',
+                    type: 'flag',
+                    key: 'flag',
+                },
+                {
+                    name: 'delete',
+                    type: 'flag',
+                    key: 'flag',
+                    and: [ { name: 'id', type: 'number' } ]
+                },
+                {
+                    name: 'edit',
+                    type: 'flag',
+                    key: 'flag',
+                    and: [ { name: 'id', type: 'number' }, { name: 'new request', type: 'text', key: 'new_val', colors: true } ]
+                },
+                {
+                    name: 'new request',
+                    type: 'text',
+                    key: 'new_val',
+                    colors: true,
+                    fake: {flag: '-add'}
+                }
+
+            ]
+        }],
         func: function(CHAN, USER, say, args, command_string){ 
-             x.manage_arr(USER, '/requests', args, command_string, 'request', say);
+             x.manage_arr(USER, '/requests', args, 'request', say);
         }
     },
     next: {
         action: 'Page next thru avaliable buffer, lines is 5 by default, join is a new line by default',
-        params: ['*lines', '*join'],
+        params: [
+            {
+                optional: true,
+                name: 'lines',
+                type: 'number'
+            },
+            {
+                optional: true,
+                name: 'join',
+                type: 'string',
+            }
+        ],
         discord: false,
         func: function(CHAN, USER, say, args, command_string){ 
             var opt = {
@@ -309,14 +479,8 @@ var cmds = {
                 copy_buffer_to_user: true
             };
 
-            if(args.length > 0){
-                if(isNaN(args[0]) === false){
-                    opt.lines = +args[0], 
-                    opt.join = args[1] ? args[1] : undefined;
-                } else {
-                    opt.join = args[0];
-                }
-            }
+            if(args.lines !== undefined) opt.lines = args.lines;
+            if(args.name !== undefined) opt.name = args.name;
 
             say(null, 2, opt)
         }
@@ -334,10 +498,13 @@ var cmds = {
     },
     whois: {
         action: 'whois info about a user',
-        params: ['irc nick'],
+        params: [{
+            name: 'irc nick',
+            type: 'string' 
+        }],
         perm: 'owner',
         func: function(CHAN, USER, say, args, command_string){ 
-            x.whois(args[0], function(whois, whois_short){
+            x.whois(args.irc_nick, function(whois, whois_short){
                 if(whois !== null){
                     CHAN.log.debug(whois_short, whois);
                     x.owner_nick(false, function(owner_nick){
@@ -348,7 +515,7 @@ var cmds = {
                 } else {
                     x.owner_nick(false, function(owner_nick){
                         if(owner_nick !== null){
-                             say({err: args[0] + ' not on server'}, 3, {to: owner_nick});
+                             say({err: args.irc_nick + ' not on server'}, 3, {to: owner_nick});
                         }
                     });
                 }
@@ -357,17 +524,20 @@ var cmds = {
     },
     seen: {
         action: 'Check when a user was last seen',
-        params: ['irc nick'],
+        params: [{
+            name: 'irc nick',
+            type: 'string' 
+        }],
         func: function(CHAN, USER, say, args, command_string){ 
-            x.get_user_data(args[0], {
+            x.get_user_data(args.irc_nick, {
                 col: 'seen',
                 ignore_err: true,
                 skip_say: true
             }, function(seen){
                 if(seen === false){
-                    say({err: args[0] + ' has never been seen'});
+                    say({err: args.irc_nick + ' has never been seen'});
                 } else {
-                    var str = x.no_highlight(CHAN.t.term(args[0])) + ' ';
+                    var str = x.no_highlight(CHAN.t.term(args.irc_nick)) + ' ';
                     switch(seen.action){
                         case 'speak':
                             str += 'last spoke in';
@@ -413,11 +583,19 @@ var cmds = {
     },
     nicks: {
         action: 'Update nicks on server',
-        params: ['-revert | -set'],
+        params: [{
+            or: [{
+                name: 'revert',
+                type: 'flag'
+            },{
+                name: 'set',
+                type: 'flag'
+            }]
+        }],
         perm: 'owner',
         discord: false,
         func: function(CHAN, USER, say, args, command_string){ 
-            if(args[0] === '-revert'){
+            if(args.flag === '-revert'){
                 if(b.is_op){
                     function test_nick(new_nick, callback){
                         x.whois(new_nick, function(whois, whois_short){
@@ -473,7 +651,7 @@ var cmds = {
                 } else {
                     say({err: bot.nick + ' is not opper'}, 3);
                 }
-            } else if (args[0] === '-set'){
+            } else if (args.flag === '-set'){
                 for(var user in b.users){
                     b.users[user].update_org_to_current();
                 }
@@ -481,9 +659,34 @@ var cmds = {
             } 
         }
     },
-    config: {
+    //TODO: need a way to add/edit/delete obj/arr items
+    /*config: {
         action: 'Update config on the fly',
-        params: ['*#chan', '*setting', '*value', '*-save'],
+        params: [{
+            optional: true,
+            or: [{
+                and: [{
+                    optional: true,
+                    name: '#chan',
+                    type: '#\\w+',
+                    key: 'chan',
+                },{
+                    optional: true,
+                    name: 'setting:setting:setting',
+                    type: 'string',
+                    key: 'settings',
+                    and: [{
+                        optional: true,
+                        name: 'value',
+                        type: 'text'
+                    }]
+                }]
+            },{
+                name: 'save',
+                type: 'flag',
+                key: 'save'
+            }]
+        }],
         perm: 'owner',
         discord: false,
         func: function(CHAN, USER, say, args, command_string){ 
@@ -491,56 +694,44 @@ var cmds = {
             var err = '';
             var succ = '';
 
-            if(args.length > 0 && args[0] === '-save'){
-                x.update_config(config);
+            var key_arr = args.settings === undefined ? [] : args.settings.split(':');
+
+            if(args.chan !== undefined && (b.channels[args.chan] === undefined || b.channels[args.chan].config === undefined)){
+                say({err: 'No channel by that name'}, 3);
                 return;
-            } else if (args.length > 1 && args[0].match(/^#/) !== null && args[1] === '-save'){
-                if(b.channels[args[0]] && b.channels[args[0]].config){
-                    x.update_config(b.channels[args[0]].config, args[0]);
-                    return;
+            }
+            
+            if(args.save !== undefined){
+                if(args.chan === undefined){
+                    x.update_config(config);
                 } else {
-                    say({err: 'No channel by that name'}, 3);
-                    return;
+                    x.update_config(b.channels[args.chan].config, args.chan);
+                }
+            } else {
+                if(args.chan === undefined){
+                    x.input_object(config, key_arr, args.value, function(resp){
+                        say(resp, 3, {join: '\n', lines: 15});
+                        //if(conf) config = conf;
+
+                        //TODO: prolly need to have a few more actions here when specific settings are updated.
+                        //if(key_arr[0] === 'bot_nick'){
+                        //    bot.send('nick', conf['bot_nick']);
+                        //} 
+
+                    },{
+                        ignore: ['network_name', 'nickserv_password', 'ircop_password', 'bot_config', 'debug_level']
+                    });
+                } else {
+                    x.input_object(b.channels[args.chan].config, key_arr, args.value, function(resp){
+                        say(response, 3, {join: '\n', lines: 15});
+                        //if(conf) config = conf;
+
+                    });
                 }
             }
 
-            if(args.length === 0){      
-                arr = x.input_object(config, {
-                    ignore: ['network_name', 'nickserv_password', 'ircop_password', 'bot_config', 'debug_level']
-                });
-            } else if(args.length === 1 && args[0].match(/^#/) !== null){
-                if(b.channels[args[0]] && b.channels[args[0]].config){
-                    arr = x.input_object(b.channels[args[0]].config);
-                } else {
-                    say({err: 'No channel by that name'}, 3);
-                    return;
-                }
-            } else {
-                if(args[0].match(/^#/) !== null){   
-                    var new_arg = command_string.match(/^#\w+ (.*)$/);
-
-                    def.set_config(b.channels[args[0]].config, [args[0]], args, command_string, function(response, conf){
-                        say(response, 3, {join: '\n', lines: 15});
-                        if(conf) config = conf;
-                    });
-                } else {
-                    //this is a main config setting
-                    def.set_config(config, [args[0]], args, command_string, function(response, key_arr, conf){
-                        say(response, 3, {join: '\n', lines: 15});
-                        if(conf) config = conf;
-
-                        //TODO: prolly need to have a few more actions here when specific settings are updated.
-                        if(key_arr[0] === 'bot_nick'){
-                            bot.send('nick', conf['bot_nick']);
-                        } 
-                    });
-                    
-                }
-            } 
-
-            say(arr, 3, {join: '\n', lines: 15});
         }
-    }
+    }*/
 
 }
 exports.cmds = cmds;

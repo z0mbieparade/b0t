@@ -14,11 +14,10 @@ DEF.prototype.validate = function(old_val, new_val){
     return null;
 }
 
-DEF.prototype.set_config = function(conf, key_arr, args, command_string, callback){
+DEF.prototype.set_config = function(conf, args, callback){
 	var _this = this;
-    var key = args[0];
+    var key_arr = args.settings.split(':');
 
-    command_string = command_string.match(/^\w+ (.*)$/) === null ? null : (command_string.match(/^\w+ (.*)$/))[1];
     var new_val = _this.validate(conf[args[0]], command_string);
 
     if(conf[key]){

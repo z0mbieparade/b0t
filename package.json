@@ -1,6 +1,6 @@
 {
   "name": "b0t",
-  "version": "0.5.5",
+  "version": "0.5.9",
   "description": "irc node bot with trakt.tv, last.fm, urban dictionary, and more functionality",
   "author": "<z0mbieparade.com>",
   "scripts": {
@@ -45,7 +45,8 @@
     "strip-ansi": "~3.0.1",
     "youtube-info": "~1.1.1",
     "date-with-offset": "~1.0.1",
-    "jsonfile": "~2.4.0"
+    "jsonfile": "~2.4.0",
+    "clones": "~1.1.0"
   },
   "preferGlobal": false,
   "private": true,
