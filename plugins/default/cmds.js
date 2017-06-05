@@ -108,7 +108,7 @@ var cmds = {
         action: 'set the channel topic',
         params: [{
             name: 'topic',
-            type: 'string',
+            type: 'text',
             colors: true
         }],
         perm: '+',
@@ -118,13 +118,6 @@ var cmds = {
             db.update_db('/', {topic: [args.topic]}, false, function(){
                 CHAN.update_topic();
             });
-        }
-    },
-    ping: {
-        action: 'Send ping and get pong',
-        func: function(CHAN, USER, say, args, command_string){ 
-            if(b.waiting_for_pong.indexOf(CHAN.chan) < 0) b.waiting_for_pong.push(CHAN.chan);
-            bot.send('ping', config.network_name);
         }
     },
     pin: {
@@ -210,6 +203,13 @@ var cmds = {
                     say(data, 2, {skip_verify: true});
                 }
             });
+        }
+    },
+    ping: {
+        action: 'Send ping and get pong',
+        func: function(CHAN, USER, say, args, command_string){ 
+            if(b.waiting_for_pong.indexOf(CHAN.chan) < 0) b.waiting_for_pong.push(CHAN.chan);
+            bot.send('ping', config.network_name);
         }
     },
     reg: {
