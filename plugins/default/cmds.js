@@ -389,19 +389,20 @@ var cmds = {
             or: [
                 {
                     name: 'list',
-                    perm: '~',
                     type: 'flag',
                     key: 'flag',
                 },
                 {
                     name: 'delete',
                     type: 'flag',
+                    perms: 'owner',
                     key: 'flag',
                     and: [ { name: 'id', type: 'number' } ]
                 },
                 {
                     name: 'edit',
                     type: 'flag',
+                    perms: 'owner',
                     key: 'flag',
                     and: [ { name: 'id', type: 'number' }, { name: 'new bug', type: 'text', key: 'new_val', colors: true } ]
                 },
@@ -425,19 +426,20 @@ var cmds = {
             or: [
                 {
                     name: 'list',
-                    perm: '~',
                     type: 'flag',
                     key: 'flag',
                 },
                 {
                     name: 'delete',
                     type: 'flag',
+                    perms: 'owner',
                     key: 'flag',
                     and: [ { name: 'id', type: 'number' } ]
                 },
                 {
                     name: 'edit',
                     type: 'flag',
+                    perms: 'owner',
                     key: 'flag',
                     and: [ { name: 'id', type: 'number' }, { name: 'new request', type: 'text', key: 'new_val', colors: true } ]
                 },
