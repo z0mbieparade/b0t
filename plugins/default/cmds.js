@@ -224,33 +224,49 @@ var cmds = {
                 type: 'string'
             },
             {
-                name: 'data',
-                type: 'text',
-                colors: true
+                or: [{
+                    name: 'list',
+                    type: 'flag',
+                    key: 'flag',
+                },
+                {
+                    name: 'delete',
+                    type: 'flag',
+                    key: 'flag',
+                    and: [ { name: 'id', type: 'number' } ]
+                },
+                {
+                    name: 'edit',
+                    type: 'flag',
+                    key: 'flag',
+                    and: [ { name: 'id', type: 'number' }, { name: 'data', type: 'text', key: 'new_val', colors: true } ]
+                },
+                {
+                    name: 'data',
+                    type: 'text',
+                    key: 'new_val',
+                    colors: true,
+                    fake: {flag: '-add'}
+                }]
             }
         ],
         perm: 'owner',
         discord: false,
         func: function(CHAN, USER, say, args, command_string){ 
-            if(args[0] === 'tags' || args[0] === 'tag'){
-                var match = command_string.match(/^[\w]+\s[\w]+\s(.+)$/);
-                if(match.length && match.length > 0){
-                    x.manage_arr(USER, '/nicks/'+args[1]+'/tags', args.slice(2), match[1], 'reg', say);
-                } else {
-                    say({err: 'nothing to match'});
-                }
+            if(args.service === 'tags' || args.service === 'tag'){
+                x.manage_arr(USER, '/nicks/'+args.irc_nick+'/tags', args, 'reg', say);
             } else {
                 var data = command_string.split(' ');
                 data.splice(0, 2);
 
                 var data_obj = {};
-                data_obj[args[0]] = data.join(' ');
+                data_obj[args.service] = args.new_val;
 
-                db.update_db("/nicks/" + args[1], data_obj, false, function(act){
+                db.update_db("/nicks/" + args.irc_nick, data_obj, false, function(act){
                     if(act === 'remove'){
-                        say({succ: args[1] + '\'s ' + args[0] + ' has now been removed'}, 2);
+                        say({succ: args.irc_nick + '\'s ' + args.service + ' has now been removed'}, 2);
                     } else {
-                        say({succ: args[1] + '\'s ' + args[0] + ' has now been set'}, 2);
+                        say({succ: args.irc_nick + '\'s ' + args.service + ' has now been set'}, 2);
                     }
                 });
             }
@@ -271,12 +287,12 @@ var cmds = {
         perm: '~',
         discord: false,
         func: function(CHAN, USER, say, args, command_string){ 
-            if(args[0] === 'tags' || args[0] === 'tag'){
+            if(args.service === 'tags' || args.service === 'tag'){
                 say({err: 'use reg command to modify user tags'});
             } else {
-                db.delete_from_db('/nicks/' + args[1] + '/' + args[0], function(act){
+                db.delete_from_db('/nicks/' + args.irc_nick + '/' + args.service, function(act){
                     if(act === true){
-                        say({succ: args[1] + '\'s ' + args[0] + ' has now been removed'});
+                        say({succ: args.irc_nick + '\'s ' + args.service + ' has now been removed'});
                     } else {
                         say({err: 'Unable to delete'});
                     }
@@ -299,11 +315,11 @@ var cmds = {
         ],
         func: function(CHAN, USER, say, args, command_string){ 
             command_string = command_string.replace(/^.*?\s/i, '');
-            db.update_db('/nicks/' + args[0] + '/msg/' + USER.nick + '[]', command_string, true, function(act){
+            db.update_db('/nicks/' + args.irc_nick + '/msg/' + USER.nick + '[]', args.message, true, function(act){
                 if(act === 'remove'){
                     say({succ: 'Your message has been removed'}, 2)
                 } else {
-                    say({succ: 'Your message will be sent when ' + args[0] + ' is next seen'}, 2);
+                    say({succ: 'Your message will be sent when ' + args.irc_nick + ' is next seen'}, 2);
                 }
             });
         }
@@ -324,8 +340,7 @@ var cmds = {
         perm: 'owner',
         discord: false,
         func: function(CHAN, USER, say, args, command_string){ 
-            if(args[0].indexOf('#') === 0){}
-            say(command_string.slice(args[0].length), 1, {to: args[0], skip_verify: true, ignore_bot_speak: true})
+            say(args.message, 1, {to: args.to, skip_verify: true, ignore_bot_speak: true})
         }
     },
     tag: {
@@ -490,12 +505,34 @@ var cmds = {
     list: {
         action: 'List all users in channel (useful with discord relay mostly)',
         no_pm: true,
+        params: [
+            {
+                optional: true,
+                name: 'chan',
+                type: '#\\w+'
+            }
+        ],
         func: function(CHAN, USER, say, args, command_string){ 
-            CHAN.get_all_users_in_chan_data(null, function(data){
-                data = data.filter(function(val){ return val !== bot.nick && (!CHAN.config.discord_relay_bot || val !== CHAN.config.discord_relay_bot) });
-                data = data.map(x.no_highlight);
-                say(data, 1, {skip_verify: true, join: ', ', skip_buffer: true, ignore_discord_formatting: true});
-            });
+            if(args.chan !== undefined){
+                if(b.channels[args.chan] === undefined || b.channels[args.chan].config === undefined){
+                    say({err: 'No channel by that name'}, 3);
+                    return;
+                } else {
+                    bot.send('names', args.chan);
+                    b.channels[args.chan].get_all_users_in_chan_data(null, function(data){
+                        data = data.filter(function(val){ return val !== bot.nick && (!b.channels[args.chan].config.discord_relay_bot || val !== b.channels[args.chan].config.discord_relay_bot) });
+                        data = data.map(x.no_highlight);
+                        say(data, 1, {skip_verify: true, join: ', ', skip_buffer: true, ignore_discord_formatting: true});
+                    });
+                }
+            } else {
+                bot.send('names', CHAN.chan);
+                CHAN.get_all_users_in_chan_data(null, function(data){
+                    data = data.filter(function(val){ return val !== bot.nick && (!CHAN.config.discord_relay_bot || val !== CHAN.config.discord_relay_bot) });
+                    data = data.map(x.no_highlight);
+                    say(data, 1, {skip_verify: true, join: ', ', skip_buffer: true, ignore_discord_formatting: true});
+                });
+            }
         }
     },
     whois: {
