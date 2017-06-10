@@ -74,7 +74,7 @@ var cmds = {
                 }
             ]
         }],
-        perms: '+',
+        perm: '+',
         discord: false,
         func: function(CHAN, USER, say, args, command_string){
 
@@ -254,7 +254,7 @@ var cmds = {
         discord: false,
         func: function(CHAN, USER, say, args, command_string){ 
             if(args.service === 'tags' || args.service === 'tag'){
-                x.manage_arr(USER, '/nicks/'+args.irc_nick+'/tags', args, 'reg', say);
+                x.manage_arr(USER, '/nicks/'+args.irc_nick+'/tags', args, 'reg', say, args.irc_nick);
             } else {
                 var data = command_string.split(' ');
                 data.splice(0, 2);
@@ -268,7 +268,7 @@ var cmds = {
                     } else {
                         say({succ: args.irc_nick + '\'s ' + args.service + ' has now been set'}, 2);
                     }
-                });
+                }, args.irc_nick);
             }
         }
     },
@@ -321,7 +321,7 @@ var cmds = {
                 } else {
                     say({succ: 'Your message will be sent when ' + args.irc_nick + ' is next seen'}, 2);
                 }
-            });
+            }, args.irc_nick);
         }
     },
     speak: {
@@ -349,7 +349,6 @@ var cmds = {
             or: [
                 {
                     name: 'list',
-                    perm: '~',
                     type: 'flag',
                     key: 'flag',
                 },
@@ -377,7 +376,7 @@ var cmds = {
         }],
         discord: false,
         func: function(CHAN, USER, say, args, command_string){
-            x.manage_arr(USER, '/nicks/' + USER.nick + '/tags', args, 'tag', say);
+            x.manage_arr(USER, '/nicks/' + USER.nick + '/tags', args, 'tag', say, USER.nick);
         }
     },
     updates: {
@@ -400,6 +399,7 @@ var cmds = {
     },
     bug: {
         action: 'send a bug report to the owner or lists current bugs',
+        perm: '%',
         params: [{
             or: [
                 {
@@ -410,14 +410,14 @@ var cmds = {
                 {
                     name: 'delete',
                     type: 'flag',
-                    perms: 'owner',
+                    perm: 'owner',
                     key: 'flag',
                     and: [ { name: 'id', type: 'number' } ]
                 },
                 {
                     name: 'edit',
                     type: 'flag',
-                    perms: 'owner',
+                    perm: 'owner',
                     key: 'flag',
                     and: [ { name: 'id', type: 'number' }, { name: 'new bug', type: 'text', key: 'new_val', colors: true } ]
                 },
@@ -447,14 +447,14 @@ var cmds = {
                 {
                     name: 'delete',
                     type: 'flag',
-                    perms: 'owner',
+                    perm: 'owner',
                     key: 'flag',
                     and: [ { name: 'id', type: 'number' } ]
                 },
                 {
                     name: 'edit',
                     type: 'flag',
-                    perms: 'owner',
+                    perm: 'owner',
                     key: 'flag',
                     and: [ { name: 'id', type: 'number' }, { name: 'new request', type: 'text', key: 'new_val', colors: true } ]
                 },
