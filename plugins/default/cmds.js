@@ -4,8 +4,8 @@ var info = {
 }
 exports.info = info;
 
-var DEFAULT = require(__dirname + '/func.js').DEF,
-    def = new DEFAULT();
+var DEFAULT         = require(__dirname + '/func.js').DEF,
+    def             = new DEFAULT()
 
 var cmds = {
     commands: { 
@@ -696,6 +696,52 @@ var cmds = {
                 }
                 say({succ: 'Original nicks updated!'});
             } 
+        }
+    },
+    poll: {
+        action: 'Create a poll and have users vote on it',
+        params: [{
+            optional: true,
+            or: [{
+                    name: 'close',
+                    key: 'close',
+                    perm: '~',
+                    type: 'flag'
+                },{
+                    and: [{
+                        name: 'question',
+                        type: '.+?(?=\\s-\\d)'
+                    },{
+                        name: '-1 answer -2 answer...',
+                        key: 'answers',
+                        type: '-\\d.+-\\d.+'
+                    }]
+                }
+            ]
+        }],
+        func: function(CHAN, USER, say, args, command_string){
+            if(args.close !== undefined){
+                x.close_current_poll(function(result){
+                    say(result);
+                });
+            } else {
+                def.get_poll(CHAN, USER, args, function(result){
+                    say(result, {skip_buffer: true, skip_verify: true, join: '\n'});
+                });
+            }
+        }
+    },
+    vote: {
+        action: 'Vote on the current poll',
+        params: [{
+            optional: true,
+            name: 'answer id',
+            type: 'number'
+        }],
+        func: function(CHAN, USER, say, args, command_string){
+            def.get_poll(CHAN, USER, args, function(result){
+                say(result, {skip_buffer: true, skip_verify: true, join: '\n'});
+            });
         }
     },
     //TODO: need a way to add/edit/delete obj/arr items
