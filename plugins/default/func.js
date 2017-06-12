@@ -163,7 +163,7 @@ DEF.prototype.get_poll = function(CHAN, USER, args, callback){
             if(Object.keys(args).length === 0){
                 _this.say_poll(CHAN, poll, callback);
             } else if (args.question !== undefined && args.answers !== undefined){
-                if(polls[polls.length - 1].status === 'open'){
+                if(poll.status === 'open'){
                     callback({err: 'There is currently an open poll, please type ' + config.command_prefix + 'poll -close before creating a new poll'});
                 } else {
                     _this.add_poll(CHAN, args, callback);
