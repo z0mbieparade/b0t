@@ -505,34 +505,33 @@ var cmds = {
     list: {
         action: 'List all users in channel (useful with discord relay mostly)',
         no_pm: true,
-        params: [
-            {
-                optional: true,
-                name: 'chan',
-                type: '#\\w+'
-            }
-        ],
+        params: [{
+            optional: true,
+            name: 'chan',
+            type: '#\\w+'
+        }],
         func: function(CHAN, USER, say, args, command_string){ 
+            var data = [];
             if(args.chan !== undefined){
                 if(b.channels[args.chan] === undefined || b.channels[args.chan].config === undefined){
                     say({err: 'No channel by that name'}, 3);
                     return;
                 } else {
                     bot.send('names', args.chan);
-                    b.channels[args.chan].get_all_users_in_chan_data(null, function(data){
-                        data = data.filter(function(val){ return val !== bot.nick && (!b.channels[args.chan].config.discord_relay_bot || val !== b.channels[args.chan].config.discord_relay_bot) });
-                        data = data.map(x.no_highlight);
-                        say(data, 1, {skip_verify: true, join: ', ', skip_buffer: true, ignore_discord_formatting: true});
-                    });
+                    for(var nick in b.channels[args.chan].users){
+                        if(nick === bot.nick || (b.channels[args.chan].config.discord_relay_bot !== undefined && nick === b.channels[args.chan].config.discord_relay_bot)) continue;
+                        data.push(CHAN.users[nick].perm + x.no_highlight(nick));
+                    }
                 }
             } else {
                 bot.send('names', CHAN.chan);
-                CHAN.get_all_users_in_chan_data(null, function(data){
-                    data = data.filter(function(val){ return val !== bot.nick && (!CHAN.config.discord_relay_bot || val !== CHAN.config.discord_relay_bot) });
-                    data = data.map(x.no_highlight);
-                    say(data, 1, {skip_verify: true, join: ', ', skip_buffer: true, ignore_discord_formatting: true});
-                });
+                for(var nick in CHAN.users){
+                    if(nick === bot.nick || (CHAN.config.discord_relay_bot !== undefined && nick === CHAN.config.discord_relay_bot)) continue;
+                    data.push(CHAN.users[nick].perm + x.no_highlight(nick) + (b.users[nick].bot_owner === true ? '(owner)' : ''));
+                }
             }
+
+            say(data.join(', '), 1, {skip_verify: true, join: ', ', skip_buffer: true, ignore_discord_formatting: true});
         }
     },
     whois: {
