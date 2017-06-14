@@ -85,6 +85,9 @@
 	},
 
 	"API": {
+		"fml": {
+			"key": ""
+		},
 		"lastfm": {
 			"key": "",
 			"secret": "",
