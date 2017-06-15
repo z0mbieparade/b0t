@@ -720,11 +720,11 @@ var cmds = {
         }],
         func: function(CHAN, USER, say, args, command_string){
             if(args.close !== undefined){
-                x.close_current_poll(function(result){
+                x.close_current_poll(CHAN, function(result){
                     say(result);
                 });
             } else {
-                def.get_poll(CHAN, USER, args, function(result){
+                x.get_poll(CHAN, USER, args, function(result){
                     say(result, {skip_buffer: true, skip_verify: true, join: '\n'});
                 });
             }
@@ -738,7 +738,7 @@ var cmds = {
             type: 'number'
         }],
         func: function(CHAN, USER, say, args, command_string){
-            def.get_poll(CHAN, USER, args, function(result){
+            x.get_poll(CHAN, USER, args, function(result){
                 say(result, {skip_buffer: true, skip_verify: true, join: '\n'});
             });
         }
