@@ -28,7 +28,7 @@ var cmds = {
                 if(args.list !== undefined) {
                     var cmd_arr = [];
 
-                    if(!b.users[USER.nick].bot_owner && CHAN.is_pm) cmd_arr.push(CHAN.t.fail('Note: When using in a PM, only shows base privileges'));
+                    if(!USER.is_owner && CHAN.is_pm) cmd_arr.push(CHAN.t.fail('Note: When using in a PM, only shows base privileges'));
 
                     for(var plugin in cmd_obj){
                         cmd_arr.push(CHAN.t.warn('--- ' + CHAN.t.term(plugin + ': ' + (commands[plugin].info.about ? commands[plugin].info.about : '')) + ' ---'));
@@ -39,7 +39,7 @@ var cmds = {
                 } else {
                     var cmd_arr = [];
 
-                    if(!USER.is_discord_user && !b.users[USER.nick].bot_owner && CHAN.is_pm) cmd_arr.push(CHAN.t.fail('Note: When using in a PM, only shows base privileges'));
+                    if(!USER.is_discord_user && !USER.is_owner && CHAN.is_pm) cmd_arr.push(CHAN.t.fail('Note: When using in a PM, only shows base privileges'));
 
                     for(var plugin in cmd_obj){
                         cmd_arr.push(CHAN.t.warn(plugin + ':') + ' ' + cmd_obj[plugin].join(', '));
@@ -115,7 +115,7 @@ var cmds = {
         discord: false,
         no_pm: true,
         func: function(CHAN, USER, say, args, command_string){ 
-            db.update_db('/', {topic: [args.topic]}, false, function(){
+            db.update('/', {topic: [args.topic]}, false, function(){
                 CHAN.update_topic();
             });
         }
@@ -139,12 +139,12 @@ var cmds = {
         discord: false,
         no_pm: true,
         func: function(CHAN, USER, say, args, command_string){ 
-            x.search_arr(USER, '/topic', args, false, function(data, found){
+            db.search_arr(USER, '/topic', args, false, function(data, found){
                 if(found && found > 1){
                     say({succ: found + " items found matching '" + command_string.trim() + "'"}, 2, {skip_verify: true});
                     say(data, 3, {skip_verify: true, join: '\n'});
                 } else if(found && found === 1){
-                    db.update_db('/pinned/' + CHAN.chan, data, true, function(act){
+                    db.update('/pinned/' + CHAN.chan, data, true, function(act){
                         CHAN.update_topic();
                     });
                 } else {
@@ -159,7 +159,7 @@ var cmds = {
         discord: false,
         no_pm: true,
         func: function(CHAN, USER, say, args, command_string){ 
-            db.delete_from_db('/pinned/' + CHAN.chan, function(act){
+            db.delete('/pinned/' + CHAN.chan, function(act){
                 if(act){
                     CHAN.update_topic();
                 } else {
@@ -193,7 +193,7 @@ var cmds = {
             ]
         }],
         func: function(CHAN, USER, say, args, command_string){ 
-            x.search_arr(USER, '/topic', args, true, function(data, found){
+            db.search_arr(USER, '/topic', args, true, function(data, found){
                 if(found && found > 1){
                     say({succ: found + " items found matching '" + command_string.trim() + "'"}, 2, {skip_verify: true});
                     say(data, 3, {skip_verify: true, join: '\n'});
@@ -254,7 +254,7 @@ var cmds = {
         discord: false,
         func: function(CHAN, USER, say, args, command_string){ 
             if(args.service === 'tags' || args.service === 'tag'){
-                x.manage_arr(USER, '/nicks/'+args.irc_nick+'/tags', args, 'reg', say, args.irc_nick);
+                db.manage_arr(USER, '/nicks/'+args.irc_nick+'/tags', args, say, args.irc_nick);
             } else {
                 var data = command_string.split(' ');
                 data.splice(0, 2);
@@ -262,7 +262,7 @@ var cmds = {
                 var data_obj = {};
                 data_obj[args.service] = args.new_val;
 
-                db.update_db("/nicks/" + args.irc_nick, data_obj, false, function(act){
+                db.update("/nicks/" + args.irc_nick, data_obj, false, function(act){
                     if(act === 'remove'){
                         say({succ: args.irc_nick + '\'s ' + args.service + ' has now been removed'}, 2);
                     } else {
@@ -290,7 +290,7 @@ var cmds = {
             if(args.service === 'tags' || args.service === 'tag'){
                 say({err: 'use reg command to modify user tags'});
             } else {
-                db.delete_from_db('/nicks/' + args.irc_nick + '/' + args.service, function(act){
+                db.delete('/nicks/' + args.irc_nick + '/' + args.service, function(act){
                     if(act === true){
                         say({succ: args.irc_nick + '\'s ' + args.service + ' has now been removed'});
                     } else {
@@ -315,7 +315,7 @@ var cmds = {
         ],
         func: function(CHAN, USER, say, args, command_string){ 
             command_string = command_string.replace(/^.*?\s/i, '');
-            db.update_db('/nicks/' + args.irc_nick + '/msg/' + USER.nick + '[]', args.message, true, function(act){
+            db.update('/nicks/' + args.irc_nick + '/msg/' + USER.nick + '[]', args.message, true, function(act){
                 if(act === 'remove'){
                     say({succ: 'Your message has been removed'}, 2)
                 } else {
@@ -376,7 +376,7 @@ var cmds = {
         }],
         discord: false,
         func: function(CHAN, USER, say, args, command_string){
-            x.manage_arr(USER, '/nicks/' + USER.nick + '/tags', args, 'tag', say, USER.nick);
+            db.manage_arr(USER, '/nicks/' + USER.nick + '/tags', args, say, USER.nick);
         }
     },
     updates: {
@@ -432,7 +432,7 @@ var cmds = {
             ]
         }],
         func: function(CHAN, USER, say, args, command_string){ 
-            x.manage_arr(USER, '/bugs', args, 'bug', say);
+            db.manage_arr(USER, '/bugs', args, say);
         }
     },
     request: {
@@ -469,7 +469,7 @@ var cmds = {
             ]
         }],
         func: function(CHAN, USER, say, args, command_string){ 
-             x.manage_arr(USER, '/requests', args, 'request', say);
+             db.manage_arr(USER, '/requests', args, say);
         }
     },
     next: {
@@ -511,24 +511,65 @@ var cmds = {
             type: '#\\w+'
         }],
         func: function(CHAN, USER, say, args, command_string){ 
+            //["", "+", "-", "@", "%", "&", "~"]
             var data = [];
+
+            function format_usr(u){
+                var str = u.perm;
+                if(u.is_owner || u.is_chan_owner) str += '(' + (u.is_owner ? 'α' : '') + (u.is_chan_owner ? 'χ' : '') + ')';
+                str += x.no_highlight(u.nick) + (u.nick_org === u.nick ? '' : '/' + x.no_highlight(u.nick_org));
+
+                data.push(str);
+            }
+            
+            function usr_list(chan){
+                var data_obj = {owner: [], chan_owner: []};
+                config.permissions.forEach(function(p){
+                    data_obj[p === '' ? 'none' : p] = [];
+                });
+
+                for(var nick in chan.users){
+                    if(nick === bot.nick || (chan.config.discord_relay_bot !== undefined && nick === chan.config.discord_relay_bot)) continue;
+                    
+                    var usr = chan.users[nick];
+
+                    if(usr.is_owner){
+                        data_obj['owner'].push(usr);
+                    } else if(usr.is_chan_owner){
+                        data_obj['chan_owner'].push(usr);
+                    } else {
+                        data_obj[usr.perm === '' ? 'none' : usr.perm].push(usr);
+                    }
+                }
+
+                for(var p in data_obj){
+                    data_obj[p].sort(function(a,b){
+                        return a.nick.localeCompare(b.nick);
+                    });
+                }
+
+                data_obj.owner.forEach(format_usr);
+                data_obj.chan_owner.forEach(format_usr);
+
+                data.push('(' + (b.is_op ? 'ο' : '') + 'β)' + bot.nick + (bot.nick !== config.bot_nick ? '/' + config.bot_nick : ''));
+                
+                for(var i = config.permissions.length - 1; i > -1; i--){
+                    var p = config.permissions[i] === '' ? 'none' : config.permissions[i];
+                    data_obj[p].forEach(format_usr);
+                }
+            }
+
             if(args.chan !== undefined){
                 if(b.channels[args.chan] === undefined || b.channels[args.chan].config === undefined){
                     say({err: 'No channel by that name'}, 3);
                     return;
                 } else {
                     bot.send('names', args.chan);
-                    for(var nick in b.channels[args.chan].users){
-                        if(nick === bot.nick || (b.channels[args.chan].config.discord_relay_bot !== undefined && nick === b.channels[args.chan].config.discord_relay_bot)) continue;
-                        data.push(CHAN.users[nick].perm + x.no_highlight(nick));
-                    }
+                    usr_list(b.channels[args.chan]);
                 }
             } else {
                 bot.send('names', CHAN.chan);
-                for(var nick in CHAN.users){
-                    if(nick === bot.nick || (CHAN.config.discord_relay_bot !== undefined && nick === CHAN.config.discord_relay_bot)) continue;
-                    data.push(CHAN.users[nick].perm + x.no_highlight(nick) + (b.users[nick].bot_owner === true ? '(owner)' : ''));
-                }
+                usr_list(CHAN);
             }
 
             say(data.join(', '), 1, {skip_verify: true, join: ', ', skip_buffer: true, ignore_discord_formatting: true});
@@ -542,22 +583,18 @@ var cmds = {
         }],
         perm: 'owner',
         func: function(CHAN, USER, say, args, command_string){ 
-            x.whois(args.irc_nick, function(whois, whois_short){
-                if(whois !== null){
-                    CHAN.log.debug(whois_short, whois);
-                    x.owner_nick(false, function(owner_nick){
-                        if(owner_nick !== null){
-                            say(whois, 3, {to: owner_nick});
-                        }
-                    });
+            b.users.whois(args.irc_nick, true, function(whois_data){
+                if(whois_data.err){
+                    say(whois_data);
                 } else {
-                    x.owner_nick(false, function(owner_nick){
-                        if(owner_nick !== null){
-                             say({err: args.irc_nick + ' not on server'}, 3, {to: owner_nick});
-                        }
-                    });
+                    CHAN.log.debug('whois cmd', whois_data);
+                    var who_arr = [];
+                    for(var who in whois_data){
+                        who_arr.push(who + ': ' + JSON.stringify(whois_data[who]));
+                    }
+                    say(who_arr, {skip_verify: true, join: '\n'});
                 }
-            }, {force: true});
+            });
         }
     },
     seen: {
@@ -603,7 +640,7 @@ var cmds = {
                             break;
                     }
 
-                    x.get_user_data(USER.nick, {
+                    b.users.get_user_data(USER.nick, {
                         label: 'timezone offset',
                         col: 'offset',
                         ignore_err: true,
@@ -628,6 +665,9 @@ var cmds = {
             },{
                 name: 'set',
                 type: 'flag'
+            },{
+                name: 'rand',
+                type: 'flag'
             }]
         }],
         perm: '~',
@@ -636,30 +676,31 @@ var cmds = {
             if(args.flag === '-revert'){
                 if(b.is_op){
                     function test_nick(new_nick, callback){
-                        x.whois(new_nick, function(whois, whois_short){
-                            if(whois !== null){ //there is a user on the server with this nick
+                        b.users.find_user(new_nick, function(usr){
+                            //CHAN.log.debug(usr, usr.where);
+                            if(usr.where !== null){
                                 test_nick('user' + x.rand_number_between(0, 1000), callback);
                             } else {
                                 callback(new_nick);
-                            }
-                        }, {user_on_whois: true});
+                            };
+                        });
                     }
 
-                    var repeat = 0;
                     var revert_nicks = {};
+                    var user_list = [];
+                    var again_count = 0;
 
                     function revert(){
+                        user_list = Object.keys(CHAN.users);
+                        if(bot.nick !== config.bot_nick) user_list.push(bot.nick);
 
-                        let requests = (Object.keys(b.users)).map((user) => {
+                        let requests = (user_list).map((nick) => {
                             return new Promise((resolve) => {
-
-                                var nick = b.users[user].nick;
-                                var orginal_nick = b.users[user].nick_org;
+                                var orginal_nick = nick === bot.nick ? config.bot_nick : CHAN.users[nick].nick_org;
 
                                 if(nick !== orginal_nick){
                                     test_nick(orginal_nick, function(new_nick){
                                         revert_nicks[nick] = new_nick; 
-                                        if(new_nick !== orginal_nick) repeat++;
                                         resolve();
                                     });
                                 } else {
@@ -670,17 +711,41 @@ var cmds = {
 
                         Promise.all(requests).then(() => { 
                             //CHAN.log.debug(revert_nicks);
-                            for(var user in revert_nicks){
-                                bot.send('sanick', user, revert_nicks[user]);
-                            }
- 
-                            if(repeat > 0){
-                                repeat = 0;
-                                revert_nicks = {};
-                                revert();
-                            } else {
-                                say({succ: 'Nicks reverted!'});
-                            }
+
+                            let changes = (Object.keys(revert_nicks)).map((user) => {
+                                return new Promise((resolve) => {
+                                    b.users.nick_change(user, revert_nicks[user], function(old_nick, new_nick, new_nick_attempt){
+                                        //CHAN.log.debug(old_nick, '->', new_nick);
+                                        resolve();
+                                    })
+                                });
+                            });
+
+                            Promise.all(changes).then(() => { 
+                                //CHAN.log.debug('finished changes');
+                                var again = false;
+                                if(bot.nick !== config.bot_nick) again = true;
+                                if(!again){
+                                   for(var nick in CHAN.users){
+                                        if(CHAN.users[nick].nick_org !== nick){
+                                            again = true;
+                                            break;
+                                        }
+                                    } 
+                                }
+
+                                //CHAN.log.debug('again?', again);
+
+                                if(again && again_count < 20){
+                                    again_count++;
+                                    revert_nicks = {};
+                                    revert();
+                                } else if (again && again_count >= 20){
+                                    say({err: 'Stuck in loop, cannot revert nicks'});
+                                } else {
+                                    say({succ: 'Nicks reverted!'});
+                                }
+                            });
                         });
                     }
 
@@ -689,9 +754,48 @@ var cmds = {
                 } else {
                     say({err: bot.nick + ' is not opper'}, 3);
                 }
-            } else if (args.flag === '-set'){
+            } else if (args.flag === '-rand'){
+                if(b.is_op){
+                    var nicks = Object.keys(CHAN.users);
+                    nicks.unshift(bot.nick);
+
+                    var new_nicks = [];
+
+                    let changes = (nicks).map((nick) => {
+                        return new Promise((resolve) => {
+                            b.users.nick_change(nick, 'user' + x.rand_number_between(0, 1000), function(old_nick, new_nick, new_nick_attempt){
+                                //CHAN.log.debug('nick 000', old_nick, '->', new_nick, '(', new_nick_attempt, ')');
+                                new_nicks.push(new_nick);
+                                resolve();
+                            })
+                        });
+                    });
+
+                    Promise.all(changes).then(() => { 
+                        nicks.sort(() => Math.random() * 2 - 1);
+                        //CHAN.log.debug('finished 000');
+
+                        let changes2 = (new_nicks).map((nick) => {
+                            return new Promise((resolve) => {
+                                var nick_new = nicks.pop();
+
+                                b.users.nick_change(nick, nick_new, function(old_nick, new_nick, new_nick_attempt){
+                                    //CHAN.log.debug('nick rand', old_nick, '->', new_nick, '(', new_nick_attempt, ')');
+                                    resolve();
+                                })
+                            });
+                        });
+
+                        Promise.all(changes2).then(() => {
+                            say({succ: 'Nicks randomized!'});
+                        });
+                    });
+                 } else {
+                    say({err: bot.nick + ' is not opper'}, 3);
+                }
+            }  else if (args.flag === '-set'){
                 for(var user in b.users){
-                    b.users[user].update_org_to_current();
+                    b.users.update_org_to_current(Object.keys(CHAN.users));
                 }
                 say({succ: 'Original nicks updated!'});
             } 

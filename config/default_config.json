@@ -49,6 +49,7 @@
 		"limit_spammy_commands": 300000,
 
 		"info_bot": false,
+		"info_bot_ignore": ["who", "what", "wat", "wot", "where", "why", "y", "he", "she", "they", "that", "this"],
 
 		"disable_colors": false,
 		"theme": {
