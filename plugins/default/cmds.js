@@ -604,7 +604,7 @@ var cmds = {
             type: 'string' 
         }],
         func: function(CHAN, USER, say, args, command_string){ 
-            x.get_user_data(args.irc_nick, {
+            x.get_user_data(args.irc_nick === USER.nick ? USER : args.irc_nick, {
                 col: 'seen',
                 ignore_err: true,
                 skip_say: true
