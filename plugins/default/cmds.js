@@ -663,6 +663,9 @@ var cmds = {
                 name: 'revert',
                 type: 'flag'
             },{
+                name: 'revert2',
+                type: 'flag'
+            },{
                 name: 'set',
                 type: 'flag'
             },{
@@ -689,7 +692,13 @@ var cmds = {
 
                     let changes = (nicks).map((nick) => {
                         return new Promise((resolve) => {
+                            let wait = setTimeout(function(){
+                                clearTimeout(wait);
+                                resolve();
+                            }, 200);
+
                             b.users.nick_change(nick, 'user' + x.rand_number_between(0, 1000), function(old_nick, new_nick, new_nick_attempt){
+                                if(wait) clearTimeout(wait);
                                 CHAN.log.debug('nick rand', old_nick, '->', new_nick, '(', new_nick_attempt, ')');
                                 new_nicks.push(new_nick);
                                 resolve();
@@ -702,7 +711,14 @@ var cmds = {
 
                         let changes2 = (new_nicks).map((nick) => {
                             return new Promise((resolve) => {
+                                let wait = setTimeout(function(){
+                                    clearTimeout(wait);
+                                    nicks_failed.push(nick);
+                                    resolve();
+                                }, 200);
+
                                 b.users.nick_change(nick, bot.nick === nick ? config.bot_nick : CHAN.users[nick].nick_org, function(old_nick, new_nick, new_nick_attempt){
+                                    if(wait) clearTimeout(wait);
                                     CHAN.log.debug('nick org', old_nick, '->', new_nick, '(', new_nick_attempt, ')');
                                     
                                     if(new_nick !== new_nick_attempt){
@@ -726,9 +742,12 @@ var cmds = {
                         });
 
                     });
+                }
 
+            } else if(args.flag === '-revert2'){
+                if(b.is_op){
 
-                    /*function test_nick(new_nick, callback){
+                    function test_nick(new_nick, callback){
                         b.users.find_user(new_nick, function(usr){
                             //CHAN.log.debug(usr, usr.where);
                             if(usr.where !== null){
@@ -802,7 +821,7 @@ var cmds = {
                         });
                     }
 
-                    revert();*/
+                    revert();
 
                 } else {
                     say({err: bot.nick + ' is not opper'}, 3);
