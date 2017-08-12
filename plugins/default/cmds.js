@@ -675,7 +675,60 @@ var cmds = {
         func: function(CHAN, USER, say, args, command_string){ 
             if(args.flag === '-revert'){
                 if(b.is_op){
-                    function test_nick(new_nick, callback){
+
+                    var nicks = [];
+                    var new_nicks = [];
+                    var nicks_failed = [];
+
+                    if(bot.nick !== config.bot_nick) nicks.push(bot.nick);
+                    for(var nick in CHAN.users){
+                        if(nick !== CHAN.users[nick].nick_org){
+                            nicks.push(nick);
+                        }
+                    }
+
+                    let changes = (nicks).map((nick) => {
+                        return new Promise((resolve) => {
+                            b.users.nick_change(nick, 'user' + x.rand_number_between(0, 1000), function(old_nick, new_nick, new_nick_attempt){
+                                CHAN.log.debug('nick rand', old_nick, '->', new_nick, '(', new_nick_attempt, ')');
+                                new_nicks.push(new_nick);
+                                resolve();
+                            })
+                        });
+                    });
+
+                    Promise.all(changes).then(() => { 
+                        CHAN.log.debug('nicks rand finish');
+
+                        let changes2 = (new_nicks).map((nick) => {
+                            return new Promise((resolve) => {
+                                b.users.nick_change(nick, bot.nick === nick ? config.bot_nick : CHAN.users[nick].nick_org, function(old_nick, new_nick, new_nick_attempt){
+                                    CHAN.log.debug('nick org', old_nick, '->', new_nick, '(', new_nick_attempt, ')');
+                                    
+                                    if(new_nick !== new_nick_attempt){
+                                        nicks_failed.push(new_nick);
+                                    }
+
+                                    resolve();
+                                })
+                            });
+                        });
+
+                        Promise.all(changes2).then(() => { 
+                            CHAN.log.debug('nicks org finish');
+                            if(nicks_failed.length > 0){
+                                CHAN.log.error('nicks failed:', nicks_failed);
+                                say({err: 'Nicks failed: ' + nicks_failed.join(', ')});
+                            } else {
+                                say({succ: 'Nicks reverted!'});
+                            }
+
+                        });
+
+                    });
+
+
+                    /*function test_nick(new_nick, callback){
                         b.users.find_user(new_nick, function(usr){
                             //CHAN.log.debug(usr, usr.where);
                             if(usr.where !== null){
@@ -749,7 +802,7 @@ var cmds = {
                         });
                     }
 
-                    revert();
+                    revert();*/
 
                 } else {
                     say({err: bot.nick + ' is not opper'}, 3);
