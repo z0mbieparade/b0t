@@ -11,6 +11,7 @@ dateWithOffset      = require('date-with-offset'),
 
 DB                  = require(__dirname + '/lib/db.js'),
 X                   = require(__dirname + '/lib/x.js'),
+CMDS                = require(__dirname + '/lib/commands.js'),
 Users               = require(__dirname + '/lib/users.js'),
 Theme               = require(__dirname + '/lib/colortheme.js'),
 Say                 = require(__dirname + '/lib/say.js'),
@@ -40,8 +41,6 @@ b                   = {
     cbs: {}, 
     whois_queue: []
 },
-commands            = {},
-command_by_plugin   = {},
 
 words               = {};
 
@@ -129,8 +128,6 @@ function init_bot(){
             return db_root
         }
     });
-
-    x.init_config();
 
     b.log.info("Initiating", config.bot_nick, "animatter shields...");
     bot = new irc.Client(
@@ -352,40 +349,7 @@ function init_plugins(complete){
     b.log.setLevel(config.debug_level);
     b.log.info('*** Reversing polarity on plugins array ***');
     b.t = new Theme(config.chan_default.theme, config.chan_default.disable_colors);
-
-    var plugin_dir = __dirname + '/plugins/';
-
-    fs.readdir(plugin_dir, function(err, filenames) {
-        if (err) {
-            error(err); 
-            return;
-        }
-
-        filenames.forEach(function(filename) {
-            
-            if(filename.indexOf('.') === 0) return;
-
-            var Plugin = require(plugin_dir + filename + '/cmds.js');
-            var info = Plugin.info
-            var cmds = Plugin.cmds;
-
-            for(var cmd in cmds){
-
-                if(command_by_plugin[cmd] && command_by_plugin[cmd] !== info.name){
-                    b.log.error('Duplicate command name error, plugin ' + info.name + ' contains a command by the same name! Overwriting command.' )
-                }
-
-                command_by_plugin[cmd] = info.name;
-                commands[info.name] = commands[info.name] || {info: info, cmds: {}};
-                commands[info.name].cmds[cmd] = cmds[cmd];
-            }
-
-            b.log.info('*', x.techno(true), info.name, 'Plugin...');
-        });
-
-
-        complete();
-    });
+    b.cmds = new CMDS(complete);
 }
 
 function get_date(){

@@ -17,7 +17,7 @@ var cmds = {
             type: 'flag'
         }],
         func: function(CHAN, USER, say, args, command_string){
-            x.verify_commands(USER, {help: (args.list !== undefined), is_pm: CHAN.is_pm, by_plugin: true, ignore_spammy: true}, function(cmd_obj){
+            b.cmds.verify_commands(USER, {help: (args.list !== undefined), is_pm: CHAN.is_pm, by_plugin: true, ignore_spammy: true}, function(cmd_obj){
 
                 if(Object.keys(cmd_obj).length === 0)
                 {
@@ -89,7 +89,7 @@ var cmds = {
                     'For any command, you can type ' + CHAN.t.highlight(config.command_prefix + 'command help') + ' to receive full usage instructions.',
                     'To view all commands and their help syntax, you can type ' + CHAN.t.highlight(config.command_prefix + 'commands -list'),
                     'For example, typing ' + CHAN.t.highlight(config.command_prefix + 'tag help') + ' will return the following syntax:',
-                    x.cmd_syntax(USER, 'tag'),
+                    b.cmds.cmd_syntax(USER, 'tag'),
                     'To break this down, that means there are 4 things you can do with the tag command: ',
                     '1. ' + CHAN.t.highlight(config.command_prefix + 'tag -list') + ' will return a list of all taglines currently for your user account',
                     '2. ' + CHAN.t.highlight(config.command_prefix + 'tag -delete 4') + ' will delete the 4th tagline (which you know the id of because you did list first)',
