@@ -282,6 +282,7 @@ function init_bot(){
                 } 
 
                 b.users.update_last_seen(nick, chan, 'pm');
+                b.pm.action(nick, text);
             });
         } else { //this is a message in a chan
 
@@ -297,7 +298,7 @@ function init_bot(){
         if(chan === bot.nick){ //this is a pm to the bot
             b.users.owner(false, function(owner_nicks){
                 b.log.debug('owner_nicks', owner_nicks);
-                if(config.send_owner_bot_pms && owner_nicks.indexOf(nick) < 0 && owner_nicks !== null){ //send pms to bot to owner
+                if(owner_nicks !== null && config.send_owner_bot_pms && owner_nicks.indexOf(nick) < 0 && owner_nicks !== null){ //send pms to bot to owner
                     owner_nicks.forEach(function(owner_nick){
                         bot.say(owner_nick, nick + ': ' + text); 
                     });
