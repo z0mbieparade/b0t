@@ -889,12 +889,13 @@ var cmds = {
                     },{
                         name: '-1 answer -2 answer...',
                         key: 'answers',
-                        type: '-\\d.+-\\d.+'
+                        type: '-\\d+\\s\\S+.*?-\\d+\\s\\S+.*'
                     }]
                 }
             ]
         }],
         func: function(CHAN, USER, say, args, command_string){
+            b.log.debug(args);
             if(args.close !== undefined){
                 x.close_current_poll(CHAN, function(result){
                     say(result);
