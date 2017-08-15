@@ -71,8 +71,7 @@ var cmds = {
                     name: 'infobot',
                     type: 'flag',
                     key: 'topic'
-                }
-            ]
+                }]
         }],
         perm: '+',
         discord: false,
@@ -132,8 +131,7 @@ var cmds = {
                     name: 'search term',
                     type: 'text',
                     key: 'query'
-                }
-            ]
+                }]
         }],
         perm: '~',
         discord: false,
@@ -189,8 +187,7 @@ var cmds = {
                     name: 'search term',
                     type: 'text',
                     key: 'query'
-                }
-            ]
+                }]
         }],
         func: function(CHAN, USER, say, args, command_string){ 
             db.search_arr(USER, '/topic', args, true, function(data, found){
@@ -214,47 +211,40 @@ var cmds = {
     },
     reg: {
         action: 'register a user for any service (lastfm, trakt, location, untappd)',
-        params: [
-            {
+        params: [{
                 name: 'service',
                 type: 'string'
-            },
-            {
+            },{
                 name: 'irc nick',
                 type: 'string'
-            },
-            {
+            },{
                 or: [{
                     name: 'list',
                     type: 'flag',
                     key: 'flag',
-                },
-                {
+                },{
                     name: 'delete',
                     type: 'flag',
                     key: 'flag',
                     and: [ { name: 'id', type: 'number' } ]
-                },
-                {
+                },{
                     name: 'edit',
                     type: 'flag',
                     key: 'flag',
                     and: [ { name: 'id', type: 'number' }, { name: 'data', type: 'text', key: 'new_val', colors: true } ]
-                },
-                {
+                },{
                     name: 'data',
                     type: 'text',
                     key: 'new_val',
                     colors: true,
                     fake: {flag: '-add'}
                 }]
-            }
-        ],
+        }],
         perm: 'owner',
         discord: false,
         func: function(CHAN, USER, say, args, command_string){ 
             if(args.service === 'tags' || args.service === 'tag'){
-                db.manage_arr(USER, '/nicks/'+args.irc_nick+'/tags', args, say, args.irc_nick);
+                db.manage_arr(USER, '/nicks/'+args.irc_nick+'/tags', args, {case_insensitive: args.irc_nick}, say);
             } else {
                 var data = command_string.split(' ');
                 data.splice(0, 2);
@@ -274,16 +264,13 @@ var cmds = {
     },
     unreg: {
         action: 'unregister a user for any service (lastfm, trakt, location, untappd)',
-        params: [
-            {
+        params: [{
                 name: 'service',
                 type: 'string'
-            },
-            {
+            },{
                 name: 'irc nick',
                 type: 'string'
-            }
-        ],
+        }],
         perm: '~',
         discord: false,
         func: function(CHAN, USER, say, args, command_string){ 
@@ -302,17 +289,14 @@ var cmds = {
     },
     tell: {
         action: 'tell another user something when they they are next active',
-        params: [
-            {
+        params: [{
                 name: 'irc nick',
                 type: 'string'
-            },
-            {
+            },{
                 name: 'message',
                 type: 'text',
                 colors: true
-            }
-        ],
+        }],
         func: function(CHAN, USER, say, args, command_string){ 
             command_string = command_string.replace(/^.*?\s/i, '');
             db.update('/nicks/' + args.irc_nick + '/msg/' + USER.nick + '[]', args.message, true, function(act){
@@ -326,17 +310,14 @@ var cmds = {
     },
     speak: {
         action: 'allows owner to speak through bot to channel or to user',
-        params: [
-            {
+        params: [{
                 name: 'to',
                 type: 'string'
-            },
-            {
+            },{
                 name: 'message',
                 type: 'text',
                 colors: true
-            }
-        ],
+        }],
         perm: 'owner',
         discord: false,
         func: function(CHAN, USER, say, args, command_string){ 
@@ -346,37 +327,31 @@ var cmds = {
     tag: {
         action: 'create a tagline for the bot to say when you enter the room',
         params: [{
-            or: [
-                {
+            or: [{
                     name: 'list',
                     type: 'flag',
                     key: 'flag',
-                },
-                {
+                },{
                     name: 'delete',
                     type: 'flag',
                     key: 'flag',
                     and: [ { name: 'id', type: 'number' } ]
-                },
-                {
+                },{
                     name: 'edit',
                     type: 'flag',
                     key: 'flag',
                     and: [ { name: 'id', type: 'number' }, { name: 'new tagline', type: 'text', key: 'new_val', colors: true } ]
-                },
-                {
+                },{
                     name: 'new tagline',
                     type: 'text',
                     key: 'new_val',
                     colors: true,
                     fake: {flag: '-add'}
-                }
-
-            ]
+                }]
         }],
         discord: false,
         func: function(CHAN, USER, say, args, command_string){
-            db.manage_arr(USER, '/nicks/' + USER.nick + '/tags', args, say, USER.nick);
+            db.manage_arr(USER, '/nicks/' + USER.nick + '/tags', args, {case_insensitive: USER.nick}, say);
         }
     },
     updates: {
@@ -401,91 +376,76 @@ var cmds = {
         action: 'send a bug report to the owner or lists current bugs',
         perm: '%',
         params: [{
-            or: [
-                {
+            or: [{
                     name: 'list',
                     type: 'flag',
                     key: 'flag',
-                },
-                {
+                },{
                     name: 'delete',
                     type: 'flag',
                     perm: 'owner',
                     key: 'flag',
                     and: [ { name: 'id', type: 'number' } ]
-                },
-                {
+                },{
                     name: 'edit',
                     type: 'flag',
                     perm: 'owner',
                     key: 'flag',
                     and: [ { name: 'id', type: 'number' }, { name: 'new bug', type: 'text', key: 'new_val', colors: true } ]
-                },
-                {
+                },{
                     name: 'new bug',
                     type: 'text',
                     key: 'new_val',
                     colors: true,
                     fake: {flag: '-add'}
-                }
-
-            ]
+                }]
         }],
         func: function(CHAN, USER, say, args, command_string){ 
-            db.manage_arr(USER, '/bugs', args, say);
+            db.manage_arr(USER, '/bugs', args, {}, say);
         }
     },
     request: {
         action: 'send a feature request to the owner or list current requests',
         params: [{
-            or: [
-                {
+            or: [{
                     name: 'list',
                     type: 'flag',
                     key: 'flag',
-                },
-                {
+                },{
                     name: 'delete',
                     type: 'flag',
                     perm: 'owner',
                     key: 'flag',
                     and: [ { name: 'id', type: 'number' } ]
-                },
-                {
+                },{
                     name: 'edit',
                     type: 'flag',
                     perm: 'owner',
                     key: 'flag',
                     and: [ { name: 'id', type: 'number' }, { name: 'new request', type: 'text', key: 'new_val', colors: true } ]
-                },
-                {
+                },{
                     name: 'new request',
                     type: 'text',
                     key: 'new_val',
                     colors: true,
                     fake: {flag: '-add'}
-                }
-
-            ]
+                }]
         }],
         func: function(CHAN, USER, say, args, command_string){ 
-             db.manage_arr(USER, '/requests', args, say);
+             db.manage_arr(USER, '/requests', args, {}, say);
         }
     },
     next: {
         action: 'Page next thru avaliable buffer, lines is 5 by default, join is a new line by default',
-        params: [
-            {
+        params: [{
                 optional: true,
                 name: 'lines',
                 type: 'number'
-            },
-            {
+            },{
                 optional: true,
                 name: 'join',
                 type: 'string',
-            }
-        ],
+            }],
         discord: false,
         func: function(CHAN, USER, say, args, command_string){ 
             var opt = {
