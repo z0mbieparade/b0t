@@ -1,8 +1,5 @@
 .DS_Store
 config.json
 node_modules/*
-words.json
-insults.json
-db.json
 db_backup.json
 plugins/testing
