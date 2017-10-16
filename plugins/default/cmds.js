@@ -283,7 +283,7 @@ var cmds = {
                     } else {
                         say({err: 'Unable to delete'});
                     }
-                });
+                }, args.irc_nick);
             }
         }
     },
