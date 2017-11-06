@@ -346,7 +346,11 @@ function init_plugins(complete){
         b.log.error('Error getting plugins', err);
     }
     
-    config  = merge.all([config_default, config_custom]);
+    config  = merge.all([config_default, config_custom],
+        { arrayMerge: function(destArr, srcArr, options){
+            return srcArr;
+        }}
+    );
     b.log.setLevel(config.debug_level);
     b.log.info('*** Reversing polarity on plugins array ***');
     b.t = new Theme(config.chan_default.theme, config.chan_default.disable_colors);
