@@ -565,15 +565,14 @@ var cmds = {
         }],
         func: function(CHAN, USER, say, args, command_string){ 
             b.users.get_user_data(args.irc_nick === USER.nick ? USER : args.irc_nick, {
-                col: 'seen',
                 ignore_err: true,
                 skip_say: true
-            }, function(seen){
-                if(seen === false){
+            }, function(data){
+                if(!data.seen){
                     say({err: args.irc_nick + ' has never been seen'});
                 } else {
                     var str = x.no_highlight(CHAN.t.term(args.irc_nick)) + ' ';
-                    switch(seen.action){
+                    switch(data.seen.action){
                         case 'speak':
                             str += 'last spoke in';
                             break;
@@ -596,7 +595,7 @@ var cmds = {
                             str += 'last quit the server'; 
                             break;
                         default: 
-                            str += 'last ' + seen.action + 'ed in';
+                            str += 'last ' + data.seen.action + 'ed in';
                             break;
                     }
 
@@ -606,10 +605,22 @@ var cmds = {
                         ignore_err: true,
                         skip_say: true
                     }, function(d){
-                        if(seen.chan !== null){
-                            str += ' ' + seen.chan + ' (' + seen.where + ')';
+                        if(data.seen.chan !== null){
+                            str += ' ' + data.seen.chan + ' (' + data.seen.where + ')';
                         } 
-                        str += ' on ' + x.epoc_to_date(seen.date, (!d ? 0 : x.convert_offset_to_min(d)));
+                        str += ' on ' + x.epoc_to_date(data.seen.date, (!d ? 0 : x.convert_offset_to_min(d)));
+
+
+                        if(data.spoke && data.spoke.text && data.spoke.text.length > 0){
+                            var last_said = data.spoke.text[0]
+
+                            str += ' "' + last_said.text + '"';
+
+                            if(data.seen.date - last_said.date > 1000){
+                                str += ' ' + x.ms_to_time(data.seen.date - last_said.date, false, true) + ' before'
+                            }
+                        }
+
                         say({succ: str});
                     });
                 }

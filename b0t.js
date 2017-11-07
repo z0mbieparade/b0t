@@ -281,12 +281,12 @@ function init_bot(){
                     });
                 } 
 
-                b.users.update_last_seen(nick, chan, 'pm');
+                b.users.update_last_seen(nick, chan, 'pm', 'irc', text);
                 b.pm.action(nick, text);
             });
         } else { //this is a message in a chan
 
-            b.users.update_last_seen(nick, chan, 'speak');
+            b.users.update_last_seen(nick, chan, 'speak', 'irc', text);
             b.channels[chan].action(nick, text);
         }
 
@@ -304,7 +304,7 @@ function init_bot(){
                     });
                 } 
 
-                b.users.update_last_seen(nick, chan, 'pm');
+                b.users.update_last_seen(nick, chan, 'pm', 'irc', text);
                 b.pm.message(nick, text);
             });
         } else { //this is a message in a chan
@@ -321,7 +321,7 @@ function init_bot(){
                 nick = nick.replace('\u000f', '');
                 text = discord_arr[2];
 
-                b.users.update_last_seen(nick, chan, 'speak', 'discord');
+                b.users.update_last_seen(nick, chan, 'speak', 'discord', text);
 
                 var is_action = text.match(/^_(.*?)_$/);
 
@@ -331,8 +331,7 @@ function init_bot(){
                     b.channels[chan].message(nick, text, true);
                 }
             } else {
-
-                b.users.update_last_seen(nick, chan, 'speak');
+                b.users.update_last_seen(nick, chan, 'speak', 'irc', text);
                 b.channels[chan].message(nick, text);
             }
 
