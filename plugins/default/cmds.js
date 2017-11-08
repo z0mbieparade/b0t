@@ -600,15 +600,13 @@ var cmds = {
                     }
 
                     b.users.get_user_data(USER.nick, {
-                        label: 'timezone offset',
-                        col: 'offset',
                         ignore_err: true,
                         skip_say: true
                     }, function(d){
                         if(data.seen.chan !== null){
                             str += ' ' + data.seen.chan + ' (' + data.seen.where + ')';
                         } 
-                        str += ' on ' + x.epoc_to_date(data.seen.date, (!d ? 0 : x.convert_offset_to_min(d)));
+                        str += ' on ' + x.epoc_to_date(data.seen.date, d.offset, d.timezone);
 
 
                         if(data.spoke && data.spoke.text && data.spoke.text.length > 0){
