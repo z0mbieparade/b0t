@@ -103,7 +103,7 @@ var cmds = {
             say(help_topics[args.topic] , 3, {skip_verify: true, skip_buffer: true, join: '\n'});
         }
     },
-    set: {
+    'set': {
         action: 'set the channel topic',
         params: [{
             name: 'topic',
@@ -350,6 +350,7 @@ var cmds = {
                 }]
         }],
         discord: false,
+        registered: true,
         func: function(CHAN, USER, say, args, command_string){
             db.manage_arr(USER, '/nicks/' + USER.nick + '/tags', args, {case_insensitive: USER.nick}, say);
         }
