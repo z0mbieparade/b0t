@@ -160,7 +160,7 @@ function init_bot(){
             b.is_op = true;
             bot.send('oper', config.bot_nick, config.ircop_password);
         }
-        if(config.nickserv_password) bot.say('NickServ', 'identify ' + config.nickserv_password);
+        if(config.nickserv_password) bot.say(config.nickserv_nick, 'identify ' + config.nickserv_password);
     });
 
     //we use raw messages instead
@@ -169,7 +169,7 @@ function init_bot(){
         b.log.error(exception);
     });
     bot.addListener('raw', function(message){
-        var ignore = ['TOPIC','PING','MODE','JOIN','NOTICE','PRIVMSG','001','002','003','004','005','042',
+        var ignore = ['TOPIC','PING','MODE','JOIN','PRIVMSG','001','002','003','004','005','042',
                       '250','251','252','253','254','255','265','266','307','315','318','329','330','332',
                       '333','353','366','372','373','375','376','378','379','396','422','671'];
         if(ignore.indexOf(message.rawCommand) > -1) return;
@@ -217,6 +217,8 @@ function init_bot(){
             case '404': //can't send colors
                 if (b.channels[message[1]]) b.channels[message[1]].disable_colors(true);
                 break;
+            case 'NOTICE': //for nickserv
+                if(message.nick !== config.nickserv_nick) break;
             case '311': //whoisuser
             case '312': //whoisserver
             case '313': //whoisoperator

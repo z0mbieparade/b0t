@@ -475,9 +475,12 @@ var cmds = {
             var data = [];
 
             function format_usr(u){
+
                 var str = u.perm;
                 if(u.is_owner || u.is_chan_owner) str += '(' + (u.is_owner ? 'α' : '') + (u.is_chan_owner ? 'χ' : '') + ')';
                 str += x.no_highlight(u.nick) + (u.nick_org === u.nick ? '' : '/' + x.no_highlight(u.nick_org));
+
+                if(u.registered) str = CHAN.t.success(str);
 
                 data.push(str);
             }

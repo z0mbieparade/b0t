@@ -4,6 +4,7 @@
 	"bot_nick": "b0t",
 	"owner": "",
 	"network_name": "localhost",
+    "nickserv_nick": "NickServ",
 	"nickserv_password": "",
 	"ircop_password": "",
 
@@ -12,6 +13,7 @@
 
 	"send_errors_to_owner_pm": false,
 	"send_owner_bot_pms": true,
+    "require_nickserv_to_edit_user_data": true,
 
 	"bot_config": {
     	"port": 6667,
@@ -47,6 +49,8 @@
 		"wait_time_between_commands_when_busy": 600000,
 
 		"limit_spammy_commands": 300000,
+
+		"moody": false,
 
 		"info_bot": false,
 		"info_bot_ignore": ["who", "what", "wat", "wot", "where", "why", "y", "he", "she", "they", "that", "this"],
