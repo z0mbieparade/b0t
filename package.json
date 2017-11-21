@@ -1,6 +1,6 @@
 {
   "name": "b0t",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "irc node bot with trakt.tv, last.fm, urban dictionary, and more functionality",
   "author": "<z0mbieparade.com>",
   "scripts": {
@@ -10,7 +10,7 @@
   },
   "main": "b0t.js",
   "repository": {
-  "type": "git",
+    "type": "git",
     "url": "https://github.com/z0mbieparade/b0t"
   },
   "bugs": {
@@ -36,7 +36,7 @@
     "flat-file-db": "~1.0.0",
     "lastfm": "~0.9.2",
     "log4js": "~0.6.37",
-    "request":  "~2.72.0",
+    "request": "~2.72.0",
     "html-entities": "~1.2.0",
     "xml2js": "~0.4.17",
     "htmlparser2": "~3.9.2",

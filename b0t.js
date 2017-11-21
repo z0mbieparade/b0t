@@ -236,6 +236,8 @@ function init_bot(){
     bot.addListener('names', function(chan, nicks) {
         b.log.debug('names', chan, nicks);
 
+        var nicks_arr = [];
+
         for(var nick in nicks){
             if(nick === bot.nick) continue;
             if(nicks[nick] === undefined) continue;
@@ -244,7 +246,11 @@ function init_bot(){
             chans[chan] = nicks[nick];
 
             b.users.add_or_update_user(nick, {nick: nick, chans: chans});
+
+            nicks_arr.push(nick);
         }
+
+        if(config.require_nickserv_to_edit_user_data) b.users.nickserv_check_list(nicks_arr);
 
         //check for extra users, delete them if they exist
         if(b.channels[chan]){

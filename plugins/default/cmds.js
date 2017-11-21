@@ -242,6 +242,7 @@ var cmds = {
         }],
         perm: 'owner',
         discord: false,
+        registered: true,
         func: function(CHAN, USER, say, args, command_string){ 
             if(args.service === 'tags' || args.service === 'tag'){
                 db.manage_arr(USER, '/nicks/'+args.irc_nick+'/tags', args, {case_insensitive: args.irc_nick}, say);
@@ -273,6 +274,7 @@ var cmds = {
         }],
         perm: '~',
         discord: false,
+        registered: true,
         func: function(CHAN, USER, say, args, command_string){ 
             if(args.service === 'tags' || args.service === 'tag'){
                 say({err: 'use reg command to modify user tags'});
@@ -297,6 +299,7 @@ var cmds = {
                 type: 'text',
                 colors: true
         }],
+        registered: true,
         func: function(CHAN, USER, say, args, command_string){ 
             command_string = command_string.replace(/^.*?\s/i, '');
             db.update('/nicks/' + args.irc_nick + '/msg/' + USER.nick + '[]', args.message, true, function(act){
@@ -473,20 +476,23 @@ var cmds = {
         }],
         func: function(CHAN, USER, say, args, command_string){ 
             //["", "+", "-", "@", "%", "&", "~"]
-            var data = [];
+           
+            function usr_list(chan_name){
+                var data = [];
 
-            function format_usr(u){
+                function format_usr(u){
 
-                var str = u.perm;
-                if(u.is_owner || u.is_chan_owner) str += '(' + (u.is_owner ? 'α' : '') + (u.is_chan_owner ? 'χ' : '') + ')';
-                str += x.no_highlight(u.nick) + (u.nick_org === u.nick ? '' : '/' + x.no_highlight(u.nick_org));
+                    var str = u.perm;
+                    if(u.is_owner || u.is_chan_owner) str += '(' + (u.is_owner ? 'α' : '') + (u.is_chan_owner ? 'χ' : '') + ')';
+                    str += x.no_highlight(u.nick) + (u.nick_org === u.nick ? '' : '/' + x.no_highlight(u.nick_org));
 
-                if(u.registered) str = CHAN.t.success(str);
+                    if(u.registered) str = CHAN.t.success(str);
 
-                data.push(str);
-            }
-            
-            function usr_list(chan){
+                    data.push(str);
+                }
+
+                var chan = b.channels[chan_name];
+
                 var data_obj = {owner: [], chan_owner: []};
                 config.permissions.forEach(function(p){
                     data_obj[p === '' ? 'none' : p] = [];
@@ -521,6 +527,9 @@ var cmds = {
                     var p = config.permissions[i] === '' ? 'none' : config.permissions[i];
                     data_obj[p].forEach(format_usr);
                 }
+
+
+                say(data.join(', '), 1, {skip_verify: true, join: ', ', skip_buffer: true, ignore_discord_formatting: true});
             }
 
             if(args.chan !== undefined){
@@ -528,15 +537,22 @@ var cmds = {
                     say({err: 'No channel by that name'}, 3);
                     return;
                 } else {
+                    b.users.finish_nicklist_callback = function(callback){
+                        var chan_name = args.chan
+                        usr_list(chan_name);
+                        callback();
+                    };
                     bot.send('names', args.chan);
-                    usr_list(b.channels[args.chan]);
                 }
             } else {
+                b.users.finish_nicklist_callback = function(callback){
+                    var chan_name = CHAN.chan
+                    usr_list(chan_name);
+                    callback();
+                };
                 bot.send('names', CHAN.chan);
-                usr_list(CHAN);
             }
 
-            say(data.join(', '), 1, {skip_verify: true, join: ', ', skip_buffer: true, ignore_discord_formatting: true});
         }
     },
     whois: {
@@ -648,6 +664,7 @@ var cmds = {
         }],
         perm: '~',
         discord: false,
+        registered: true,
         func: function(CHAN, USER, say, args, command_string){ 
             if(args.flag === '-revert'){
                 if(b.is_op){
