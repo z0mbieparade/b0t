@@ -16,3 +16,6 @@
 [submodule "plugins/b0t-getinfo"]
 	path = plugins/b0t-getinfo
 	url = https://github.com/z0mbieparade/b0t-getinfo.git
+[submodule "plugins/b0t-books"]
+	path = plugins/b0t-books
+	url = https://github.com/z0mbieparade/b0t-books.git

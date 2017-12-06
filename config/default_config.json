@@ -4,7 +4,7 @@
 	"bot_nick": "b0t",
 	"owner": "",
 	"network_name": "localhost",
-    "nickserv_nick": "NickServ",
+	"nickserv_nick": "NickServ",
 	"nickserv_password": "",
 	"ircop_password": "",
 
@@ -13,19 +13,19 @@
 
 	"send_errors_to_owner_pm": false,
 	"send_owner_bot_pms": true,
-    "require_nickserv_to_edit_user_data": true,
+	"require_nickserv_to_edit_user_data": true,
 
 	"bot_config": {
-    	"port": 6667,
-    	"localAddress": null,
-    	"debug": false,
-    	"showErrors": false,
-    	"autoRejoin": false,
-    	"autoConnect": true,
-    	"channels": [],
-    	"secure": false,
-    	"selfSigned": false,
-    	"password": ""
+		"port": 6667,
+		"localAddress": null,
+		"debug": false,
+		"showErrors": false,
+		"autoRejoin": false,
+		"autoConnect": true,
+		"channels": [],
+		"secure": false,
+		"selfSigned": false,
+		"password": ""
 	},
 
 	"chan_default": {
@@ -75,9 +75,9 @@
 			"potd": {
 				"imgur_album": ""
 			},
-            "stock": {
-                "url": ""
-            },
+			"stock": {
+				"url": ""
+			},
 			"poll_timer": 600000
 		},
 
@@ -89,6 +89,10 @@
 	},
 
 	"API": {
+		"goodreads": {
+			"key": "",
+			"secret": ""
+		},
 		"imgur": {
 			"key": "",
 			"secret": ""
@@ -117,9 +121,9 @@
 		"weather": {
 			"key": ""
 		},
-        "wolframalpha": {
-            "key": ""
-        },
+		"wolframalpha": {
+			"key": ""
+		},
 		"youtube": {
 			"key": ""
 		}
