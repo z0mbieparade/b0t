@@ -62,6 +62,7 @@ words_db.get_data('/', function(w){
             //if there's no config.json, run command line basic config
             b.log.warn('No config.json file, starting config');
             var prompt       = require('prompt'),
+                JsonDB       = require('node-json-db'),
                 config_setup = require(__dirname + '/config/./setup_config.json'),
                 config_db    = new JsonDB('config.json', true, true);
 
