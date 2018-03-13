@@ -53,7 +53,7 @@
 		"moody": false,
 
 		"info_bot": false,
-		"info_bot_ignore": ["who", "what", "wat", "wot", "where", "why", "y", "he", "she", "they", "it", "us", "me", "you", "I", "but"],
+		"info_bot_ignore": ["who", "what", "wat", "wot", "where", "why", "y", "he", "she", "they", "it", "us", "me", "you", "I", "but", "up"],
 
 		"disable_colors": false,
 		"theme": {

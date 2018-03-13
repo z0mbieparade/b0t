@@ -31,7 +31,7 @@ var cmds = {
                     if(!USER.is_owner && CHAN.is_pm) cmd_arr.push(CHAN.t.fail('Note: When using in a PM, only shows base privileges'));
 
                     for(var plugin in cmd_obj){
-                        cmd_arr.push(CHAN.t.warn('--- ' + CHAN.t.term(plugin + ': ' + (commands[plugin].info.about ? commands[plugin].info.about : '')) + ' ---'));
+                        cmd_arr.push(CHAN.t.warn('--- ' + CHAN.t.term(plugin + ': ' + (b.cmds.commands[plugin].info.about ? b.cmds.commands[plugin].info.about : '')) + ' ---'));
                         cmd_arr = cmd_arr.concat(cmd_obj[plugin]);
                     }
 
@@ -50,7 +50,7 @@ var cmds = {
 
                     if(CHAN.is_pm) str += CHAN.t.null(' (cannot be used in a PM)');
 
-                    say(str, 2, {skip_verify: true});
+                    say(str, 2, {skip_verify: true, lines: 20, force_lines: true});
                 }
 
             });
