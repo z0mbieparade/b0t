@@ -244,8 +244,22 @@ var cmds = {
         discord: false,
         registered: true,
         func: function(CHAN, USER, say, args, command_string){ 
-            if(args.service === 'tags' || args.service === 'tag'){
+
+            var command_data = b.cmds.command(args.service, {
+                t: CHAN.t,
+                perm: 'owner',
+                config: CHAN.config
+            });
+
+            if(command_data.err)
+            {
+                return say(command_data);
+            }
+
+           if(args.service === 'tag'){
                 db.manage_arr(USER, '/nicks/'+args.irc_nick+'/tags', args, {case_insensitive: args.irc_nick}, say);
+            } else if(args.service === 'location'){
+                command_data.func(CHAN, {nick: args.irc_nick}, say, {location: args.new_val}, '');
             } else {
                 var data = command_string.split(' ');
                 data.splice(0, 2);
