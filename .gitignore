@@ -3,3 +3,4 @@ config.json
 node_modules/*
 db_backup.json
 plugins/testing
+package-lock.json
