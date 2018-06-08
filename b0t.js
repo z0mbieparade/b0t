@@ -112,6 +112,8 @@ words_db.get_data('/', function(w){
     
 function init_bot(){
     //load db
+    polls_db = new DB({readable: true, db_name: 'polls'});
+    topic_db = new DB({readable: true, db_name: 'topic'});
     db = new DB({
         readable: true,
         on_load: function(db_root){
@@ -119,6 +121,18 @@ function init_bot(){
                 if(db_root.buffer) delete db_root.buffer;
                 if(db_root.speak) delete db_root.speak;
                 if(db_root.pong) delete db_root.pong;
+
+                if(db_root.polls)
+                {
+                    polls_db.update('/', db_root.polls, true);
+                    delete db_root.polls;
+                }
+
+                if(db_root.topic)
+                {
+                    topic_db.update('/', db_root.topic, true);
+                    delete db_root.topic;
+                }
 
                 if(db_root.nicks){
                     for(var nick in db_root.nicks){

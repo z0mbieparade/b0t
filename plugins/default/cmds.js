@@ -137,7 +137,7 @@ var cmds = {
         discord: false,
         no_pm: true,
         func: function(CHAN, USER, say, args, command_string){ 
-            db.search_arr(USER, '/topic', args, false, function(data, found){
+            topic_db.search_arr(USER, '/', args, false, function(data, found){
                 if(found && found > 1){
                     say({succ: found + " items found matching '" + command_string.trim() + "'"}, 2, {skip_verify: true});
                     say(data, 3, {skip_verify: true, join: '\n'});
@@ -190,7 +190,7 @@ var cmds = {
                 }]
         }],
         func: function(CHAN, USER, say, args, command_string){ 
-            db.search_arr(USER, '/topic', args, true, function(data, found){
+            topic_db.search_arr(USER, '/', args, true, function(data, found){
                 if(found && found > 1){
                     say({succ: found + " items found matching '" + command_string.trim() + "'"}, 2, {skip_verify: true});
                     say(data, 3, {skip_verify: true, join: '\n'});
