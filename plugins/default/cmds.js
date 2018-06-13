@@ -114,7 +114,7 @@ var cmds = {
         discord: false,
         no_pm: true,
         func: function(CHAN, USER, say, args, command_string){ 
-            db.update('/', {topic: [args.topic]}, false, function(){
+            topic_db.update('/' + CHAN.chan, {topic: [args.topic]}, false, function(){
                 CHAN.update_topic();
             });
         }
@@ -137,12 +137,12 @@ var cmds = {
         discord: false,
         no_pm: true,
         func: function(CHAN, USER, say, args, command_string){ 
-            topic_db.search_arr(USER, '/', args, false, function(data, found){
+            topic_db.search_arr(USER, '/' + CHAN.chan + '/topic', args, false, function(data, found){
                 if(found && found > 1){
                     say({succ: found + " items found matching '" + command_string.trim() + "'"}, 2, {skip_verify: true});
                     say(data, 3, {skip_verify: true, join: '\n'});
                 } else if(found && found === 1){
-                    db.update('/pinned/' + CHAN.chan, data, true, function(act){
+                    topic_db.update('/' + CHAN.chan + '/pinned', data, true, function(act){
                         CHAN.update_topic();
                     });
                 } else {
@@ -157,7 +157,7 @@ var cmds = {
         discord: false,
         no_pm: true,
         func: function(CHAN, USER, say, args, command_string){ 
-            db.delete('/pinned/' + CHAN.chan, function(act){
+            topic_db.delete('/' + CHAN.chan + '/pinned', function(act){
                 if(act){
                     CHAN.update_topic();
                 } else {
@@ -190,7 +190,7 @@ var cmds = {
                 }]
         }],
         func: function(CHAN, USER, say, args, command_string){ 
-            topic_db.search_arr(USER, '/', args, true, function(data, found){
+            topic_db.search_arr(USER, '/' + CHAN.chan + '/topic', args, true, function(data, found){
                 if(found && found > 1){
                     say({succ: found + " items found matching '" + command_string.trim() + "'"}, 2, {skip_verify: true});
                     say(data, 3, {skip_verify: true, join: '\n'});

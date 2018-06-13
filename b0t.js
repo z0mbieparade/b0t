@@ -113,7 +113,27 @@ words_db.get_data('/', function(w){
 function init_bot(){
     //load db
     polls_db = new DB({readable: true, db_name: 'polls'});
-    topic_db = new DB({readable: true, db_name: 'topic'});
+    topic_db = new DB({
+        readable: true, 
+        db_name: 'topic',
+        on_load: function(db_root)
+        {
+            if(typeof(db_root) === 'object' && Array.isArray(db_root))
+            {
+                var new_root = {};
+                config.bot_config.channels.forEach(function(chan){
+                    new_root[chan] = {
+                        topic: db_root
+                    };
+                });
+                return new_root;
+            }
+            else
+            {
+                return db_root;
+            }
+        }
+    });
     db = new DB({
         readable: true,
         on_load: function(db_root){
@@ -130,8 +150,20 @@ function init_bot(){
 
                 if(db_root.topic)
                 {
-                    topic_db.update('/', db_root.topic, true);
+                    config.bot_config.channels.forEach(function(chan){
+                        topic_db.update('/' + chan + '/topic', db_root.topic, true);
+                    });
                     delete db_root.topic;
+                }
+
+                if(db_root.pinned)
+                {
+                    for(var chan in db_root.pinned)
+                    {
+                        topic_db.update('/' + chan + '/pinned' , db_root.pinned[chan], true);
+                    }
+                    
+                    delete db_root.pinned;
                 }
 
                 if(db_root.nicks){
