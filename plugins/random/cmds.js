@@ -1,0 +1,690 @@
+var imgur   = require("imgur"),
+    fortune = require("adage")
+
+var info = {
+    name: 'Random',
+    about: 'silly commands, or one offs with no place',
+    bullet: 0,
+    bullet_order: [0, 1, 2, 3, 4, 5]
+}
+exports.info = info;
+
+if(config.API.imgur && config.API.imgur.key !== '') {
+    imgur.setClientId(config.API.imgur.key);
+} else {
+    b.log.warn('Missing imgur API key!');
+}
+
+var insults_db = new DB({db_name: 'insults'});
+var scopes_db = new DB({db_name: 'scopes'});
+var creeds_db = new DB({readable: true, db_name: 'creeds'});
+
+var answers = [
+        'It is certain',
+        'It is decidedly so',
+        'Without a doubt',
+        'Yes, definitely',
+        'You may rely on it',
+        'As I see it, yes',
+        'Most likely',
+        'Outlook good',
+        'Yes',
+        'Signs point to yes', //0-9 positive
+        'Reply hazy try again',
+        'Ask again later',
+        'Better not tell you now',
+        'Cannot predict now',
+        'Concentrate and ask again', //10-14 maybe
+        'Don\'t count on it',
+        'My reply is no',
+        'My sources say no',
+        'Outlook not so good',
+        'Very doubtful' //15-19 negative
+    ],
+    dance_mirror = [
+        [" 8====D ", " ᗡ====8 "],
+        [" 8==m==D - - ", " - - ᗡ==m==8 "],
+        [" rEEEEE ", " ƎƎƎƎƎɹ "],
+        [" fweeeEEEEP ", " ԀƎƎƎƎǝǝǝʍɟ "],
+        [" (__*__) ", " (__*__) "],
+        [" shake ", " ǝʞɐɥs "],
+        [" ( o Y o ) ", " ( o Y o ) "],
+        [" (.)(.) ", " (.)(.) "],
+        ["(((", ")))"],
+        [">>>>>", "<<<<<"],
+        [" ////// ", " \\\\\\\\\\\\ "]
+    ],
+    dance_outside = [
+        "👻", "🍺", "💃", "⚡", "❇", "🍹", "🎉", "✨", "- _ -", "_", "🚨", "-v-^-v-",
+        "🎈", "🔫", "🍻", "🔔", "⚠", '.', "==", "x", "💀", "🍰", "💊", "👾", "***", "{(*)}"
+    ],
+    dance_inside = [
+        "dance bitch",
+        "OoOoOoOoOoO",
+        "OONTZ OONTZ OONTZ",
+        "ya play dat shit",
+        "TURN IT UP",
+        "*does the stomp and shuffle*",
+        "yolo swag twerk",
+        "FUCK YA",
+        "now THAT'S how you PARTY"
+    ],
+    russian_nick = [
+        "Anastasia",
+        "Bogdan",
+        "Boris",
+        "Dmitry",
+        "Egor",
+        "Ivan",
+        "Katya",
+        "Mikhail",
+        "Nastya",
+        "Natasha",
+        "Nikita",
+        "Nikolai",
+        "Oleg",
+        "Pavel",
+        "Sasha",
+        "Sonya",
+        "Sophia",
+        "Svetlana",
+        "Vadim",
+        "Vladimir"
+    ];
+
+var cmds = {
+    '8ball': {
+        action: 'magic 8ball answer',
+        params: [{
+            optional: true,
+            name: 'question',
+            type: 'string'
+        }],
+        func: function(CHAN, USER, say, args, command_string){
+            var num = x.rand_number_between(0, answers.length - 1);
+            if(num <= 10){
+                var answer = CHAN.t.success(answers[num]);
+            } else if (num <= 15) {
+                var answer = CHAN.t.warn(answers[num]);
+            } else {
+                var answer = CHAN.t.fail(answers[num]);
+            }
+            say(answer, 1, {skip_verify: true});
+        }
+    },
+    potd: {
+        action: 'pull the last image from a pre-set imgur album',
+        settings: ['potd/imgur_album'],
+        API: ['imgur'],
+        func: function(CHAN, USER, say, args, command_string){
+            imgur.getAlbumInfo(CHAN.config.plugin_settings.potd.imgur_album)
+                .then(function(album) {
+                    var img = album.data.images[0];
+                    var say_arr = [];
+                    
+                    say_arr.push(CHAN.t.highlight('POTD: ') + img.link);
+                    if(img.title != 'null' && img.title !== null) say_arr.push(CHAN.t.null(img.title));
+                    if(img.description != 'null' && img.description !== null) say_arr.push(CHAN.t.null(img.description));
+
+                    say(say_arr, 1, {skip_verify: true, join: '\n'});
+
+                }).catch(function (err) {
+                    CHAN.log.error(err.message);
+                    say({err: 'None found'}, 2);
+                });
+        }
+        
+    },
+    creed: {
+        action: 'things to live by',
+        params: [{
+            optional: true,
+            or: [
+                {
+                    name: 'disable',
+                    perm: '~',
+                    type: 'flag',
+                    key: 'flag',
+                    discord: false,
+                    and: [ { name: 'id', type: 'number', key: 'id' } ]
+                },{
+                    name: 'add',
+                    perm: '~',
+                    type: 'flag',
+                    key: 'flag',
+                    discord: false,
+                    and: [ { name: 'new creed', type: 'text', key: 'new_val' } ]
+                },{
+                    name: 'edit',
+                    perm: '~',
+                    type: 'flag',
+                    key: 'flag',
+                    discord: false,
+                    and: [ { name: 'id', type: 'number' }, { name: 'new creed', type: 'text', key: 'new_val' } ]
+                },{
+                    name: 'all',
+                    type: 'flag',
+                    key: 'flag',
+                    discord: false,
+                },{
+                    name: 'id',
+                    key: 'id',
+                    type: 'number'
+                }
+
+            ]
+        }],
+        func: function(CHAN, USER, say, args, command_string){
+            creeds_db.get_data("/", function(d){
+                if(d === null) return say({err: 'No creeds found.'});
+                var creeds = [];
+                var j = 0;
+                d.forEach(function(creed, i){
+                    if(args.flag === undefined || args.flag !== '-all'){
+                        if(creed.disabled) return;
+                        j++;
+                        creeds.push(CHAN.t.warn('Creed ' + j + ') ') + (creed.new ? creed.new : creed.creed));
+                    } else {
+                        if(creed.disabled){
+                            creeds.push(CHAN.t.null('Creed X) ' + (creed.new ? creed.creed  + ' / ' : '')) + (creed.new ? creed.new : creed.creed));
+                        } else {
+                            j++;
+                            creeds.push(CHAN.t.warn('Creed ' + j + ') ') + CHAN.t.null(creed.new ? creed.creed  + ' / ' : '') + (creed.new ? creed.new : creed.creed));
+                        }
+                    }
+                });
+
+                if(args.id !== undefined && args.flag === undefined){
+                    if(creeds[+args.id - 1] !== undefined){
+                        say(creeds[+args.id - 1], 1, {skip_verify: true});
+                    } else {
+                        say({err: 'No creed id ' + args.id + ' found.'})
+                    }
+                } else if (args.flag === '-disable') {
+                    var d_creed = '';
+                    var k = 0;
+                    d.forEach(function(creed, i){
+                        if(creed.disabled) return;
+                        k++;
+                        if(k === args.id){
+                            creed.disabled = true;
+                            d_creed = creed.creed;
+                        }
+                    });
+
+                    if(d_creed !== ''){
+                        creeds_db.update('/', d, true, function(act){
+                             say({succ: 'Disabled creed ' + args.id + ': ' + d_creed});
+                        });
+                    } else {
+                        say({err: 'No creed id ' + args.id + ' found.'})
+                    }
+                } else if (args.flag === '-edit') {
+                    var o_creed = '';
+                    var k = 0;
+                    d.forEach(function(creed, i){
+                        if(creed.disabled) return;
+                        k++;
+                        if(k === args.id){
+                            creed.new = args.new_val;
+                            o_creed = creed.creed;
+                        }
+                    });
+
+                    if(o_creed !== ''){
+                        creeds_db.update('/', d, true, function(act){
+                             say({succ: 'Updated creed ' + args.id + ': ' + o_creed + ' -> ' + args.new_val});
+                        });
+                    } else {
+                        say({err: 'No creed id ' + args.id + ' found.'})
+                    }
+                } else if (args.flag === '-add') {
+                    creeds_db.update('/', [{creed: args.new_val, disabled: false}], false, function(act){
+                        say({succ: 'Added new creed ' + args.new_val});
+                    });
+                } else {
+                    say(creeds, 3, {skip_verify: true, join: '\n'});
+                }
+            });
+        }
+    },
+    oontz: {
+        action: 'random excitement',
+        func: function(CHAN, USER, say, args, command_string){
+            var inside = x.rand_arr(dance_inside);
+
+            var outside_left = [];
+            for(var i = 0; i < 8; i++) {
+                outside_left.push(x.rand_color(x.rand_arr(dance_outside)));
+            }
+
+            var outside_right = Array.prototype.slice.call(outside_left);
+            outside_right.reverse();
+
+            var oontz_arr = outside_left.concat([x.rand_color(' ' + inside + ' ')], outside_right);
+
+            var create_mirror = function(){
+                var mirror_pos = x.rand_number_between(1, 8);
+                var mirror_arr = x.rand_color(x.rand_arr(dance_mirror));
+
+                oontz_arr.splice(mirror_pos, 0, mirror_arr[0]);
+                oontz_arr.splice(-mirror_pos, 0, mirror_arr[1]);
+            }
+
+            create_mirror();
+            create_mirror();
+
+            var str = oontz_arr.join('');
+
+
+            say(str, 1, {skip_verify: true});
+        }
+    },
+    insult: {
+        action: 'insult a user',
+        params: [{
+            optional: true,
+            or: [
+                {
+                    name: 'list',
+                    perm: '~',
+                    type: 'flag',
+                    key: 'flag',
+                    discord: false
+                },{
+                    name: 'delete',
+                    perm: '~',
+                    type: 'flag',
+                    key: 'flag',
+                    discord: false,
+                    and: [ { name: 'id', type: 'number' } ]
+                },{
+                    name: 'edit',
+                    perm: '~',
+                    type: 'flag',
+                    key: 'flag',
+                    discord: false,
+                    and: [ { name: 'id', type: 'number' }, { name: 'new insult', type: 'text', key: 'new_val' } ]
+                },{
+                    name: 'add',
+                    type: 'flag',
+                    key: 'flag',
+                    and: [ { name: 'insult', type: 'text', key: 'new_val' } ]
+                },{
+                    name: 'to',
+                    type: 'text',
+                    key: 'to'
+                }
+
+            ]
+        }],
+        func: function(CHAN, USER, say, args, command_string){
+            if(args.flag){
+                insults_db.manage_arr(USER, '/', args, {}, say);
+            } else {
+
+                /*function get_new_insult(callback){
+                    x.get_url('http://www.randominsults.net/', 'html', function(result){
+                        callback(result[4]);
+                    }, {
+                        only_return_text: true,
+                        only_return_nodes: {tag: ['table']}
+                    });
+                }
+
+                function insult(d, count){
+                    get_new_insult(function(ins){
+                        if(d.indexOf(ins) > -1 && count < 5){
+                            count++;
+                            insult(d, count);
+                        } else if (d.indexOf(ins) < 0) {
+                            insult_db.update("/[]", ins, true, function(act){
+                                var str = (args.to !== undefined ? args.to + ': ' : '') + ins;
+                                say(CHAN.t.warn(str), 1);
+                            });
+                        } else if (d.indexOf(ins) > -1 && count >= 5) { 
+                            var str = (args.to !== undefined ? args.to + ': ' : '') + d[x.rand_number_between(0, d.length - 1)];
+                            say(CHAN.t.warn(str), 1);
+                        }
+                    });
+                }*/
+
+                insults_db.get_data("/", function(d){
+                    //insult(d, 0);
+                    var str = (args.to !== undefined ? args.to.replace('<', '') + ': ' : '') + x.rand_arr(d);
+                    say(CHAN.t.warn(str), 1);
+                });
+            }
+        }
+    },
+    fml: {
+        action: 'get random fml quote',
+        API: ['fml'],
+        func: function(CHAN, USER, say, args, command_string){
+           x.get_url('http://api.betacie.com/view/random?key=' + config.API.fml.key + '&language=en', 'xml', function(result){
+                try {
+                    var str = CHAN.t.highlight('FML: ');
+                    if(+result.root.items[0].item[0].agree > +result.root.items[0].item[0].deserved){
+                        str += CHAN.t.warn('"' + result.root.items[0].item[0].text + '"');
+                    } else {
+                        str += CHAN.t.fail('"' + result.root.items[0].item[0].text + '"');
+                    }
+                    str += CHAN.t.null(' -' + result.root.items[0].item[0].author[0]._);
+                    say(str);
+                } catch(e){
+                    say({err: 'Something went wrong'});
+                }
+            });
+        }
+    },
+    lottery: {
+        action: 'play the lottery',
+        func: function(CHAN, USER, say, args, command_string){
+            var no = Array.from({length: 9}, function(){
+                return x.rand_number_between(0, 9);
+            });
+
+            say("You should play: " + no[0] + no[1] + no[2] + " and " + no[3] + no[4] + no[5] + no[6] + " for today's lottery!", 1, {skip_verify: true});
+        }
+    },
+    rr: {
+        action: 'play russian roulette',
+        func: function(CHAN, USER, say, args, command_string){
+            var debug = false;
+
+            if(info.bullet === 0)
+            {
+                info.bullet_order = x.shuffle_arr(info.bullet_order);
+            }
+
+            b.log.debug('info.bullet', info.bullet, 'bullet_order', info.bullet_order);
+
+            function pull_trigger(force_fire){
+                info.bullet++;
+                if(!force_fire) say(CHAN.t.warn('Pulling the trigger... ') + (debug ? CHAN.t.null('(' + (info.bullet) + ')') : ''), 1, {skip_verify: true});
+
+                function click(){
+                    var bullet = info.bullet_order[info.bullet - 1];
+                    var misfire = x.rand_number_between(1,15) === 1 ? true : false;
+                    var hit_nick = misfire ? x.rand_arr(Object.keys(CHAN.users)) : USER.nick;
+                    misfire = hit_nick === USER.nick ? false : misfire;
+
+                    var new_gun = false;
+
+                    b.log.debug('pull_trigger bullet', bullet, 'misfire', misfire, 'force_fire', force_fire, 'hit_nick', hit_nick);
+
+                    switch(bullet) {
+                        case 1:
+                            if(force_fire) {
+                                say(CHAN.t.fail('BANG! You killed ' + hit_nick + '!'), 1, {skip_verify: true});
+                                if(!debug) bot.send('kill', hit_nick, "BANG! " + USER.nick + " killed you!");
+                            } else if(misfire){
+                                say(CHAN.t.fail('BANG! Your gun misfired and hit ' + hit_nick + '!'), 1, {skip_verify: true});
+                                if(!debug) bot.send('kill', hit_nick, "BANG! " + USER.nick + "'s gun misfired and hit you!");
+                            } else {
+                                say(CHAN.t.fail('BANG!'), 1, {skip_verify: true});
+                                if(!debug) bot.send('kill', hit_nick, "BANG! You found the only bullet! So you die.");
+                            }
+                            new_gun = true;
+                            break;
+                        case 2:
+                            if(force_fire) {
+                                say(CHAN.t.success('Click! ' + hit_nick + ' gains half-ops!'), 1, {skip_verify: true});
+                            } else if(misfire){
+                                say(CHAN.t.success('Click! Your aim is terrible! ' + hit_nick + ' gains half-ops!'), 1, {skip_verify: true});
+                            } else {
+                                say(CHAN.t.success('Click! Gain half-ops!'), 1, {skip_verify: true});
+                            }
+                            if(!debug) bot.send('samode', CHAN.chan, '+h', hit_nick);
+                            break;
+                        case 3:
+                            if(force_fire) {
+                                say(CHAN.t.success('Click! ' + hit_nick + ' gets a new nickname!'), 1, {skip_verify: true});
+                                var new_nick = x.rand_arr(russian_nick);
+                                if(!debug) bot.send('sanick', hit_nick, new_nick);
+                                if(!debug) hit_nick = new_nick;
+                            } else if(misfire){
+                                say(CHAN.t.success('Click! Watch where you\'re pointing that thing! ' + hit_nick + ', enjoy your new nickname!'), 1, {skip_verify: true});
+                            } else {
+                                say(CHAN.t.success('Click! Enjoy your new nickname!'), 1, {skip_verify: true});
+                            }
+                            if(!debug) bot.send('sanick', hit_nick, x.rand_arr(russian_nick));
+                            break;
+                        case 4:
+                            if(force_fire) {
+                                say(CHAN.t.success('Click! ' + hit_nick + ' loses half-ops.'), 1, {skip_verify: true});
+                                if(!debug) bot.send('samode', CHAN.chan, '-h', hit_nick);
+                            } else if(misfire){
+                                say(CHAN.t.success('Click! Shoddy aim, partner. ' + hit_nick + ' loses half-ops.'), 1, {skip_verify: true});
+                            } else {
+                                say(CHAN.t.success('Click! Lose half-ops!'), 1, {skip_verify: true});
+                            }
+                            if(!debug) bot.send('samode', CHAN.chan, '-h', hit_nick);
+                            break;
+                        case 5:
+                            if(force_fire) {
+
+                            } else if(misfire){
+                                var clicks = x.rand_number_between(1, 3);
+                                var clicks_txt = ['once', 'twice', 'thrice'];
+                                say(CHAN.t.success('Click! Hold the gun to ' + hit_nick + '\'s head and fire ' + clicks_txt[clicks - 1] + '!'), 1, {skip_verify: true});
+
+                                function multi_click(){
+                                    setTimeout(function(){
+                                        if(!new_gun) 
+                                        {
+                                            pull_trigger(true);
+                                            clicks--;
+
+                                            if(clicks > 0)
+                                            {
+                                                multi_click();
+                                            }
+                                        }
+                                    }, 200);
+                                }
+                                multi_click();
+
+                                break;
+                            } 
+                        case 6:
+                        default:
+                            say(CHAN.t.success('Click!'), 1, {skip_verify: true});
+                            break;
+                    }
+                    
+                    if(info.bullet > 6 || new_gun) info.bullet = 0;
+                }
+
+                if(force_fire) {
+                    click();
+                } else {
+                    setTimeout(click, 200);
+                }
+                
+            }
+            pull_trigger();
+        }
+    },
+    poll: {
+        action: 'Create a poll and have users vote on it',
+        params: [{
+            optional: true,
+            or: [{
+                    name: 'close',
+                    key: 'close',
+                    perm: '~',
+                    type: 'flag'
+                },{
+                    and: [{
+                        name: 'question',
+                        type: '.+?(?=\\s-\\d)'
+                    },{
+                        name: '-1 answer -2 answer...',
+                        key: 'answers',
+                        type: '-\\d+\\s\\S+.*?-\\d+\\s\\S+.*'
+                    }]
+                }
+            ]
+        }],
+        func: function(CHAN, USER, say, args, command_string){
+            b.log.debug(args);
+            if(args.close !== undefined){
+                x.close_current_poll(CHAN, function(result){
+                    say(result);
+                });
+            } else {
+                x.get_poll(CHAN, USER, args, function(result){
+                    say(result, {skip_buffer: true, skip_verify: true, join: '\n'});
+                });
+            }
+        }
+    },
+    vote: {
+        action: 'Vote on the current poll',
+        params: [{
+            optional: true,
+            name: 'answer id',
+            type: 'number'
+        }],
+        func: function(CHAN, USER, say, args, command_string){
+            x.get_poll(CHAN, USER, args, function(result){
+                say(result, {skip_buffer: true, skip_verify: true, join: '\n'});
+            });
+        }
+    },
+    choose: {
+        action: 'Choose one thing or another',
+        params: [{
+            name: 'this or that',
+            type: '\\S.*?\\sor\\s\\S.*'
+        }],
+        func: function(CHAN, USER, say, args, command_string){
+            var choose = args.this_or_that.split(/\sor\s/i);
+            say({succ: x.rand_arr(choose)}, {skip_buffer: true, skip_verify: true})
+        }
+    },
+    fortune: {
+        action: 'Unix fortune',
+        func: function(CHAN, USER, say, args, command_string){
+            fortune({}, function(err, a) {
+              if(err) return say({err: err});
+              say(x.rand_color(a), {skip_buffer: true, skip_verify: true});
+            });
+        }
+    },
+    remind: {
+        action: 'Remind user at/in time to do something',
+        registered: true,
+        params: [{
+            or: [{
+                    name: 'list',
+                    type: 'flag',
+                    key: 'flag',
+                },{
+                    name: 'delete',
+                    type: 'flag',
+                    key: 'flag',
+                    and: [ { name: 'id', type: 'number' } ]
+                },{
+                    and: [{
+                        name: 'irc nick or me',
+                        type: 'string',
+                        key: 'who',
+                        default: function(USER){ return 'me'; }
+                    },{
+                        name: 'at|in',
+                        key: 'at in',
+                        type: 'at|in'
+                    },{
+                        name: 'time',
+                        type: '.+?)(?=\\sto\\s'
+                    },{
+                        name: 'to',
+                        type: 'to',
+                        ignore: true
+                    },{
+                        name: 'do something',
+                        type: 'text',
+                        key: 'to do'
+                    }]
+                }]
+        }],
+        func: function(CHAN, USER, say, args, command_string){
+            if(args.flag){
+                db.manage_arr(USER, '/nicks/' + USER.nick_org + '/reminders', args, {
+                    case_insensitive: USER.nick_org,
+                    format: function(item){
+                        var str = '';
+
+                        if(item.who_set !== item.who){
+                            str += item.who_set + ' set a reminder for you to '
+                        } 
+
+                        str += item.to_do + ' ' + x.date_string_to_mdyhms(item.time, item.offset, item.timezone);
+
+                        return str;
+                    }
+                },
+                say);
+            } else {
+                args.who = args.who.toLowerCase() === 'me' || args.who.toLowerCase() === 'myself' || args.who.toLowerCase() === 'moi' || args.who.toLowerCase() === 'mee' ? 
+                    USER.nick : b.users.get_nick_org(args.who);
+                args.who_set = USER.nick_org;
+                args.at_in = args.at_in.toLowerCase();
+
+                b.users.get_user_data(USER.nick, {
+                    label: 'timezone offset',
+                    ignore_err: true,
+                    skip_say: true
+                }, function(d){
+
+                    var time_str = (args.at_in === 'in' ? 'in ' : 'at ') + args.time;
+                    var time = x.str_to_datetime(time_str, d.offset);
+
+                    if(time.err) return say(time);
+
+                    args.time = time.gmt_epoc;
+                    args.offset = d && d.offset ? x.convert_offset_to_min(d.offset) : 0;
+                    args.timezone = d && d.timezone ? d.timezone : null;
+
+                    b.log.debug(args, time);
+
+                    x.set_reminder(USER, CHAN, args, function(result){
+                        say(result);
+                    })
+                });
+            }
+        }
+    },
+    horoscope: {
+        action: 'horoscope',
+        params: [{
+            optional: true,
+            name: 'sign',
+            type: 'string'
+        }],
+        func: function(CHAN, USER, say, args, command_string){
+            if(args.sign && args.sign !== '') {
+                scopes_db.get_data("/" + args.sign.toLowerCase(), function(d){
+                    if(d !== null) {
+                        say(CHAN.t.warn(x.cap_first_letter(args.sign) + ': ' + x.rand_arr(d)), {skip_buffer: true, skip_verify: true})
+                    } else {
+                        say({err: x.cap_first_letter(args.sign) + ' is not a valid zodiac sign.'})
+                    }
+                });
+            } else {
+                scopes_db.get_data("/", function(d){
+                    if(d !== null) {
+                        var pick_sign = x.rand_arr(Object.keys(d));
+                        say(CHAN.t.warn(x.rand_arr(d[pick_sign])), {skip_buffer: true, skip_verify: true})
+                    } else {
+                        say({err: 'No horoscopes avaliable.'})
+                    }
+                });
+            }
+        }
+    },
+
+}
+exports.cmds = cmds;
