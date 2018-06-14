@@ -665,16 +665,16 @@ var cmds = {
             or: [{
                 name: 'revert',
                 type: 'flag'
-            },{
+            } /*,{
                 name: 'revert2',
                 type: 'flag'
-            },{
+            } */,{
                 name: 'set',
                 type: 'flag'
-            },{
+            } /*,{
                 name: 'rand',
                 type: 'flag'
-            }]
+            }*/]
         }],
         perm: '~',
         discord: false,
@@ -748,7 +748,7 @@ var cmds = {
                     });
                 }
 
-            } else if(args.flag === '-revert2'){
+            } /*else if(args.flag === '-revert2'){
                 if(b.is_op){
 
                     function test_nick(new_nick, callback){
@@ -869,7 +869,7 @@ var cmds = {
                  } else {
                     say({err: bot.nick + ' is not opper'}, 3);
                 }
-            }  else if (args.flag === '-set'){
+            }  */ else if (args.flag === '-set'){
                 for(var user in b.users){
                     b.users.update_org_to_current(Object.keys(CHAN.users));
                 }
