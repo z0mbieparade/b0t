@@ -90,7 +90,12 @@ var answers = [
         "Svetlana",
         "Vadim",
         "Vladimir"
-    ];
+    ],
+    slap = {
+        size: [ 'large', 'massive', 'gigantic', 'huge', 'mini', 'mircoscopic', 'tiny'],
+        adj: [ 'rotten', 'slimey', 'sticky', 'wet', 'smelly', 'fleshy', 'pregnant', 'leaking', 'flatulent'],
+        fish: [ 'trout', 'salmon', 'crab', 'sea bass', 'octopus', 'shark', 'goldfish', 'angler fish', 'squid']
+    };
 
 var cmds = {
     '8ball': {
@@ -399,23 +404,29 @@ var cmds = {
 
             b.log.debug('info.bullet', info.bullet, 'bullet_order', info.bullet_order);
 
-            function pull_trigger(force_fire){
+            function pull_trigger(force_fire_on){
                 info.bullet++;
-                if(!force_fire) say(CHAN.t.warn('Pulling the trigger... ') + (debug ? CHAN.t.null('(' + (info.bullet) + ')') : ''), 1, {skip_verify: true});
+                if(!force_fire_on) say(CHAN.t.warn('Pulling the trigger... ') + (debug ? CHAN.t.null('(' + (info.bullet) + ')') : ''), 1, {skip_verify: true});
 
                 function click(){
                     var bullet = info.bullet_order[info.bullet - 1];
                     var misfire = x.rand_number_between(1,15) === 1 ? true : false;
-                    var hit_nick = misfire ? x.rand_arr(Object.keys(CHAN.users)) : USER.nick;
+
+                    if(force_fire_on) {
+                        var hit_nick = force_fire_on;
+                    } else {
+                        var hit_nick = misfire ? x.rand_arr(Object.keys(CHAN.users)) : USER.nick;
+                    }
+
                     misfire = hit_nick === USER.nick ? false : misfire;
 
                     var new_gun = false;
 
-                    b.log.debug('pull_trigger bullet', bullet, 'misfire', misfire, 'force_fire', force_fire, 'hit_nick', hit_nick);
+                    b.log.debug('pull_trigger bullet', bullet, 'misfire', misfire, 'force_fire_on', force_fire_on, 'hit_nick', hit_nick);
 
                     switch(bullet) {
                         case 1:
-                            if(force_fire) {
+                            if(force_fire_on) {
                                 say(CHAN.t.fail('BANG! You killed ' + hit_nick + '!'), 1, {skip_verify: true});
                                 if(!debug) bot.send('kill', hit_nick, "BANG! " + USER.nick + " killed you!");
                             } else if(misfire){
@@ -428,7 +439,7 @@ var cmds = {
                             new_gun = true;
                             break;
                         case 2:
-                            if(force_fire) {
+                            if(force_fire_on) {
                                 say(CHAN.t.success('Click! ' + hit_nick + ' gains half-ops!'), 1, {skip_verify: true});
                             } else if(misfire){
                                 say(CHAN.t.success('Click! Your aim is terrible! ' + hit_nick + ' gains half-ops!'), 1, {skip_verify: true});
@@ -438,7 +449,7 @@ var cmds = {
                             if(!debug) bot.send('samode', CHAN.chan, '+h', hit_nick);
                             break;
                         case 3:
-                            if(force_fire) {
+                            if(force_fire_on) {
                                 say(CHAN.t.success('Click! ' + hit_nick + ' gets a new nickname!'), 1, {skip_verify: true});
                                 var new_nick = x.rand_arr(russian_nick);
                                 if(!debug) bot.send('sanick', hit_nick, new_nick);
@@ -451,7 +462,7 @@ var cmds = {
                             if(!debug) bot.send('sanick', hit_nick, x.rand_arr(russian_nick));
                             break;
                         case 4:
-                            if(force_fire) {
+                            if(force_fire_on) {
                                 say(CHAN.t.success('Click! ' + hit_nick + ' loses half-ops.'), 1, {skip_verify: true});
                                 if(!debug) bot.send('samode', CHAN.chan, '-h', hit_nick);
                             } else if(misfire){
@@ -462,29 +473,26 @@ var cmds = {
                             if(!debug) bot.send('samode', CHAN.chan, '-h', hit_nick);
                             break;
                         case 5:
-                            if(force_fire) {
-
-                            } else if(misfire){
+                            if(!force_fire_on && misfire){
                                 var clicks = x.rand_number_between(1, 3);
                                 var clicks_txt = ['once', 'twice', 'thrice'];
                                 say(CHAN.t.success('Click! Hold the gun to ' + hit_nick + '\'s head and fire ' + clicks_txt[clicks - 1] + '!'), 1, {skip_verify: true});
 
-                                function multi_click(){
+                                function multi_click(hit_nick){
                                     setTimeout(function(){
                                         if(!new_gun) 
                                         {
-                                            pull_trigger(true);
+                                            pull_trigger(hit_nick);
                                             clicks--;
 
                                             if(clicks > 0)
                                             {
-                                                multi_click();
+                                                multi_click(hit_nick);
                                             }
                                         }
                                     }, 200);
                                 }
-                                multi_click();
-
+                                multi_click(hit_nick);
                                 break;
                             } 
                         case 6:
@@ -496,7 +504,7 @@ var cmds = {
                     if(info.bullet > 6 || new_gun) info.bullet = 0;
                 }
 
-                if(force_fire) {
+                if(force_fire_on) {
                     click();
                 } else {
                     setTimeout(click, 200);
@@ -569,7 +577,7 @@ var cmds = {
         func: function(CHAN, USER, say, args, command_string){
             fortune({}, function(err, a) {
               if(err) return say({err: err});
-              say(x.rand_color(a), {skip_buffer: true, skip_verify: true});
+              say(a, {skip_buffer: true, skip_verify: true});
             });
         }
     },
@@ -683,6 +691,19 @@ var cmds = {
                     }
                 });
             }
+        }
+    },
+    slap: {
+        action: 'slap something',
+        params: [{
+            optional: true,
+            name: 'thing',
+            type: 'string'
+        }],
+        func: function(CHAN, USER, say, args, command_string){
+            var thing = args.thing ? args.thing : x.rand_arr(Object.keys(CHAN.users));
+            var str = 'Slaps ' + thing + ' around with a ' + x.rand_arr(slap.size) + ' ' + x.rand_arr(slap.adj) + ' ' + x.rand_arr(slap.fish);
+            say(x.rand_color(str), {skip_buffer: true, skip_verify: true})
         }
     },
 
