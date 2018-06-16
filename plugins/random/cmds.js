@@ -702,7 +702,7 @@ var cmds = {
         }],
         func: function(CHAN, USER, say, args, command_string){
             var thing = args.thing ? args.thing : x.rand_arr(Object.keys(CHAN.users));
-            var str = 'Slaps ' + thing + ' around with a ' + x.rand_arr(slap.size) + ' ' + x.rand_arr(slap.adj) + ' ' + x.rand_arr(slap.fish);
+            var str = 'slaps ' + thing + ' around with a ' + x.rand_arr(slap.size) + ' ' + x.rand_arr(slap.adj) + ' ' + x.rand_arr(slap.fish);
             say('/me ' + x.rand_color(str), {skip_buffer: true, skip_verify: true})
         }
     },
