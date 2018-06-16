@@ -92,9 +92,9 @@ var answers = [
         "Vladimir"
     ],
     slap = {
-        size: [ 'large', 'massive', 'gigantic', 'huge', 'mini', 'mircoscopic', 'tiny'],
-        adj: [ 'rotten', 'slimey', 'sticky', 'wet', 'smelly', 'fleshy', 'pregnant', 'leaking', 'flatulent'],
-        fish: [ 'trout', 'salmon', 'crab', 'sea bass', 'octopus', 'shark', 'goldfish', 'angler fish', 'squid']
+        size: [ 'large', 'massive', 'gigantic', 'huge', 'jumbo', 'enormous', 'minuscule', 'mircoscopic', 'tiny', 'undersized'],
+        adj: [ 'rotten', 'slimey', 'sticky', 'wet', 'smelly', 'fleshy', 'pregnant', 'leaking', 'flatulent', 'soupy', 'stank ass', 'overripe', 'decomposing', 'viscous', 'putrid'],
+        fish: [ 'trout', 'salmon', 'crab', 'sea bass', 'octopus', 'shark', 'goldfish', 'angler fish', 'squid', 'eel', 'manta ray', 'kraken', 'jelly fish', 'mermaid', 'shrimp']
     };
 
 var cmds = {
@@ -703,7 +703,7 @@ var cmds = {
         func: function(CHAN, USER, say, args, command_string){
             var thing = args.thing ? args.thing : x.rand_arr(Object.keys(CHAN.users));
             var str = 'Slaps ' + thing + ' around with a ' + x.rand_arr(slap.size) + ' ' + x.rand_arr(slap.adj) + ' ' + x.rand_arr(slap.fish);
-            say(x.rand_color(str), {skip_buffer: true, skip_verify: true})
+            say('/me ' + x.rand_color(str), {skip_buffer: true, skip_verify: true})
         }
     },
 
