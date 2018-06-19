@@ -65,7 +65,7 @@ var cmds = {
                     var str = CHAN.t.highlight(d.irc_nick) + ' ';
                     str += d.now_playing ? 'is now playing: ' + CHAN.t.success(title_str) : 'last played: ' + CHAN.t.null(title_str); 
                     str += ' [' + x.score(d.user_play_count, {max: d.play_count, score_str: x.abv_num(d.user_play_count), config: CHAN.config})  + '/';
-                    str += x.score(d.play_count, {max: info.highest_song_count, score_str: x.abv_num(d.user_play_count), config: CHAN.config}) + '] ' + (d.loved ? CHAN.t.fail('♥') + ' (' : '('); 
+                    str += x.score(d.play_count, {max: info.highest_song_count, score_str: x.abv_num(d.play_count), config: CHAN.config}) + '] ' + (d.loved ? CHAN.t.fail('♥') + ' (' : '('); 
 
                     if(d.tags.length > 0){
                         var tags = d.tags.splice(0, 4); //max 4 tags
