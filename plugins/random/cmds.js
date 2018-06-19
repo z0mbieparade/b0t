@@ -92,7 +92,7 @@ var answers = [
         "Vladimir"
     ],
     slap = {
-        size: [ 'large', 'massive', 'gigantic', 'huge', 'jumbo', 'enormous', 'minuscule', 'mircoscopic', 'tiny', 'undersized'],
+        size: [ 'large', 'massive', 'gigantic', 'huge', 'jumbo', 'enormous', 'minuscule', 'microscopic', 'tiny', 'undersized'],
         adj: [ 'rotten', 'slimey', 'sticky', 'wet', 'smelly', 'fleshy', 'pregnant', 'leaking', 'flatulent', 'soupy', 'stank ass', 'overripe', 'decomposing', 'viscous', 'putrid'],
         fish: [ 'trout', 'salmon', 'crab', 'sea bass', 'octopus', 'shark', 'goldfish', 'angler fish', 'squid', 'eel', 'manta ray', 'kraken', 'jelly fish', 'mermaid', 'shrimp']
     };

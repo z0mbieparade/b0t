@@ -64,8 +64,8 @@ var cmds = {
 
                     var str = CHAN.t.highlight(d.irc_nick) + ' ';
                     str += d.now_playing ? 'is now playing: ' + CHAN.t.success(title_str) : 'last played: ' + CHAN.t.null(title_str); 
-                    str += ' [' + x.score(d.user_play_count, {max: d.play_count, config: CHAN.config})  + '/';
-                    str += x.score(d.play_count, {max: info.highest_song_count, config: CHAN.config}) + '] ' + (d.loved ? CHAN.t.fail('♥') + ' (' : '('); 
+                    str += ' [' + x.score(d.user_play_count, {max: d.play_count, score_str: x.abv_num(d.user_play_count), config: CHAN.config})  + '/';
+                    str += x.score(d.play_count, {max: info.highest_song_count, score_str: x.abv_num(d.user_play_count), config: CHAN.config}) + '] ' + (d.loved ? CHAN.t.fail('♥') + ' (' : '('); 
 
                     if(d.tags.length > 0){
                         var tags = d.tags.splice(0, 4); //max 4 tags
@@ -156,7 +156,7 @@ var cmds = {
                                     artist: d.artist ? d.artist : null,
                                     song: d.name ? d.name : null,
                                     album: d.album ? d.album : null,
-                                    plays: d.user_play_count + '/' + d.play_count,
+                                    plays: x.abv_num(d.user_play_count) + '/' + x.abv_num(d.play_count),
                                     user_plays_hidden: d.user_play_count,
                                     total_plays_hidden: d.play_count,
                                     '♥': '♥',
@@ -200,8 +200,8 @@ var cmds = {
                                 song: function(row, cell){ return CHAN.t.highlight(cell) },
                                 album: function(row, cell){ return CHAN.t.highlight(cell) },
                                 plays: function(row, cell){ 
-                                    return x.score(row.user_plays_hidden, {max: row.total_plays_hidden, config: CHAN.config})  + 
-                                    '/' + x.score(row.total_plays_hidden, {max: info.highest_song_count, config: CHAN.config}) 
+                                    return x.score(row.user_plays_hidden, {max: row.total_plays_hidden, score_str: x.abv_num(row.user_plays_hidden), config: CHAN.config})  + 
+                                    '/' + x.score(row.total_plays_hidden, {max: info.highest_song_count, score_str: x.abv_num(row.total_plays_hidden), config: CHAN.config}) 
                                 },
                                 '♥': function(row, cell) { 
                                     return row.loved_hidden ? CHAN.t.fail('♥') : CHAN.t.null('♥')
