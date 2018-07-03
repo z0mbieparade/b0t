@@ -62,7 +62,7 @@ var cmds = {
                         });
 
                         var ret = CHAN.t[color](book.title + (book.pub_year ? ' (' + book.pub_year + ')' : '') + (authors.length > 0 ? ' (' + authors.join(', ') + ') ' : ' '));
-                        if(book.rating) ret += '[' + x.score(book.rating, {max:5, end:'/5', config: CHAN.config}) + '] ';
+                        if(book.rating) ret += '[' + x.score(book.rating, {max:5, end:'/5', score_str: parseFloat(book.rating), config: CHAN.config}) + '] ';
                         ret += '(' + (genres.length > 0 ? CHAN.t.highlight(genres.join(', ')) : CHAN.t.null('no genres')) + ')';
 
                         return ret;
@@ -270,7 +270,7 @@ var cmds = {
 
                 var data = [
                     CHAN.t.highlight(CHAN.t.term(d.title) + (d.pub_year ? ' (' + d.pub_year + ')' : '')) + ' by ' + CHAN.t.highlight2(authors.join(', ')),
-                    'Rating ' + x.score(d.rating, {max:5, end:'/5', config: CHAN.config}) + ' Shelves ' + (d.shelves.length > 0 ? CHAN.t.warn(d.shelves.join(', ')) : CHAN.t.null('none')),
+                    'Rating ' + x.score(d.rating, {max:5, end:'/5', score_str: parseFloat(d.rating), config: CHAN.config}) + ' Shelves ' + (d.shelves.length > 0 ? CHAN.t.warn(d.shelves.join(', ')) : CHAN.t.null('none')),
                     CHAN.t.highlight('Summary ') + x.verify_string(d.description)
                 ];
 
@@ -318,7 +318,7 @@ var cmds = {
                 var data = [CHAN.t.highlight('Similar to ' + CHAN.t.term(d.title) + ' by ' + authors.join(', ') + ': ')];
 
                 d.similar_books.forEach(function(book){ 
-                    data.push(book.title + CHAN.t.null(' by ' + book.authors.join(', ')) + ' ' + x.score(book.rating, {max:5, end:'/5', config: CHAN.config})); 
+                    data.push(book.title + CHAN.t.null(' by ' + book.authors.join(', ')) + ' ' + x.score(book.rating, {max:5, end:'/5', score_str: parseFloat(book.rating), config: CHAN.config})); 
                 });
 
                 say(data, 1, {skip_verify: true, ellipsis: true});
@@ -344,7 +344,7 @@ var cmds = {
                 var books = [];
                 d.books.forEach(function(book){
                     if(books.length > 2) return;
-                    books.push(book.title + ' ' + x.score(book.rating, {max:5, end:'/5', config: CHAN.config}));
+                    books.push(book.title + ' ' + x.score(book.rating, {max:5, end:'/5', score_str: parseFloat(book.rating), config: CHAN.config}));
                 });
 
 
