@@ -156,34 +156,7 @@ var cmds = {
                                     CHAN.log.error(d.err);
                                 } else {
                                     x.add_cache('/nicks/' + d.irc_nick + '/cache/wa', d, 900000, d.irc_nick);
-
-                                    say_data.push({
-                                        user_hidden: d.irc_nick,
-                                        location: d.display_location.full,
-                                        temp: parseInt(d.temp_f) + 'F (' + parseInt(d.temp_c) + 'C)',
-                                        temp_f_hidden: d.temp_f,
-                                        feels: parseInt(d.feelslike_f) + 'F (' + parseInt(d.feelslike_c) + 'C)',
-                                        feels_f_hidden: d.feelslike_f,
-                                        wind: d.wind_string === 'Calm' ? 'Calm ' + d.wind_dir : Math.round(d.wind_mph) + 'mph ' + d.wind_dir,
-                                        wind_hidden: Math.round(d.wind_mph),
-                                        hum: d.relative_humidity.slice(0, -1) + '%',
-                                        humid_hidden: d.relative_humidity.slice(0, -1),
-                                        lat_hidden: d.display_location.latitude,
-                                        long_hidden: d.display_location.longitude,
-                                        conditions: d.conditions
-                                    });
-
-
-                                    //after we update all the locations, will depricate this
-                                    db.update("/nicks/" + d.irc_nick, {
-                                        offset: d.local_tz_offset, 
-                                        timezone: d.local_tz_short,
-                                        display_location: d.display_location.full,
-                                        lat: d.display_location.latitude,
-                                        long: d.display_location.longitude
-                                    }, false, function(act){
-                                        CHAN.log.debug(d.irc_nick, act)
-                                    }, d.irc_nick);
+                                    say_data.push(wu.weather_tbl(d, CHAN));
                                 }
 
                                 resolve();

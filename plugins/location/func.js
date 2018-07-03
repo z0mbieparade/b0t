@@ -106,6 +106,25 @@ WU.prototype.get_weather = function(loc, irc_nick, callback) {
     });
 }
 
+WU.prototype.weather_tbl = function(d, CHAN)
+{
+    return {
+        user_hidden: d.irc_nick,
+        location: d.display_location.full,
+        temp: parseInt(d.temp_f) + 'F (' + parseInt(d.temp_c) + 'C)',
+        temp_f_hidden: d.temp_f,
+        feels: parseInt(d.feelslike_f) + 'F (' + parseInt(d.feelslike_c) + 'C)',
+        feels_f_hidden: d.feelslike_f,
+        wind: d.wind_string === 'Calm' ? 'Calm ' + d.wind_dir : Math.round(d.wind_mph) + 'mph ' + d.wind_dir,
+        wind_hidden: Math.round(d.wind_mph),
+        hum: d.relative_humidity.slice(0, -1) + '%',
+        humid_hidden: d.relative_humidity.slice(0, -1),
+        lat_hidden: d.display_location.latitude,
+        long_hidden: d.display_location.longitude,
+        conditions: d.conditions
+    };
+}
+
 WU.prototype.weather_str = function(d, CHAN){
     var str = CHAN.t.highlight(d.display_location.full) + ': ' + symbols[d.icon] + ' ' + d.weather + ' ';
     str += x.score(d.temp_f, {
