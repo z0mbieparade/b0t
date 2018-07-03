@@ -17,7 +17,7 @@ Theme               = require(__dirname + '/lib/colortheme.js'),
 Say                 = require(__dirname + '/lib/say.js'),
 pkg                 = require(__dirname + '/./package.json');
 
-let config_default      = require(__dirname + '/config/./default_config.json'),
+let config_default      = require(__dirname + '/config/./default_config.js').default,
     config_custom       = {};
 
 log4js.configure({
