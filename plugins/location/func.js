@@ -108,7 +108,7 @@ WU.prototype.weather_str = function(d, CHAN){
         config: CHAN.config});
 
     str += ' Wind: ' + x.score(d.wind_mph, {
-        score_str: d.wind_string === 'Calm' ? 'Calm ' + wind_dir[d.wind_dir] : d.wind_mph + 'mph ' + wind_dir[d.wind_dir], 
+        score_str: d.wind_string === 'Calm' ? 'Calm ' + wind_dir[d.wind_dir] : Math.round(d.wind_mph) + 'mph ' + wind_dir[d.wind_dir], 
         colors: wind_colors, 
         config: CHAN.config});
     str += ' Humidity: ' + x.score(+d.relative_humidity.slice(0, -1), {
