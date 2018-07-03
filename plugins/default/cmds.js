@@ -592,71 +592,176 @@ var cmds = {
         }
     },
     seen: {
-        action: 'Check when a user was last seen',
+        action: 'Check when user(s) was last seen',
         params: [{
-            name: 'irc nick',
-            type: 'string' 
+            or: [{
+                name: 'irc nick',
+                type: 'string',
+                key: 'method'
+            },{
+                name: 'all',
+                type: 'flag',
+                key: 'method'
+            }]
         }],
         func: function(CHAN, USER, say, args, command_string){ 
-            b.users.get_user_data(args.irc_nick === USER.nick ? USER : args.irc_nick, {
-                ignore_err: true,
-                skip_say: true
-            }, function(data){
-                if(!data.seen){
-                    say({err: args.irc_nick + ' has never been seen'});
-                } else {
-                    var str = x.no_highlight(CHAN.t.term(args.irc_nick)) + ' ';
-                    switch(data.seen.action){
-                        case 'speak':
-                            str += 'last spoke in';
-                            break;
-                        case 'pm':
-                            str += 'last PMed';
-                            break;
-                        case 'part':
-                            str += 'last parted from';
-                            break;
-                        case 'join':
-                            str += 'last joined';
-                            break;
-                        case 'kick':
-                            str += 'was last kicked from'; 
-                            break;
-                        case 'kill':
-                            str += 'was last killed from'; 
-                            break;
-                        case 'quit':
-                            str += 'last quit the server'; 
-                            break;
-                        default: 
-                            str += 'last ' + data.seen.action + 'ed in';
-                            break;
-                    }
+            if(args.method === '-all'){
+                var say_data = [];
 
-                    b.users.get_user_data(USER.nick, {
-                        ignore_err: true,
-                        skip_say: true
-                    }, function(d){
-                        if(data.seen.chan !== null){
-                            str += ' ' + data.seen.chan + ' (' + data.seen.where + ')';
-                        } 
-                        str += ' on ' + x.epoc_to_date(data.seen.date, d.offset, d.timezone);
+                b.users.get_user_data(USER.nick, {
+                    ignore_err: true,
+                    skip_say: true
+                }, function(d){
+                    b.log.debug('d', d);
+                    CHAN.get_all_users_in_chan_data({no_highlight: false, col: ['seen', 'spoke'], label: 'Seen/Spoke', return_rows: true}, function(data){
+                        
+                        var say_data = [];
+                        var now = (new dateWithOffset(0)).getTime();
 
+                        for(var irc_nick in data){
+                            b.log.debug('data', irc_nick, data[irc_nick]);
 
-                        if(data.spoke && data.spoke.text && data.spoke.text.length > 0){
-                            var last_said = data.spoke.text[0]
+                            if(data[irc_nick].seen.date > now - 3600000 && data[irc_nick].seen.action === 'speak') continue;
 
-                            str += ' "' + last_said.text + '"';
+                            var spoke_txt = '';
+                            if(data[irc_nick].spoke && data[irc_nick].spoke.text && data[irc_nick].spoke.text.length > 0){
+                                var last_said = data[irc_nick].spoke.text[0]
 
-                            if(data.seen.date - last_said.date > 1000){
-                                str += ' ' + x.ms_to_time(data.seen.date - last_said.date, false, true) + ' before'
+                                spoke_txt += '"' + last_said.text + '"';
+
+                                if(data[irc_nick].seen.date - last_said.date > 1000){
+                                    spoke_txt += ' ' + x.ms_to_time(data[irc_nick].seen.date - last_said.date, false, true, true) + ' before'
+                                }
                             }
+
+                            say_data.push({
+                                nick: irc_nick,
+                                date_hidden: data[irc_nick].seen.date,
+                                date: x.epoc_to_date(data[irc_nick].seen.date, d.offset, d.timezone),
+                                action: data[irc_nick].seen.action,
+                                said: spoke_txt
+                            })
                         }
 
-                        say({succ: str});
+                        say_data.sort(function (a, b) {
+                          return a.date_hidden - b.date_hidden;
+                        }).reverse();
+
+                        CHAN.log.debug(say_data, now);
+
+                        say(say_data, 1, {
+                            table: true, 
+                            table_opts: {
+                                header: true, 
+                                outline: false, 
+                                full_width: ['nick'],
+                                col_format: {
+                                    nick: function(row, cell){ 
+                                        return x.score(row.date_hidden, {max: now + 100, min: now - 2592000000, score_str: x.no_highlight(row.nick), config: CHAN.config})
+                                    }, 
+                                    date: function(row, cell){ 
+                                        return x.score(row.date_hidden, {max: now + 100, min: now - 2592000000, score_str: row.date, config: CHAN.config})
+                                    },
+                                    action: function(row, cell){
+                                        switch(row.action){
+                                            case 'speak':
+                                                return CHAN.t.highlight(row.action);
+                                                break;
+                                            case 'pm':
+                                                return CHAN.t.highlight2(row.action);
+                                                break;
+                                            case 'join':
+                                                return CHAN.t.success(row.action);
+                                                break;
+                                            case 'kick':
+                                                return CHAN.t.warn(row.action);
+                                                break;
+                                            case 'kill':
+                                                return CHAN.t.fail(row.action);
+                                                break;
+                                            case 'part':
+                                            case 'quit':
+                                                return CHAN.t.null(row.action);
+                                                break;
+                                            default: 
+                                                return CHAN.t.waiting(row.action);
+                                                break;
+                                        }
+                                    }
+                                }
+                            }, 
+                            lines: 15, 
+                            force_lines: true
+                        });
+
                     });
-                }
-            });
+                });
+                
+
+            } else {
+                args.irc_nick = args.method;
+                delete args.method;
+
+                b.users.get_user_data(args.irc_nick === USER.nick ? USER : args.irc_nick, {
+                    ignore_err: true,
+                    skip_say: true
+                }, function(data){
+                    if(!data.seen){
+                        say({err: args.irc_nick + ' has never been seen'});
+                    } else {
+                        var str = x.no_highlight(CHAN.t.term(args.irc_nick)) + ' ';
+                        switch(data.seen.action){
+                            case 'speak':
+                                str += 'last spoke in';
+                                break;
+                            case 'pm':
+                                str += 'last PMed';
+                                break;
+                            case 'part':
+                                str += 'last parted from';
+                                break;
+                            case 'join':
+                                str += 'last joined';
+                                break;
+                            case 'kick':
+                                str += 'was last kicked from'; 
+                                break;
+                            case 'kill':
+                                str += 'was last killed from'; 
+                                break;
+                            case 'quit':
+                                str += 'last quit the server'; 
+                                break;
+                            default: 
+                                str += 'last ' + data.seen.action + 'ed in';
+                                break;
+                        }
+
+                        b.users.get_user_data(USER.nick, {
+                            ignore_err: true,
+                            skip_say: true
+                        }, function(d){
+                            if(data.seen.chan !== null){
+                                str += ' ' + data.seen.chan + ' (' + data.seen.where + ')';
+                            } 
+                            str += ' on ' + x.epoc_to_date(data.seen.date, d.offset, d.timezone);
+
+
+                            if(data.spoke && data.spoke.text && data.spoke.text.length > 0){
+                                var last_said = data.spoke.text[0]
+
+                                str += ' "' + last_said.text + '"';
+
+                                if(data.seen.date - last_said.date > 1000){
+                                    str += ' ' + x.ms_to_time(data.seen.date - last_said.date, false, true, true) + ' before'
+                                }
+                            }
+
+                            say({succ: str});
+                        });
+                    }
+                });
+            }
         }
     },
     nicks: {
