@@ -297,7 +297,7 @@ function init_bot(){
             nicks_arr.push(nick);
         }
 
-        if(config.require_nickserv_to_edit_user_data) b.users.nickserv_check_list(nicks_arr);
+        if(config.require_nickserv_to_edit_user_data) b.users.nickserv_check_list(nicks_arr, chan, 'names');
 
         //check for extra users, delete them if they exist
         if(b.channels[chan]){

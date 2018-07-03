@@ -551,19 +551,19 @@ var cmds = {
                     say({err: 'No channel by that name'}, 3);
                     return;
                 } else {
-                    b.users.finish_nicklist_callback = function(callback){
+                    b.users.add_nickserv_cb(args.chan, 'names', function(callback){
                         var chan_name = args.chan
                         usr_list(chan_name);
                         callback();
-                    };
+                    });
                     bot.send('names', args.chan);
                 }
             } else {
-                b.users.finish_nicklist_callback = function(callback){
+                b.users.add_nickserv_cb(CHAN.chan, 'names', function(callback){
                     var chan_name = CHAN.chan
                     usr_list(chan_name);
                     callback();
-                };
+                });
                 bot.send('names', CHAN.chan);
             }
 
