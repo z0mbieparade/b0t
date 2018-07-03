@@ -1,5 +1,6 @@
 var wunderbar = require('wunderbar'),
-    weather = new wunderbar(config.API.weather.key);
+    weather = new wunderbar(config.API.weather.key),
+    didYouMean = require('didyoumean2');
 
 var WU = exports.WU = function(){}
 
@@ -79,20 +80,33 @@ WU.prototype.get_weather = function(loc, irc_nick, callback) {
 
                 callback(data);
             } else if (res.response.results) {
-
                 var w_obj = {};
+                var w_name_list = [];
                 res.response.results.forEach(function(res){
+                    res.name_string = res.city + ', ' + res.state + ' ' + res.country_name;
+                    w_name_list.push(res.name_string);
                     w_obj[res.l] = res;
                 });
+                var closest = didYouMean(loc, w_name_list);
 
-                _this.get_weather(Object.keys(w_obj)[0], irc_nick, callback);
+                var ret_obj = Object.keys(w_obj)[0];
+                for(var l in w_obj){
+                    if(w_obj[l].name_string === closest)
+                    {
+                        ret_obj = w_obj[l];
+                        break;
+                    }
+                }
+
+                b.log.debug(w_name_list, 'didumean', loc, closest, ret_obj);
+
+                _this.get_weather(ret_obj.l, irc_nick, callback);
             }
         }
     });
 }
 
 WU.prototype.weather_str = function(d, CHAN){
-    b.log.debug(d);
     var str = CHAN.t.highlight(d.display_location.full) + ': ' + symbols[d.icon] + ' ' + d.weather + ' ';
     str += x.score(d.temp_f, {
         score_str: parseInt(d.temp_f) + '°F (' + parseInt(d.temp_c) + '°C)', 
@@ -125,9 +139,6 @@ WU.prototype.get_forecast = function(loc, loc_name, irc_nick, callback) {
     var location = loc_name;
     var _this = this;
     weather.forecast(loc, function(err, res) {
-
-    b.log.debug(loc, location, irc_nick);
-
         if(err) {
             b.log.error(err);
             callback({'err': 'An error has occured.'});

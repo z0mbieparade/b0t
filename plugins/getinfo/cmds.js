@@ -113,24 +113,13 @@ var cmds = {
             });
             args.term = pascal;
             info.last_word = pascal;
-            wikipedia.from_api(args.term, "en", function(markup){
-                if(markup){
-                    var obj = wikipedia.parse(markup);
 
-                    var text = wikipedia.plaintext(markup);
-
-                    if(!text){
-                        text = markup.replace(/^==\s/gm, ' \u001f');
-                        text = text.replace(/\s==$/gm, '\u000f: ');
-                        text = text.replace(/{{.*?}}|\[\[|\]\]|\r\r|\n\n/gm, '');
-                    }
-
-                    var str = CHAN.t.highlight('Wiki ' + CHAN.t.term(args.term)) + ' ' + text;
-
-                    say(str, 1, {url: 'https://en.wikipedia.org/wiki/' + encodeURIComponent(args.term)});
-                } else {
-                    say({err: 'Nothing found'});
-                }
+            wikipedia.fetch(args.term).then(doc => {
+                var text = doc.plaintext().trim();
+                var str = CHAN.t.highlight('Wiki ' + CHAN.t.term(args.term)) + ' ' + text;
+                say(str, 1, {url: 'https://en.wikipedia.org/wiki/' + encodeURIComponent(args.term)});
+            }).catch(err => {
+                say({err: 'Nothing found'});
             });
         }
     },
