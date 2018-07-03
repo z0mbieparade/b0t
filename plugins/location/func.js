@@ -95,13 +95,13 @@ WU.prototype.weather_str = function(d, CHAN){
     b.log.debug(d);
     var str = CHAN.t.highlight(d.display_location.full) + ': ' + symbols[d.icon] + ' ' + d.weather + ' ';
     str += x.score(d.temp_f, {
-        score_str: d.temp_f + '°F (' + d.temp_c + '°C)', 
+        score_str: parseInt(d.temp_f) + '°F (' + parseInt(d.temp_c) + '°C)', 
         colors: temp_colors, 
         max: 105, 
         min: -5, 
         config: CHAN.config});
     str += ' Feels like: ' + x.score(d.feelslike_f, {
-        score_str: d.feelslike_f + '°F (' + d.feelslike_c + '°C)', 
+        score_str: parseInt(d.feelslike_f) + '°F (' + parseInt(d.feelslike_c) + '°C)', 
         colors: temp_colors, 
         max: 105, 
         min: -5, 
@@ -160,14 +160,14 @@ WU.prototype.get_forecast = function(loc, loc_name, irc_nick, callback) {
 WU.prototype.forecast_str = function(d, CHAN, hide_day){
     var str = (hide_day ? '' : CHAN.t.term(d.date.weekday_short) + ': ') + symbols[d.icon] + ' ' + d.conditions + ' ';
     str += x.score(d.high.fahrenheit, {
-        score_str: '⬆' + d.high.fahrenheit + '°F (' + d.high.celsius + '°C)', 
+        score_str: '⬆' + parseInt(d.high.fahrenheit) + '°F (' + parseInt(d.high.celsius) + '°C)', 
         colors: temp_colors, 
         max: 105, 
         min: -5, 
         config: CHAN.config
     });
     str += ' ' + x.score(d.low.fahrenheit, {
-        score_str: '⬇' + d.low.fahrenheit + '°F (' + d.low.celsius + '°C)', 
+        score_str: '⬇' + parseInt(d.low.fahrenheit) + '°F (' + parseInt(d.low.celsius) + '°C)', 
         colors: temp_colors, 
         max: 105, 
         min: -5, 

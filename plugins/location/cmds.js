@@ -160,9 +160,9 @@ var cmds = {
                                     say_data.push({
                                         user_hidden: d.irc_nick,
                                         location: d.display_location.full,
-                                        temp: d.temp_f + 'F (' + d.temp_c + 'C)',
+                                        temp: parseInt(d.temp_f) + 'F (' + parseInt(d.temp_c) + 'C)',
                                         temp_f_hidden: d.temp_f,
-                                        feels: d.feelslike_f + 'F (' + d.feelslike_c + 'C)',
+                                        feels: parseInt(d.feelslike_f) + 'F (' + parseInt(d.feelslike_c) + 'C)',
                                         feels_f_hidden: d.feelslike_f,
                                         wind: d.wind_string === 'Calm' ? 'Calm ' + d.wind_dir : d.wind_mph + 'mph ' + d.wind_dir,
                                         wind_hidden: d.wind_mph,
