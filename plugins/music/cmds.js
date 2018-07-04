@@ -182,8 +182,6 @@ var cmds = {
 
                     var say_data = [playing, not_playing];
 
-                    CHAN.log.debug(say_data);
-
                     say(say_data, 1, {
                         table: true, 
                         table_opts: {

@@ -601,7 +601,8 @@ var cmds = {
             },{
                 name: 'all',
                 type: 'flag',
-                key: 'method'
+                key: 'method',
+                spammy: true
             }]
         }],
         func: function(CHAN, USER, say, args, command_string){ 
@@ -612,7 +613,6 @@ var cmds = {
                     ignore_err: true,
                     skip_say: true
                 }, function(d){
-                    b.log.debug('d', d);
                     CHAN.get_all_users_in_chan_data({no_highlight: false, col: ['seen', 'spoke'], label: 'Seen/Spoke', return_rows: true}, function(data){
                         
                         var say_data = [];
@@ -621,7 +621,7 @@ var cmds = {
                         for(var irc_nick in data){
                             b.log.debug('data', irc_nick, data[irc_nick]);
 
-                            if(data[irc_nick].seen.date > now - 3600000 && data[irc_nick].seen.action === 'speak') continue;
+                            if(data[irc_nick].seen.date > now - 3600000 && data[irc_nick].seen.action === 'speak' && Object.keys(data).length > 15) continue;
 
                             var spoke_txt = '';
                             if(data[irc_nick].spoke && data[irc_nick].spoke.text && data[irc_nick].spoke.text.length > 0){
@@ -646,8 +646,6 @@ var cmds = {
                         say_data.sort(function (a, b) {
                           return a.date_hidden - b.date_hidden;
                         }).reverse();
-
-                        CHAN.log.debug(say_data, now);
 
                         say(say_data, 1, {
                             table: true, 
@@ -980,6 +978,33 @@ var cmds = {
                 }
                 say({succ: 'Original nicks updated!'});
             } 
+        }
+    },
+    unban: {
+        action: 'Unban yourself if you were auto kick/banned for being inactive for too long',
+        discord: false,
+        func: function(CHAN, USER, say, args, command_string){ 
+            if(b.is_op){
+                b.users.get_user_data(USER.nick, {
+                        ignore_err: true,
+                        skip_say: true
+                    }, function(d){
+                        if(!d || !d.auto_kb){
+                            say({err: 'You have not been auto kick/banned from any channels! If you are banned for another reason, please contact the channel operator.'});
+                        } else {
+                            var chans = Object.keys(d.auto_kb);
+                            for(var chan in d.auto_kb){
+                                bot.send('mode', chan, '-b', USER.nick + '!*@*');
+                                bot.send('sajoin', USER.nick, chan);
+                            }
+                            db.delete("/nicks/" + USER.nick + '/auto_kb', function(){
+                                say({succ: 'You have been unbanned from: ' + chans.join(', ') + ' you can now rejoin if you were not autojoined.' });
+                            }, USER.nick);
+                        }
+                });
+            } else {
+                say({err: 'Cannot use this command due to insufficent bot channel privileges.'});
+            }
         }
     },
     //TODO: need a way to add/edit/delete obj/arr items

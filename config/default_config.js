@@ -84,8 +84,8 @@ exports.default = {
 		//an array of words for info_bot to ignore.
 		info_bot_ignore 	: ["who", "what", "wat", "wot", "where", "why", "y", "he", "she", "they", "it", "us", "me", "you", "I", "but", "up"],
 
-		//auto kick/ban users who are inactive for a long enough period of time (beta)
-		//autokb_users_inactive_for: 2629746000, // = 1mo
+		//auto kick/ban users who are inactive for a long enough period of time
+		autokb_users_inactive_for: 0, //2629746000 = 1mo, setting a time in ms > 0 enables this setting
 
 		//disables all color output for b0t in channel, and all color input from users in color accepted commands.
 		disable_colors 		: false,
