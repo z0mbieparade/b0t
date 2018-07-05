@@ -64,7 +64,7 @@ module.exports = class GI{
              x.get_url(is_yt[5], 'youtube', function(data){
 
                 var str =  CHAN.t.highlight(data.title) + CHAN.t.null(' | Uploader: ') + CHAN.t.highlight(data.owner);
-                    str += CHAN.t.null(' | Time: ') + CHAN.t.highlight(x.ms_to_time(data.duration * 1000, false)) + CHAN.t.null(' | Views: ') + CHAN.t.highlight(data.views);  
+                    str += CHAN.t.null(' | Time: ') + CHAN.t.highlight(x.ms_to_time(data.duration * 1000, {short: false})) + CHAN.t.null(' | Views: ') + CHAN.t.highlight(data.views);  
 
                 say_link.title = str;
                 callback(CHAN.t.highlight(CHAN.t.term(src + ':') + ' ' + say_link.title) + ' ' + say_link.description, say_link.href)

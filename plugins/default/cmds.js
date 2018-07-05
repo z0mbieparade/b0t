@@ -631,7 +631,7 @@ var cmds = {
                                 spoke_txt += '"' + last_said.text + '"';
 
                                 if(data[irc_nick].seen.date - last_said.date > 1000){
-                                    spoke_txt += ' ' + x.ms_to_time(data[irc_nick].seen.date - last_said.date, false, true, true) + ' before'
+                                    spoke_txt += ' ' + x.ms_to_time(data[irc_nick].seen.date - last_said.date) + ' before'
                                 }
                             }
 
@@ -752,7 +752,7 @@ var cmds = {
                                 str += ' "' + last_said.text + '"';
 
                                 if(data.seen.date - last_said.date > 1000){
-                                    str += ' ' + x.ms_to_time(data.seen.date - last_said.date, false, true, true) + ' before'
+                                    str += ' ' + x.ms_to_time(data.seen.date - last_said.date) + ' before'
                                 }
                             }
 
