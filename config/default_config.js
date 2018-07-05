@@ -86,6 +86,7 @@ exports.default = {
 
 		//auto kick/ban users who are inactive for a long enough period of time
 		autokb_users_inactive_for: 0, //2629746000 = 1mo, setting a time in ms > 0 enables this setting
+		autokb_new_user_threshold: 60480000, // = 1wk, new users that join have this amount of time to speak or be kb. requires above to not be 0
 
 		//disables all color output for b0t in channel, and all color input from users in color accepted commands.
 		disable_colors 		: false,
