@@ -298,7 +298,7 @@ function init_bot(){
         }
 
         if(config.require_nickserv_to_edit_user_data) b.users.nickserv_check_list(nicks_arr, chan, 'names');
-        if(config.autokb_users_inactive_for > 0) b.users.autokb_check_list(nicks_arr, chan);
+        if(b.channels[chan].config.autokb_users_inactive_for > 0) b.users.autokb_check_list(nicks_arr, chan);
 
         //check for extra users, delete them if they exist
         if(b.channels[chan]){

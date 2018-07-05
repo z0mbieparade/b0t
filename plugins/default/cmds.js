@@ -984,9 +984,10 @@ var cmds = {
     unban: {
         action: 'Unban yourself if you were auto kick/banned for being inactive for too long',
         discord: false,
-        disabled: function(){
+       /* disabled: function(){ //this needs a little more thought
+            console.log('UNBAN', this);
             return !config.autokb_users_inactive_for;
-        },
+        }, */
         func: function(CHAN, USER, say, args, command_string){ 
             if(b.is_op){
                 b.users.get_user_data(USER.nick, {
