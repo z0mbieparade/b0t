@@ -66,31 +66,64 @@ var cmds = {
 				}
 
 				try {
-					var str = CHAN.t.highlight('MWD ' + CHAN.t.term(word) + ' ');
+					var entries = [];
 
-					var def_count = 0;
 					for(var i = 0; i < data.entry_list.entry.length; i++){
 						var entry = data.entry_list.entry[i];
-						if(entry.ew[0] === word){
-							for(var j = 0; j < entry.def.length; j++){
-								var def = entry.def[j];
-								for(var k = 0; k < def.dt.length; k++){
-									var dt = typeof def.dt[k] === 'string' ? def.dt[k].replace(/^:/, '').trim() : (
-										typeof def.dt[k]['_'] === 'string' ? def.dt[k]['_'].replace(/^:/, '').trim() : false);
 
-									if(dt){
-										def_count ++;
-										str += CHAN.t.warn(def_count) + ' ' + dt + ' ';
+						if(entry.ew[0] === word){
+							//console.log('entry', require('util').inspect(entry, true, 10));
+							var e_str = '';
+
+							var type = entry.fl && entry.fl.length ? entry.fl[0] : '';
+							var pr = entry.pr && entry.pr.length ? ' \\' + entry.pr[0] + '\\' : '';
+							var defs = [];
+
+							entry.def.forEach(function(def){
+								var ssl = def.ssl && def.ssl.length ? def.ssl : [];
+
+								def.dt.forEach(function(dt, i){
+									var d = typeof dt === 'string' ? dt.replace(/^:/, '').trim() : (typeof dt['_'] === 'string' ? dt['_'].replace(/^:/, '').trim() : '');
+
+									if(ssl[i]) d = CHAN.t.null(ssl[i] + ':') + ' ' + d;
+
+									var syn = [];
+									if(dt.sx){
+										dt.sx.forEach(function(sx){
+											if(typeof sx === 'string'){
+												syn.push(sx.trim());
+											} else if (sx['_'] && typeof sx['_'] === 'string') {
+												syn.push(sx['_'].trim())
+											}
+										});
 									}
-								}
+
+									if(syn.length > 0) d = d.trim() + ' ' + CHAN.t.considering(syn.join(', '))
+
+									if(d && dt.un && typeof dt.un[0] === 'string'){
+										d += CHAN.t.highlight(' - ' + dt.un.join(', '));
+									}
+
+									if(d) defs.push(d);
+								})
+							});
+
+							if(defs.length > 0){
+								e_str += ' ' + CHAN.t.success(type + pr);
+								defs.forEach(function(def, i){
+									e_str += ' ' + CHAN.t.warn(i + 1) + ' ' + def;
+								});
+
+								entries.push(e_str);
 							}
 						}
 					}
 
-					if(def_count === 0){
+					if(entries.length === 0){
 						say({err: 'Nothing found'});
 					} else {
-						say(str, 1, {url: 'http://www.merriam-webster.com/dictionary/' + word});
+						entries.unshift(CHAN.t.highlight('MWD ' + CHAN.t.term(word)));
+						say(entries, 1, {url: 'http://www.merriam-webster.com/dictionary/' + word, join: '\n', force_lines: 5});
 					}
 				} catch(e) {
 					say({err: 'Something went wrong'});
