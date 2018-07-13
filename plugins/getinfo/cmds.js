@@ -173,6 +173,7 @@ var cmds = {
 
 			wolfram.query(command_string, function (err, result) {
 				if (err){
+					say({err: err});
 					b.log.error(err);
 					return;
 				}
