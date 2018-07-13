@@ -72,7 +72,7 @@ var cmds = {
 						var entry = data.entry_list.entry[i];
 
 						if(entry.ew[0] === word){
-							//console.log('entry', require('util').inspect(entry, true, 10));
+							console.log('entry', require('util').inspect(entry, true, 10));
 							var e_str = '';
 
 							var type = entry.fl && entry.fl.length ? entry.fl[0] : '';
@@ -173,7 +173,7 @@ var cmds = {
 
 			wolfram.query(command_string, function (err, result) {
 				if (err){
-					log.error(err);
+					b.log.error(err);
 					return;
 				}
 
