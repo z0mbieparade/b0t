@@ -1,5 +1,4 @@
-var urban	   = require('urban'),
-	wikipedia   = require('wtf_wikipedia'),
+var wikipedia   = require('wtf_wikipedia'),
 	GetInfo	 = require(__dirname + '/func.js'),
 	gi		  = new GetInfo();
 
@@ -32,17 +31,45 @@ var cmds = {
 		}],
 		func: function(CHAN, USER, say, args, command_string){
 			info.last_word = args.term;
-			var ud = urban(args.term);
-			ud.first(function(json) {
-				if(json){
-					var str = CHAN.t.highlight('UD ' + CHAN.t.term(args.term) + ': ') + ' ' + c.stripColorsAndStyle(json.definition);
-					if(json.example !== '') str += '\n' + CHAN.t.highlight('e.g. ') + '\u000f' + c.stripColorsAndStyle(json.example);
 
-					say(str, 1, {url: json.permalink});
-				} else {
+			var term = args.term.split(/\s/).filter(function(word){
+				return word ? true : false;
+			}).join('+');
+			var url = 'https://www.urbandictionary.com/define.php?term=' + encodeURI(term);
+
+			x.get_url(url, 'html', function(data){
+				console.log('https://www.urbandictionary.com/define.php?term=' + encodeURI(term), data);
+
+				if(!data || !data.length || data.length === 0)
+				{
+					return say({err: 'Nothing found'}, 2);
+				}
+
+				var description = null, title = null;
+				data.forEach(function(meta){
+					if(meta.attr && meta.attr.content && meta.attr.property === 'og:description'){
+						description = meta.attr.content
+					} else if(meta.attr && meta.attr.content && meta.attr.property === 'og:title'){
+						title = meta.attr.content.replace('Urban Dictionary: ', '');
+					}
+				});
+
+				if(description !== null)
+				{
+					var str = CHAN.t.highlight('UD ' + CHAN.t.term(title === null ? args.term : title) + ': ') + ' ' + c.stripColorsAndStyle(description);
+					//if(json.example !== '') str += '\n' + CHAN.t.highlight('e.g. ') + '\u000f' + c.stripColorsAndStyle(json.example);
+					say(str, 1, {url: url});
+				}
+				else
+				{
 					say({err: 'Nothing found'}, 2);
 				}
-			});
+
+
+
+			}, {
+				only_return_nodes: {tag: ['meta'], attr: {property: ['og:description', 'og:title']}}
+			})
 		}
 	},
 	d: {
