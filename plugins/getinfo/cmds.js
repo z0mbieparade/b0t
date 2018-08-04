@@ -1,4 +1,5 @@
-var wikipedia   = require('wtf_wikipedia'),
+var urban	   = require('urban-dictionary'),
+	wikipedia   = require('wtf_wikipedia'),
 	GetInfo	 = require(__dirname + '/func.js'),
 	gi		  = new GetInfo();
 
@@ -31,45 +32,39 @@ var cmds = {
 		}],
 		func: function(CHAN, USER, say, args, command_string){
 			info.last_word = args.term;
+			urban.term(args.term, (error, entries, tags, sounds) => {
+				if (error) {
+					say({err: error.message});
+				} else {
 
-			var term = args.term.split(/\s/).filter(function(word){
-				return word ? true : false;
-			}).join('+');
-			var url = 'https://www.urbandictionary.com/define.php?term=' + encodeURI(term);
+					entries.forEach(function(entry){
+						entry.rank = entry.thumbs_up - entry.thumbs_down;
+						entry.definition = c.stripColorsAndStyle(entry.definition);
+						entry.definition = entry.definition.replace(/[\[\]]/gm, '');
 
-			x.get_url(url, 'html', function(data){
-				console.log('https://www.urbandictionary.com/define.php?term=' + encodeURI(term), data);
+						if(entry.example)
+						{
+							entry.example = c.stripColorsAndStyle(entry.example);
+							entry.example = entry.example.replace(/[\[\]]/gm, '');
+						}
+					});
+					entries.sort(function(a, b){
+						if (a.rank > b.rank) return -1;
+						if (a.rank < b.rank) return 1;
+						return 0;
+					});
 
-				if(!data || !data.length || data.length === 0)
-				{
-					return say({err: 'Nothing found'}, 2);
+					var entry = entries[0];
+
+					var str_arr = [ 
+						CHAN.t.highlight('UD ' + CHAN.t.term(entry.word)) + ' 👍' + CHAN.t.success(entry.thumbs_up) + ' 👎' + CHAN.t.fail(entry.thumbs_down) + ' ' + CHAN.t.null('-' + entry.author),
+						entry.definition
+					];
+					if(entry.example) str_arr.push( CHAN.t.highlight('e.g. ') + '\u000f' + entry.example);
+
+					say(str_arr, 1, {join: '\n', force_lines: 5, url: entry.permalink});
 				}
-
-				var description = null, title = null;
-				data.forEach(function(meta){
-					if(meta.attr && meta.attr.content && meta.attr.property === 'og:description'){
-						description = meta.attr.content
-					} else if(meta.attr && meta.attr.content && meta.attr.property === 'og:title'){
-						title = meta.attr.content.replace('Urban Dictionary: ', '');
-					}
-				});
-
-				if(description !== null)
-				{
-					var str = CHAN.t.highlight('UD ' + CHAN.t.term(title === null ? args.term : title) + ': ') + ' ' + c.stripColorsAndStyle(description);
-					//if(json.example !== '') str += '\n' + CHAN.t.highlight('e.g. ') + '\u000f' + c.stripColorsAndStyle(json.example);
-					say(str, 1, {url: url});
-				}
-				else
-				{
-					say({err: 'Nothing found'}, 2);
-				}
-
-
-
-			}, {
-				only_return_nodes: {tag: ['meta'], attr: {property: ['og:description', 'og:title']}}
-			})
+			});
 		}
 	},
 	d: {

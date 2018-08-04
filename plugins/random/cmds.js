@@ -1,5 +1,6 @@
-var imgur   = require("imgur"),
-	fortune = require("adage")
+var fortune = require("adage"),
+	RND = require(__dirname + '/func.js'),
+	rnd = new RND();
 
 var info = {
 	name: 'Random',
@@ -8,12 +9,6 @@ var info = {
 	bullet_order: [0, 1, 2, 3, 4, 5]
 }
 exports.info = info;
-
-if(config.API.imgur && config.API.imgur.key !== '') {
-	imgur.setClientId(config.API.imgur.key);
-} else {
-	b.log.warn('Missing imgur API key!');
-}
 
 var insults_db = new DB({db_name: 'insults'});
 var scopes_db = new DB({db_name: 'scopes'});
@@ -122,23 +117,26 @@ var cmds = {
 		settings: ['potd/imgur_album'],
 		API: ['imgur'],
 		func: function(CHAN, USER, say, args, command_string){
-			imgur.getAlbumInfo(CHAN.config.plugin_settings.potd.imgur_album)
-				.then(function(album) {
-					var img = album.data.images[0];
-					var say_arr = [];
-					
-					say_arr.push(CHAN.t.highlight('POTD: ') + img.link);
-					if(img.title != 'null' && img.title !== null) say_arr.push(CHAN.t.null(img.title));
-					if(img.description != 'null' && img.description !== null) say_arr.push(CHAN.t.null(img.description));
+			rnd.imgur(CHAN, 'album', {
+				path: [CHAN.config.plugin_settings.potd.imgur_album],
+				handlers: {
+					success: function(album){
+						var img = album.data.images[0];
+						var say_arr = [];
+						
+						say_arr.push(CHAN.t.highlight('POTD: ') + img.link);
+						if(img.title != 'null' && img.title !== null) say_arr.push(CHAN.t.null(img.title));
+						if(img.description != 'null' && img.description !== null) say_arr.push(CHAN.t.null(img.description));
 
-					say(say_arr, 1, {skip_verify: true, join: '\n'});
-
-				}).catch(function (err) {
-					CHAN.log.error(err.message);
-					say({err: 'None found'}, 2);
-				});
+						say(say_arr, 1, {skip_verify: true, join: '\n'});
+					},
+					error: function(err){
+						b.log.error(err);
+						say({err: 'None found'}, 2);
+					}
+				}
+			})
 		}
-		
 	},
 	creed: {
 		action: 'things to live by',

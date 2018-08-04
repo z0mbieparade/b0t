@@ -5,7 +5,7 @@ var info = {
 exports.info = info;
 
 if(config.API.weather && config.API.weather.key !== '') {
-	var Weather = require(__dirname + '/func.js').WU,
+	var Weather = require(__dirname + '/func.js'),
 		wu = new Weather(),
 		cluster = require('hierarchical-clustering');
 } else {
