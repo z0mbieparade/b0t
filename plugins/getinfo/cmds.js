@@ -1,7 +1,7 @@
-var urban	   = require('urban-dictionary'),
+var urban	   	= require('urban-dictionary'),
 	wikipedia   = require('wtf_wikipedia'),
-	GetInfo	 = require(__dirname + '/func.js'),
-	gi		  = new GetInfo();
+	GetInfo	 	= require(__dirname + '/func.js'),
+	gi		  	= new GetInfo();
 
 var info = {
 	name: 'GetInfo',
@@ -36,6 +36,15 @@ var cmds = {
 				if (error) {
 					say({err: error.message});
 				} else {
+
+					var filter_entries = entries.filter(function(entry){
+						return entry.word.toLowerCase() === args.term.toLowerCase(); 
+					});
+
+					if(filter_entries.length > 0)
+					{
+						entries = filter_entries;
+					}
 
 					entries.forEach(function(entry){
 						entry.rank = entry.thumbs_up - entry.thumbs_down;
