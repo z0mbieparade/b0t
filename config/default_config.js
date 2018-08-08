@@ -156,6 +156,13 @@ exports.default = {
 		mwdictionary: {
 			key 		: ""
 		},
+
+		// http://developer.nutritionix.com/admin/access_details (n command)
+		nutritionix: {
+			key 		: "",
+			app_id	 	: ""
+		},
+
 		// http://docs.trakt.apiary.io/ You will need an api key here. 
 		// The docs should have a link for creating your key. (TV/Movie commands)
 		trakt: {

@@ -1,8 +1,41 @@
-var google	  = require('google'),
-	DDG		 = require('node-ddg-api').DDG,
-	ddg		 = new DDG(config.bot_nick);
+var google	  	= require('google'),
+	request 	= require('request'),
+	DDG		 	= require('node-ddg-api').DDG,
+	ddg		 	= new DDG(config.bot_nick);
 
 module.exports = class GI{
+	nu(CHAN, send_data){
+		if(config.API.nutritionix && config.API.nutritionix.key !== '') {
+			request.post({
+				url: 'https://trackapi.nutritionix.com/v2/natural/nutrients', 
+				headers: {
+					"Content-Type": "application/json", 
+					"x-app-id": config.API.nutritionix.app_id, 
+					"x-app-key": config.API.nutritionix.key
+				},
+				form: {
+					query: send_data.query
+				}
+			}, function(error, response, body){
+				if(error){
+					CHAN.log.error('Error:', error);
+					if(send_data.handlers.error) send_data.handlers.error(error);
+				} else if(response.statusCode !== 200){
+					CHAN.log.error('Invalid Status Code Returned:', response.statusCode);
+					if(send_data.handlers.error) send_data.handlers.error(error);
+				} else {
+					var json_parse = JSON.parse(body);
+					if(json_parse.error) CHAN.log.error('Error:', json_parse.message);
+
+					send_data.handlers.success(json_parse);
+				}
+			})
+
+		} else {
+			b.log.warn('Missing Nutritionix API key!');
+			if(send_data.handlers.error) send_data.handlers.error({err: 'Missing imgur API key'});
+		}
+	};
 
 	goog(CHAN, search_string, callback){
 		var _this = this;

@@ -509,5 +509,62 @@ var cmds = {
 			});
 		}
 	},
+	n: {
+		action: 'get nutrition info about food',
+		params: [{
+			name: 'search string',
+			type: 'text'
+		}],
+		API: ['nutritionix'],
+		func: function(CHAN, USER, say, args, command_string){
+			gi.nu(CHAN, {
+				query: args.search_string,
+				handlers: {
+					success: function(data){
+						if(data.foods && data.foods.length > 0)
+						{
+							var say_arr = [];
+							data.foods.forEach(function(food){
+
+								console.log(food);
+
+								for(var key in food){
+									if(food[key] === null) food[key] = 0;
+								}
+
+								var str = CHAN.t.highlight(food.food_name);
+
+								var serving = food.serving_qty + food.serving_unit;
+								if(food.serving_unit.match(/^serving/i))
+								{
+									serving = food.serving_unit
+										.replace(/^serving \(about /i, '~')
+										.replace(/\s|\)/gi, '')
+								}
+
+								str += CHAN.t.success(' (' + serving + '/' + food.serving_weight_grams + 'g) ' + Math.round(food.nf_calories) + 'cal, ');
+								str += CHAN.t.fail('Carbs: ' + Math.round(food.nf_total_carbohydrate) + 'g (Sug: ' +  food.nf_sugars.toFixed(1) + 'g, Fiber: ' + food.nf_dietary_fiber.toFixed(1) + 'g), ');
+								str += CHAN.t.warn('Fat: ' + Math.round(food.nf_total_fat) + 'g (Sat: ' +  food.nf_saturated_fat.toFixed(1) + 'g), ');
+								str += CHAN.t.waiting('Chol: ' + Math.round(food.nf_cholesterol) + 'g, ');
+								str += CHAN.t.considering('Prot: ' + food.nf_protein.toFixed(1) + 'g ');
+
+								say_arr.push(str);
+							});
+
+							say(say_arr, 1, {join: '\n'});
+						}
+						else
+						{
+							console.log('succ error', data)
+						}
+					},
+					error: function(err)
+					{
+						console.log('error', err)
+					}
+				}
+			})
+		}
+	},
 }
 exports.cmds = cmds;
