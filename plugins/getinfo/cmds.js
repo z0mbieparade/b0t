@@ -71,7 +71,7 @@ var cmds = {
 					];
 					if(entry.example) str_arr.push( CHAN.t.highlight('e.g. ') + '\u000f' + entry.example);
 
-					say(str_arr, 1, {join: '\n', force_lines: 5, url: entry.permalink});
+					say(str_arr, 1, {join: '\n', url: entry.permalink});
 				}
 			});
 		}
@@ -525,7 +525,6 @@ var cmds = {
 						{
 							var say_arr = [];
 							data.foods.forEach(function(food){
-
 								console.log(food);
 
 								for(var key in food){
