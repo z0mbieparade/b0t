@@ -2,6 +2,7 @@
 config.json
 node_modules/*
 db_backup.json
+db_backup/*
 plugins/testing
 package-lock.json
 te5t/*
