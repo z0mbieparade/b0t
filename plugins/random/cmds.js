@@ -1,4 +1,5 @@
 var fortune = require("adage"),
+	dateWithOffset  = require("date-with-offset"),
 	RND = require(__dirname + '/func.js'),
 	rnd = new RND();
 
@@ -400,7 +401,28 @@ var cmds = {
 				info.bullet_order = x.shuffle_arr(info.bullet_order);
 			}
 
-			b.log.debug('info.bullet', info.bullet, 'bullet_order', info.bullet_order);
+			if(debug) b.log.debug('info.bullet', info.bullet, 'bullet_order', info.bullet_order);
+
+			b.users.get_user_data(USER.nick, {
+				col: 'rr',
+				label: 'russian roulette',
+				ignore_err: true,
+				skip_say: true
+			}, function(d){
+				console.log('get user data rr', USER.nick, d);
+				if(d){
+					var now = (new dateWithOffset(0)).getTime();
+					var wait = (d + 900000) - now;
+
+					if(wait > 0){
+						return say({err: 'You have to wait ' + x.ms_to_time(wait) + ' before playing russian roulette!'})
+					} else {
+						pull_trigger();
+					}
+				} else {
+					pull_trigger();
+				}
+			});
 
 			function pull_trigger(force_fire_on){
 				info.bullet++;
@@ -420,20 +442,26 @@ var cmds = {
 
 					var new_gun = false;
 
-					b.log.debug('pull_trigger bullet', bullet, 'misfire', misfire, 'force_fire_on', force_fire_on, 'hit_nick', hit_nick);
+					if(debug) b.log.debug('pull_trigger bullet', bullet, 'misfire', misfire, 'force_fire_on', force_fire_on, 'hit_nick', hit_nick);
 
 					switch(bullet) {
 						case 1:
 							if(force_fire_on) {
 								say(CHAN.t.fail('BANG! You killed ' + hit_nick + '!'), 1, {skip_verify: true});
 								if(!debug) bot.send('kill', hit_nick, "BANG! " + USER.nick + " killed you!");
+								if(debug) CHAN.log.debug('kill', hit_nick, "BANG! " + USER.nick + " killed you!");
 							} else if(misfire){
 								say(CHAN.t.fail('BANG! Your gun misfired and hit ' + hit_nick + '!'), 1, {skip_verify: true});
 								if(!debug) bot.send('kill', hit_nick, "BANG! " + USER.nick + "'s gun misfired and hit you!");
+								if(debug) CHAN.log.debug('kill', hit_nick, "BANG! " + USER.nick + "'s gun misfired and hit you!");
 							} else {
 								say(CHAN.t.fail('BANG!'), 1, {skip_verify: true});
 								if(!debug) bot.send('kill', hit_nick, "BANG! You found the only bullet! So you die.");
+								if(debug) CHAN.log.debug('kill', hit_nick, "BANG! You found the only bullet! So you die.");
 							}
+
+							b.users.update_user(hit_nick, {rr: (new dateWithOffset(0)).getTime()}, function(msg){});
+
 							new_gun = true;
 							break;
 						case 2:
@@ -444,13 +472,26 @@ var cmds = {
 							} else {
 								say(CHAN.t.success('Click! Gain half-ops!'), 1, {skip_verify: true});
 							}
+
+							for(var usr in CHAN.users)
+							{
+								if(CHAN.users[usr].perm === '%' && usr !== hit_nick)
+								{
+									if(!debug) bot.send('samode', CHAN.chan, '-h', usr);
+									if(debug) CHAN.log.debug('samode', CHAN.chan, '-h', usr)
+								}
+							}
+
 							if(!debug) bot.send('samode', CHAN.chan, '+h', hit_nick);
+							if(debug) CHAN.log.debug('samode', CHAN.chan, '+h', hit_nick)
+
 							break;
 						case 3:
 							if(force_fire_on) {
 								say(CHAN.t.success('Click! ' + hit_nick + ' gets a new nickname!'), 1, {skip_verify: true});
 								var new_nick = x.rand_arr(russian_nick);
 								if(!debug) bot.send('sanick', hit_nick, new_nick);
+								if(debug) CHAN.log.debug('sanick', hit_nick, new_nick);
 								if(!debug) hit_nick = new_nick;
 							} else if(misfire){
 								say(CHAN.t.success('Click! Watch where you\'re pointing that thing! ' + hit_nick + ', enjoy your new nickname!'), 1, {skip_verify: true});
@@ -458,17 +499,20 @@ var cmds = {
 								say(CHAN.t.success('Click! Enjoy your new nickname!'), 1, {skip_verify: true});
 							}
 							if(!debug) bot.send('sanick', hit_nick, x.rand_arr(russian_nick));
+							if(debug) CHAN.log.debug('sanick', hit_nick, x.rand_arr(russian_nick));
 							break;
 						case 4:
 							if(force_fire_on) {
 								say(CHAN.t.success('Click! ' + hit_nick + ' loses half-ops.'), 1, {skip_verify: true});
 								if(!debug) bot.send('samode', CHAN.chan, '-h', hit_nick);
+								if(debug) CHAN.log.debug('samode', CHAN.chan, '-h', hit_nick);
 							} else if(misfire){
 								say(CHAN.t.success('Click! Shoddy aim, partner. ' + hit_nick + ' loses half-ops.'), 1, {skip_verify: true});
 							} else {
 								say(CHAN.t.success('Click! Lose half-ops!'), 1, {skip_verify: true});
 							}
 							if(!debug) bot.send('samode', CHAN.chan, '-h', hit_nick);
+							if(debug) CHAN.log.debug('samode', CHAN.chan, '-h', hit_nick);
 							break;
 						case 5:
 							if(!force_fire_on && misfire){
@@ -509,7 +553,6 @@ var cmds = {
 				}
 				
 			}
-			pull_trigger();
 		}
 	},
 	poll: {
