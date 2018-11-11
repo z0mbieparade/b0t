@@ -478,7 +478,8 @@ var cmds = {
 								if(CHAN.users[usr].perm === '%' && usr !== hit_nick)
 								{
 									if(!debug) bot.send('samode', CHAN.chan, '-h', usr);
-									if(debug) CHAN.log.debug('samode', CHAN.chan, '-h', usr)
+									if(!debug) bot.send('samode', CHAN.chan, '+v', usr);
+									if(debug) CHAN.log.debug('samode', CHAN.chan, '-h+v', usr)
 								}
 							}
 
