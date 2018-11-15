@@ -253,9 +253,14 @@ var cmds = {
 		}
 	},
 	oontz: {
+		params: [{
+			optional: true,
+			name: 'text',
+			type: 'text'
+		}],
 		action: 'random excitement',
 		func: function(CHAN, USER, say, args, command_string){
-			var inside = x.rand_arr(dance_inside);
+			var inside = args.text ? args.text : x.rand_arr(dance_inside);
 
 			var outside_left = [];
 			for(var i = 0; i < 8; i++) {
