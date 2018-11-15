@@ -15,7 +15,7 @@ exports.default = {
 
 	//Order these from lowest to highest user permission symbols in the irc. 
 	//These are used to permission commands if you don't want to give everyone access to a command in the chan.
-	permissions 				: ["", "+", "-", "@", "%", "&", "~"],
+	permissions 				: ["", "+", "-", "%", "@", "&", "~"],
 	command_prefix 				: "!", //This is the character that starts every command that the b0t listens for. (i.e. !np)
 
 	//If true, then some commands require registration and ID with NickServ before a user can update their data. 
