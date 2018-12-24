@@ -365,7 +365,7 @@ var cmds = {
 								line_count = line_count + say_arr.length;
 							}
 
-							if(line_count > 15 && i > 1) break;
+							if(line_count > 5 && i > 1) break;
 
 							say(say_arr, 1, { join: '\n', lines: 5, force_lines: true });
 						}
@@ -373,7 +373,7 @@ var cmds = {
 						{
 							line_count = line_count + answer.table.length + 1;
 
-							if(line_count > 15 && i > 1) break;
+							if(line_count > 5 && i > 1) break;
 
 							say(answer.table, 1, {
 								table: true,
