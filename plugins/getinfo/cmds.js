@@ -346,47 +346,34 @@ var cmds = {
 						say(CHAN.t.highlight(CHAN.t.term(interpretation)), 1);
 					}
 
+					var say_arr = [];
 					for(var i = 0; i < answer_arr.length; i++)
 					{
 						var answer = answer_arr[i];
 						if(answer.text)
 						{
-							var say_arr = [];
 							if(answer.title){
 								say_arr.push(CHAN.t.highlight(answer.title));
-								line_count++;
 							}
 
 							if(typeof answer.text === 'string'){
 								say_arr.push(answer.text);
-								line_count++;
 							} else {
 								say_arr = say_arr.concat(answer.text);
-								line_count = line_count + say_arr.length;
 							}
-
-							if(line_count > 5 && i > 1) break;
-
-							say(say_arr, 1, { join: '\n', lines: 5, force_lines: true });
-						}
-						else
-						{
-							line_count = line_count + answer.table.length + 1;
-
-							if(line_count > 5 && i > 1) break;
-
-							say(answer.table, 1, {
-								table: true,
-								table_opts: {
-									title: answer.title,
-									header: false, 
-									outline: false
-								},
-								lines: 15,
-								force_lines: true
+							
+						} else {
+							var table_arr = CHAN.SAY.table(answer.table, {
+								title: answer.title,
+								header: false, 
+								outline: false
 							});
-						}
+
+							say_arr = say_arr.concat(table_arr);
+						}	
 					}
+
+					say(say_arr, 1, { join: '\n', lines: 5, force_lines: true });
 				} else {
 					say({err: 'Nothing found'});
 				}
