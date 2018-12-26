@@ -103,12 +103,13 @@ var cmds = {
 						var entry = data.entry_list.entry[i];
 
 						if(entry.ew[0] === word){
-							console.log('entry', require('util').inspect(entry, true, 10));
 							var e_str = '';
 
 							var type = entry.fl && entry.fl.length ? entry.fl[0] : '';
 							var pr = entry.pr && entry.pr.length ? ' \\' + entry.pr[0] + '\\' : '';
 							var defs = [];
+
+							if(!entry.def) continue;
 
 							entry.def.forEach(function(def){
 								var ssl = def.ssl && def.ssl.length ? def.ssl : [];
@@ -163,6 +164,7 @@ var cmds = {
 					}
 				} catch(e) {
 					say({err: 'Something went wrong'});
+					CHAN.log.error(e);
 				}
 			});
 		}
