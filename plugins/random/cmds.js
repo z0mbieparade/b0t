@@ -1,7 +1,8 @@
-var fortune = require("adage"),
+var fortune 		= require("adage"),
 	dateWithOffset  = require("date-with-offset"),
-	RND = require(__dirname + '/func.js'),
-	rnd = new RND();
+	xpath 			= require('xpath'),
+	RND 			= require(__dirname + '/func.js'),
+	rnd 			= new RND();
 
 var info = {
 	name: 'Random',
@@ -369,8 +370,15 @@ var cmds = {
 	fml: {
 		action: 'get random fml quote',
 		API: ['fml'],
+		params: [{
+			optional: true,
+			name: 'xpath',
+			type: 'text'
+		}],
 		func: function(CHAN, USER, say, args, command_string){
-		   x.get_url('http://api.betacie.com/view/random?key=' + config.API.fml.key + '&language=en', 'xml', function(result){
+			console.log(args)
+			//We'll leave this here just in case the API magically comes back. prolly not.
+		  /* x.get_url('http://api.betacie.com/view/random?key=' + config.API.fml.key + '&language=en', 'xml', function(result){
 				try {
 					var str = CHAN.t.highlight('FML: ');
 					if(+result.root.items[0].item[0].agree > +result.root.items[0].item[0].deserved){
@@ -383,7 +391,40 @@ var cmds = {
 				} catch(e){
 					say({err: 'Something went wrong'});
 				}
-			});
+			});*/
+
+			x.get_url('https://www.fmylife.com/random', 'html', function(result){
+				if(result.err){
+					CHAN.log.error(result.err);
+					return say(result);
+				} else {
+					try {
+						var str = CHAN.t.highlight('FML: ');
+						var txt = xpath.select1('.//div[2]/p/a/text()', result[0]).nodeValue.replace(/\n/gm, '');
+
+						var auth_reg = /By (.*?) /g;
+						var auth = xpath.select1('.//div[3]/text()', result[0]).nodeValue;
+						var author = auth_reg.exec(auth);
+
+						var agree = xpath.select1('.//button[contains(@class, \'vote-up\')]/text()', result[0]).nodeValue;
+						var deserved = xpath.select1('.//button[contains(@class, \'vote-down\')]/text()', result[0]).nodeValue;
+
+						if(+agree > +deserved){
+							str += CHAN.t.warn('"' + txt + '"');
+						} else {
+							str += CHAN.t.fail('"' + txt + '"');
+						}
+						if(author && author.length) str += CHAN.t.null(' -' + author[1]);
+
+						say(str);
+					} catch(e){
+						return say({err: 'Something went wrong'});
+					}
+				}
+			}, {
+				return_err: true,
+				xpath: '//*[@id="content"]/div/div[1]/div[1]/article[1]/div[1]/div[1]'
+			})
 		}
 	},
 	lottery: {
