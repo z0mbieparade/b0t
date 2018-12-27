@@ -164,7 +164,7 @@ var cmds = {
 							entries[closest].unshift(CHAN.t.highlight('MWD ' + CHAN.t.term(closest)));
 						}
 						
-						say(entries[closest], 1, {url: 'http://www.merriam-webster.com/dictionary/' + word, join: '\n', force_lines: 5});
+						say(entries[closest], 1, {url: 'http://www.merriam-webster.com/dictionary/' + word, join: '\n'});
 					}
 				} catch(e) {
 					say({err: 'Something went wrong'});

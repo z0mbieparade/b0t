@@ -50,7 +50,7 @@ var cmds = {
 
 					if(CHAN.is_pm) str += CHAN.t.null(' (cannot be used in a PM)');
 
-					say(str, 2, {skip_verify: true, lines: 20, force_lines: true});
+					say(str, 3, {skip_verify: true, lines: 20, force_lines: true});
 				}
 
 			});
