@@ -558,14 +558,14 @@ var cmds = {
 								{
 									if(CHAN.users[usr].perm === '%' && usr !== hit_nick)
 									{
-										if(!debug) bot.send('samode', CHAN.chan, '-h', usr);
-										if(!debug) bot.send('samode', CHAN.chan, '+v', usr);
-										if(debug) CHAN.log.debug('samode', CHAN.chan, '-h+v', usr)
+										if(!debug) bot.send('mode', CHAN.chan, '-h', usr);
+										if(!debug) bot.send('mode', CHAN.chan, '+v', usr);
+										if(debug) CHAN.log.debug('mode', CHAN.chan, '-h+v', usr)
 									}
 								}
 
-								if(!debug) bot.send('samode', CHAN.chan, '+h', hit_nick);
-								if(debug) CHAN.log.debug('samode', CHAN.chan, '+h', hit_nick)
+								if(!debug) bot.send('mode', CHAN.chan, '+h', hit_nick);
+								if(debug) CHAN.log.debug('mode', CHAN.chan, '+h', hit_nick)
 							}
 
 							break;
@@ -593,15 +593,15 @@ var cmds = {
 							{
 								if(force_fire_on) {
 									say(CHAN.t.success('Click! ' + hit_nick + ' loses half-ops.'), 1, {skip_verify: true});
-									if(!debug) bot.send('samode', CHAN.chan, '-h', hit_nick);
-									if(debug) CHAN.log.debug('samode', CHAN.chan, '-h', hit_nick);
+									if(!debug) bot.send('mode', CHAN.chan, '-h', hit_nick);
+									if(debug) CHAN.log.debug('mode', CHAN.chan, '-h', hit_nick);
 								} else if(misfire){
 									say(CHAN.t.success('Click! Shoddy aim, partner. ' + hit_nick + ' loses half-ops.'), 1, {skip_verify: true});
 								} else {
 									say(CHAN.t.success('Click! Lose half-ops!'), 1, {skip_verify: true});
 								}
-								if(!debug) bot.send('samode', CHAN.chan, '-h', hit_nick);
-								if(debug) CHAN.log.debug('samode', CHAN.chan, '-h', hit_nick);
+								if(!debug) bot.send('mode', CHAN.chan, '-h', hit_nick);
+								if(debug) CHAN.log.debug('mode', CHAN.chan, '-h', hit_nick);
 							}
 
 							break;
