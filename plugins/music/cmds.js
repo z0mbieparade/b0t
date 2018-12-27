@@ -302,7 +302,7 @@ var cmds = {
 					info.last_artist = d.artist;
 				}
 
-				var str =  CHAN.t.highlight('Bio for ' + CHAN.t.term(d.artist) + ': ') + d.bio;
+				var str =  CHAN.t.highlight('Bio for ' + CHAN.t.term(d.artist) + ': ') + '\u000f' + d.bio;
 				say(str, 1, {url: d.url});
 			});
 		}
