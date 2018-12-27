@@ -129,22 +129,27 @@ exports.default = {
 	//If you would like to use a set of commands that require an API key, you must go register for that API key and copy and paste it here. 
 	//If you don't want to use a set of commands you can leave the key blank or delete the whole section. Commands relating to that api will be disabled
 	API: {
+
 		// https://www.goodreads.com/api You will need an API key and secret. (Book commands)
 		goodreads: {
 			key 		: "",
 			secret 		: ""
 		},
+
 		// https://api.imgur.com/ You will need to have an imgur account, and then scroll down on this page to where it say Register an Application. 
 		// client_id is the key, client_secret is the secret.
 		imgur: {
 			key 		: "",
 			secret 		: ""
 		},
+
 		//FML site clamped down on it's API years back, and it's hard to get a key from them now days. 
 		//Sometimes people leave theirs lying around accidentally however. Happy hunting!
-		fml: {
+		//note: this is prolly not relavant anymore since the api has been shut down
+		/*fml: {
 			key 		: ""
-		},
+		},*/
+
 		// http://www.last.fm/api/account/create You will need an API key and a secret. 
 		//You can enter an app_name here too, otherwise it defaults to b0t. (Music/Artist commands)
 		lastfm: {
@@ -152,6 +157,7 @@ exports.default = {
 			secret 		: "",
 			app_name 	: ""
 		},
+
 		// http://www.dictionaryapi.com/ You will need to set up an account and then request a dictionary key. (!d command)
 		mwdictionary: {
 			key 		: ""
@@ -163,26 +169,36 @@ exports.default = {
 			app_id	 	: ""
 		},
 
+		// https://www.themoviedb.org You will need an API key.
+		//Movie commands for getting which movies are in theaters
+		themoviedb: {
+			key 		: ""
+		},
+
 		// http://docs.trakt.apiary.io/ You will need an api key here. 
 		// The docs should have a link for creating your key. (TV/Movie commands)
 		trakt: {
 			key 		: ""
 		},
+
 		// https://untappd.com/api/docs Untappd.com takes a couple of weeks to approve your api_key and secret. (Beer commands)
 		untappd: {
 			key 		: "",
 			secret 		: ""
 		},
+
 		// https://www.wunderground.com/weather/api/d/pricing.html You can get a free key for Weather Underground here, 
 		// so long as you don't go over a certain number of requests a day. 
 		// (Required for Weather/Forecast, however uses location info for users to set times for other things such as !seen)
 		weather: {
 			key 		: ""
 		},
+
 		// http://products.wolframalpha.com/api/ You can get a free appID from here (Required for !wr command)
 		wolframalpha: {
 			key 		: ""
 		},
+
 		// https://console.developers.google.com The youtube API is a bit fiddly, you have to have a gmail account first off. 
 		// Create credentials, for an API key and then you have to grant access for your server IP your b0t is running on. 
 		// The b0t should throw an error the first time you use !yt with your API key in your config with the URL to go to to enable this. 

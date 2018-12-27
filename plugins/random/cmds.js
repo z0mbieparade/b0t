@@ -370,15 +370,9 @@ var cmds = {
 	fml: {
 		action: 'get random fml quote',
 		API: ['fml'],
-		params: [{
-			optional: true,
-			name: 'xpath',
-			type: 'text'
-		}],
 		func: function(CHAN, USER, say, args, command_string){
-			console.log(args)
 			//We'll leave this here just in case the API magically comes back. prolly not.
-		  /* x.get_url('http://api.betacie.com/view/random?key=' + config.API.fml.key + '&language=en', 'xml', function(result){
+		  	/* x.get_url('http://api.betacie.com/view/random?key=' + config.API.fml.key + '&language=en', 'xml', function(result){
 				try {
 					var str = CHAN.t.highlight('FML: ');
 					if(+result.root.items[0].item[0].agree > +result.root.items[0].item[0].deserved){

@@ -1,16 +1,14 @@
 var info = {
-	name: 'TraktTV',
+	name: 'Media',
 	about: 'tv and movie related commands',
 	last_media: null
 }
 exports.info = info;
 
-if(config.API.trakt && config.API.trakt.key !== '') {
-	var traktTV = require(__dirname + '/func.js'),
-		ttv = new traktTV();
-} else {
-	b.log.warn('Missing TraktTV API key!');
-}
+if((config.API.trakt && config.API.trakt.key !== '') || (config.API.themoviedb && config.API.themoviedb.key !== '')) {
+	var Media = require(__dirname + '/func.js'),
+		m = new Media();
+} 
 
 var symbols = {
 	episode: "📺",
@@ -39,7 +37,7 @@ var cmds = {
 					return;
 				}
 
-				ttv.getRecent(CHAN, args.irc_nick, trakt_un, function(d) {
+				m.getRecent(CHAN, args.irc_nick, trakt_un, function(d) {
 					if(d.err) return say(d, 2);
 
 					if(d.title !== '') info.last_media = d.title;
@@ -70,7 +68,7 @@ var cmds = {
 
 				let requests = (Object.keys(data)).map((trakt_un) => {
 					return new Promise((resolve) => {
-						ttv.getRecent(CHAN, data[trakt_un], trakt_un, function(d) {
+						m.getRecent(CHAN, data[trakt_un], trakt_un, function(d) {
 							if(d.err) {
 								CHAN.log.error(d.err);
 							} else {
@@ -135,7 +133,7 @@ var cmds = {
 			}
 
 			try{
-				ttv.search(CHAN, 'show', args.show, function(d) {
+				m.search(CHAN, 'show', args.show, function(d) {
 					if(d.err) return say(d, 2);
 
 					if(d.title !== '') info.last_media = d.title;
@@ -190,7 +188,7 @@ var cmds = {
 			}
 
 			try{
-				ttv.search(CHAN, 'movie', args.movie, function(d) {
+				m.search(CHAN, 'movie', args.movie, function(d) {
 					if(d.err) return say(d, 2);
 
 					if(d.title !== '') info.last_media = d.title;
@@ -223,7 +221,7 @@ var cmds = {
 		}],
 		API: ['trakt'],
 		func: function(CHAN, USER, say, args, command_string){
-			ttv.getTrending(CHAN, args.flag, function(d) {
+			m.getTrending(CHAN, args.flag, function(d) {
 				if(d.err) return say(d, 2);
 
 				var str = CHAN.t.highlight('Trending ');
@@ -245,6 +243,145 @@ var cmds = {
 				str += arr.join(', ');
 
 				say(str, 1, {skip_verify: true});
+			});
+		}
+	},
+	out: {
+		action: 'get movies currently showing in theaters this week',
+		params: [{
+			optional: true,
+			name: 'date',
+			type: 'text'
+		}],
+		API: ['themoviedb'],
+		func: function(CHAN, USER, say, args, command_string){
+			function format_date(date){
+				var month   = date.getMonth() + 1,
+				    day	 	= date.getDate(),
+				    year	= date.getFullYear();
+
+				return year + '-' + month + '-' + day;
+			}
+
+			function adjust_date(date, days)
+			{
+				return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
+			}
+
+			b.users.get_user_data(USER.nick, {
+				ignore_err: true,
+				skip_say: true
+			}, function(d){
+				
+				var date_check = x.str_to_datetime(args.date, d.offset);
+				if(date_check.err){
+					var date = new Date();
+				} else {
+					var date = new Date(date_check.gmt_epoc);
+				}
+
+				var days 		= ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+				var days_abv	= ['sun','mon','tues','wed','thur','fri','sat'];
+				var months 		= ['January','February','March','April','May','June', 'July','August','September','October','November','December'];
+				var months_abv 	= ['jan','feb','mar','apr','may','jun', 'jul','aug','sep','oct','nov','dec'];
+
+				var day = date.getDay();
+				var end_date_str = day === 6 ? end_date_str : format_date(adjust_date(date, 6 - day));
+				var start_date_str = day === 0 ? start_date_str : format_date(adjust_date(date, day * -1));
+				var release_str = 'this week';
+
+				if(args.date){
+					var one_day_reg = new RegExp('\b' + days.join('\b|\b') + '\b|\b' + days_abv.join('\b|\b') + '\b|\btomorrow\b|\btoday\b|\bnow\b|\byesterday\b|\bon\b ', 'igm');
+					var one_month_reg = new RegExp('\b' + months.join('\b|\b') + '\b|\b' + months_abv.join('\b|\b') + '\b|\bmonth\b', 'igm');
+
+					if(args.date.match(one_day_reg)){ //1 day
+						var end_date_str = format_date(date);
+						var start_date_str = format_date(adjust_date(date, -1));
+
+						if(args.date.match(/today|now/igm)){
+							release_str = 'today';
+						} else if(args.date.match(/tomorrow/igm)){
+							release_str = 'tomorrow';
+						} else if(args.date.match(/yesterday/igm)){
+							release_str = 'yesterday';
+						} else {
+							release_str = 'between ' + start_date_str + ' and ' + end_date_str;
+						}
+					} else if(args.date.match(/week/igm)){ //7 days default
+						if(args.date.match(/this week/igm)){
+							release_str = 'this week';
+						} else if(args.date.match(/last week/igm)){
+							release_str = 'last week';
+						} else if(args.date.match(/next week/igm)){
+							release_str = 'next week';
+						} else {
+							release_str = 'between ' + start_date_str + ' and ' + end_date_str;
+						}
+					} else if(args.date.match(/month/igm)){ //30 days
+						start_date_str = date.getFullYear() + '-' + (date.getMonth() + 1) + '-1';
+						var end_date = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+						end_date_str = format_date(end_date);
+
+						if(args.date.match(/this month/igm)){
+							release_str = 'this month';
+						} else if(args.date.match(/last month/igm)){
+							release_str = 'last month';
+						} else if(args.date.match(/next month/igm)){
+							release_str = 'next month';
+						} else {
+							release_str = 'between ' + start_date_str + ' and ' + end_date_str;
+						}
+					} else if(args.date.match(/year/igm)){ //265 days
+						start_date_str = date.getFullYear() + '-1-1';
+						var end_date = new Date(date.getFullYear() + 1, 0, 0);
+						end_date_str = format_date(end_date);
+
+						if(args.date.match(/this year/igm)){
+							release_str = 'this year';
+						} else if(args.date.match(/last year/igm)){
+							release_str = 'last year';
+						} else if(args.date.match(/next year/igm)){
+							release_str = 'next year';
+						} else {
+							release_str = 'between ' + start_date_str + ' and ' + end_date_str;
+						}
+					}
+				}
+
+				m.get_tmdb_url(CHAN, 'discover/movie', {
+					'primary_release_date.gte': start_date_str,
+					'primary_release_date.lte': end_date_str,
+					handlers: {
+						error: function(err){
+							b.log.error(err)
+							say({err: err});
+						},
+						success: function(data){
+							if(data.results && data.results.length > 0){
+								var movie_arr = data.results.map(function(movie){
+
+									if(new Date(movie.release_date) > new Date){
+										var str = CHAN.t.success(movie.title);
+									} else {
+										var str = movie.title + ' ' + x.score(movie.vote_average, {max:10, end:'/10', config: CHAN.config});
+									}
+
+									return str;
+								})
+
+								var say_str = CHAN.t.highlight('Movies released ' + release_str + ':');
+								say_str += ' ' + movie_arr.join(', ');
+
+								say(say_str, 1, {skip_verify: true});
+							} else {
+								say({err: 'No movie releases for those dates.'});
+							}
+						}
+					}
+				});
+
+
+
 			});
 		}
 	},
