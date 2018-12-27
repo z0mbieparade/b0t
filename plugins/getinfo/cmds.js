@@ -1,6 +1,7 @@
 var urban	   	= require('urban-dictionary'),
 	wikipedia   = require('wtf_wikipedia'),
-	GetInfo	 	= require(__dirname + '/func.js'),
+	GetInfo	 	= require(__dirname + '/func.js')
+	didYouMean 	= require('didyoumean2'),
 	gi		  	= new GetInfo();
 
 var info = {
@@ -97,70 +98,73 @@ var cmds = {
 				}
 
 				try {
-					var entries = [];
+					var entries = {};
+
+					console.log('data', require('util').inspect(data, true, 10));
 
 					for(var i = 0; i < data.entry_list.entry.length; i++){
 						var entry = data.entry_list.entry[i];
 
-						if(entry.ew[0] === word){
-							var e_str = '';
+						var e_str = '';
 
-							var type = entry.fl && entry.fl.length ? entry.fl[0] : '';
-							var pr = entry.pr && entry.pr.length ? ' \\' + entry.pr[0] + '\\' : '';
-							var defs = [];
+						var type = entry.fl && entry.fl.length ? entry.fl[0] : '';
+						var pr = entry.pr && entry.pr.length ? ' \\' + entry.pr[0] + '\\' : '';
+						var defs = [];
 
-							if(!entry.def) continue;
+						if(!entry.def) continue;
 
-							entry.def.forEach(function(def){
-								var ssl = def.ssl && def.ssl.length ? def.ssl : [];
+						entry.def.forEach(function(def){
+							var ssl = def.ssl && def.ssl.length ? def.ssl : [];
 
-								def.dt.forEach(function(dt, i){
-									var d = typeof dt === 'string' ? dt.replace(/^:/, '').trim() : (typeof dt['_'] === 'string' ? dt['_'].replace(/^:/, '').trim() : '');
+							def.dt.forEach(function(dt, i){
+								var d = typeof dt === 'string' ? dt.replace(/^:/, '').trim() : (typeof dt['_'] === 'string' ? dt['_'].replace(/^:/, '').trim() : '');
 
-									var syn = [];
-									if(dt.sx){
-										dt.sx.forEach(function(sx){
-											if(typeof sx === 'string'){
-												syn.push(sx.trim());
-											} else if (sx['_'] && typeof sx['_'] === 'string') {
-												syn.push(sx['_'].trim())
-											}
-										});
-									}
+								var syn = [];
+								if(dt.sx){
+									dt.sx.forEach(function(sx){
+										if(typeof sx === 'string'){
+											syn.push(sx.trim());
+										} else if (sx['_'] && typeof sx['_'] === 'string') {
+											syn.push(sx['_'].trim())
+										}
+									});
+								}
 
-									if(syn.length > 0) d = d.trim() + ' ' + CHAN.t.considering(syn.join(', '))
+								if(syn.length > 0) d = d.trim() + ' ' + CHAN.t.considering(syn.join(', '))
 
-									if(d.trim() && dt.un && typeof dt.un[0] === 'string'){
-										d += CHAN.t.highlight(' - ' + dt.un.join(', '));
-									}
+								if(d.trim() && dt.un && typeof dt.un[0] === 'string'){
+									d += CHAN.t.highlight(' - ' + dt.un.join(', '));
+								}
 
-									if(ssl[i] && d.trim()) d = CHAN.t.null(ssl[i] + ':') + ' ' + d.trim();
+								if(ssl[i] && d.trim()) d = CHAN.t.null(ssl[i] + ':') + ' ' + d.trim();
 
-									if(d.trim()) defs.push(d.trim());
-								})
+								if(d.trim()) defs.push(d.trim());
+							})
+						});
+
+						if(defs.length > 0){
+							e_str += ' ' + CHAN.t.success(type + pr);
+							defs.forEach(function(def, i){
+								e_str += ' ' + CHAN.t.warn(i + 1) + ' ' + def;
 							});
 
-							if(defs.length > 0){
-								e_str += ' ' + CHAN.t.success(type + pr);
-								defs.forEach(function(def, i){
-									e_str += ' ' + CHAN.t.warn(i + 1) + ' ' + def;
-								});
-
-								entries.push(e_str);
-							}
+							entries[entry.ew[0]] = entries[entry.ew[0]] || [];
+							entries[entry.ew[0]].push(e_str);
 						}
 					}
 
-					if(entries.length === 0){
+					if(Object.keys(entries).length === 0){
 						say({err: 'Nothing found'});
 					} else {
-						if(entries.length === 1) {
-							entries[0] = CHAN.t.highlight('MWD ' + CHAN.t.term(word)) + entries[0]
+						var closest = didYouMean(word, Object.keys(entries));
+
+						if(entries[closest].length === 1) {
+							entries[closest][0] = CHAN.t.highlight('MWD ' + CHAN.t.term(closest)) + entries[closest][0]
 						} else {
-							entries.unshift(CHAN.t.highlight('MWD ' + CHAN.t.term(word)));
+							entries[closest].unshift(CHAN.t.highlight('MWD ' + CHAN.t.term(closest)));
 						}
 						
-						say(entries, 1, {url: 'http://www.merriam-webster.com/dictionary/' + word, join: '\n', force_lines: 5});
+						say(entries[closest], 1, {url: 'http://www.merriam-webster.com/dictionary/' + word, join: '\n', force_lines: 5});
 					}
 				} catch(e) {
 					say({err: 'Something went wrong'});
