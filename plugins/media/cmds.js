@@ -160,8 +160,10 @@ var cmds = {
 							break;
 					}
 
+					var genres = d.genres && d.genres.length > 0 ? d.genres.join(', ') : CHAN.t.null('no genres');
+
 					var data = [
-						CHAN.t.highlight(CHAN.t.term(d.title + ' (' + d.year + ')')) + ' Rating ' + x.score(d.rating, {max:10, end:'/10', config: CHAN.config}) + ' Status ' + status + ' Genres (' + d.genres.join(', ') + ')',
+						CHAN.t.highlight(CHAN.t.term(d.title + ' (' + d.year + ')')) + ' Rating ' + x.score(d.rating, {max:10, end:'/10', config: CHAN.config}) + ' Status ' + status + ' Genres (' + genres + ')',
 						CHAN.t.highlight('Summary ') + x.verify_string(d.overview, d.homepage)
 					];
 
@@ -193,8 +195,10 @@ var cmds = {
 
 					if(d.title !== '') info.last_media = d.title;
 
+					var genres = d.genres && d.genres.length > 0 ? d.genres.join(', ') : CHAN.t.null('no genres');
+
 					var data = [
-						CHAN.t.highlight(CHAN.t.term(d.title + ' (' + d.year + ')')) + ' Rating ' + x.score(d.rating, {max:10, end:'/10', config: CHAN.config}) + ' Genres (' + d.genres.join(', ') + ')',
+						CHAN.t.highlight(CHAN.t.term(d.title + ' (' + d.year + ')')) + ' Rating ' + x.score(d.rating, {max:10, end:'/10', config: CHAN.config}) + ' Genres (' + genres + ')',
 						CHAN.t.highlight('Summary ') + x.verify_string(d.overview, d.homepage)
 					];
 
