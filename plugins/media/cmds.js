@@ -143,7 +143,7 @@ var cmds = {
 					var status = '';
 					switch(d.status){
 						case 'returning series':
-							status += CHAN.t.success(d.airs.day ? 'Returning - ' + d.airs.day : 'Returning');
+							status += CHAN.t.success('Returning');
 							break;
 						case 'production':
 							status += CHAN.t.waiting('Production');
