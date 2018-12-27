@@ -330,6 +330,11 @@ var cmds = {
 					return;
 				}
 
+				if(result.length  === 0)
+				{
+					return say({err: 'Data not available'});
+				}
+
 				result = result.map(function(r){
 					var new_row = split_rows(r);
 					return new_row;
