@@ -6,3 +6,4 @@ db_backup/*
 plugins/testing
 package-lock.json
 te5t/*
+logs_live

@@ -6,8 +6,7 @@ In the directory you want to install the b0t, run:
 ```
 git clone https://github.com/z0mbieparade/b0t.git
 cd b0t
-git submodule update --init --recursive
-npm install && git submodule foreach "npm install"
+npm install
 ```
 
 
