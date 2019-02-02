@@ -100,7 +100,7 @@ var cmds = {
 				try {
 					var entries = {};
 
-					console.log('data', require('util').inspect(data, true, 10));
+					//console.log('data', require('util').inspect(data, true, 10));
 
 					for(var i = 0; i < data.entry_list.entry.length; i++){
 						var entry = data.entry_list.entry[i];
