@@ -324,6 +324,7 @@ var cmds = {
 			}
 
 			wolfram.query(command_string, function (err, result) {
+				console.log(err, result);
 				if (err){
 					say({err: err});
 					b.log.error(err, result);
