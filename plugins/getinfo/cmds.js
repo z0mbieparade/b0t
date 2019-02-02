@@ -324,7 +324,7 @@ var cmds = {
 			}
 
 			wolfram.query(command_string, function (err, result) {
-				console.log(err, result);
+				//console.log(err, result);
 				if (err){
 					say({err: err});
 					b.log.error(err, result);
@@ -341,12 +341,12 @@ var cmds = {
 					return new_row;
 				})
 
-				console.log(require('util').inspect(result, true, 10));
+				//console.log(require('util').inspect(result, true, 10));
 
 				result_loop(result, 0);
 
-				console.log('interpretation', interpretation)
-				console.log(require('util').inspect(answer_arr, true, 10));
+				//console.log('interpretation', interpretation)
+				//console.log(require('util').inspect(answer_arr, true, 10));
 
 				if(answer_arr[0].text && answer_arr[0].text === '(data not available)'){
 					say({err: 'Data not available'});
