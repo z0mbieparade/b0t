@@ -150,7 +150,7 @@ module.exports = class GI{
 
 		x.get_url(get_url, 'json', function(data){
 
-			console.log(require('util').inspect(data, true, 10));
+			//console.log(require('util').inspect(data, true, 10));
 
 			if(data.queryresult && !data.queryresult.error)
 			{
@@ -162,8 +162,8 @@ module.exports = class GI{
 				{
 					result_loop(data.queryresult.pods, 0);
 
-					console.log('interpretation', interpretation)
-					console.log(require('util').inspect(answer_arr, true, 10));
+					//console.log('interpretation', interpretation)
+					//console.log(require('util').inspect(answer_arr, true, 10));
 
 					if(answer_arr[0].text && answer_arr[0].text === '(data not available)')
 					{
