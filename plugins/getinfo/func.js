@@ -138,4 +138,249 @@ module.exports = class GI{
 		}
 	}
 
+	wr(CHAN, question, callback)
+	{
+		var interpretation = null;
+		var total_lines = 0;
+		var answer_arr = [];
+		var url = null;
+
+		var question = encodeURI(question);
+		var get_url = "http://api.wolframalpha.com/v2/query?input=" + question + "&appid=" + config.API.wolframalpha.key + '&output=json';
+
+		x.get_url(get_url, 'json', function(data){
+
+			//console.log(require('util').inspect(data, true, 10));
+
+			if(data.queryresult && data.queryresult.success)
+			{
+				if(data.queryresult.numpods < 1)
+				{
+					callback({err: 'Data not available'})
+				}
+				else
+				{
+					result_loop(data.queryresult.pods, 0);
+
+					//console.log('interpretation', interpretation)
+					//console.log(require('util').inspect(answer_arr, true, 10));
+
+					if(answer_arr[0].text && answer_arr[0].text === '(data not available)')
+					{
+						callback({err: 'Data not available'});
+					} 
+					else if(answer_arr.length > 0)
+					{
+						var line_count = 0;
+
+						if(interpretation !== null)
+						{
+							line_count++;
+							callback(CHAN.t.highlight(CHAN.t.term(interpretation)));
+						}
+
+						var say_arr = [];
+						for(var i = 0; i < answer_arr.length; i++)
+						{
+							var answer = answer_arr[i];
+							if(answer.text)
+							{
+								if(answer.title)
+								{
+									say_arr.push(CHAN.t.highlight(answer.title));
+								}
+
+								if(typeof answer.text === 'string')
+								{
+									say_arr.push(answer.text);
+								} 
+								else 
+								{
+									say_arr = say_arr.concat(answer.text);
+								}
+								
+							} else {
+								var table_arr = CHAN.SAY.table(answer.table, 
+								{
+									title: answer.title,
+									header: false, 
+									outline: false
+								});
+
+								say_arr = say_arr.concat(table_arr);
+							}	
+						}
+
+						callback(say_arr, true);
+					}
+
+				}
+
+			} else {
+				callback({err: 'Something went wrong'});
+			}
+		})
+
+		function result_loop(pods, loop)
+		{
+			pods.forEach(function(pod)
+			{
+				pod = split_rows(pod);
+
+				if(pod.title === 'Input interpretation' && !pod.primary && pod.subpods[0].plaintext)
+				{
+					interpretation = pod.subpods[0].plaintext;
+					if(typeof interpretation !== 'string')
+					{
+						interpretation = interpretation.join(' ');
+					}
+					interpretation = interpretation.replace(/ \| /gm, ' ');
+				} 
+				else if(pod.primary === true)
+				{
+					pod.subpods.forEach(function(subpod)
+					{
+						if(subpod.plaintext !== '' && subpod.plaintext !== null)
+						{
+							var data = tableize(subpod.plaintext)
+							data.title = interpretation;
+							interpretation = null;
+							answer_arr.push(data)
+						}
+						else if(subpod.img && subpod.img.src !== null)
+						{
+							answer_arr.push({text: subpod.img.src, title: interpretation});
+						}
+					});
+				} 
+				else if(pod.title === 'Image' && loop < 3)
+				{
+					return;
+				} 
+				else
+				{
+					pod.subpods.forEach(function(subpod)
+					{
+						if(subpod.plaintext)
+						{
+							var data = tableize(subpod.plaintext)
+							data.title = pod.title;
+							answer_arr.push(data)
+						}
+						else if(subpod.img && subpod.img.src !== null)
+						{
+							answer_arr.push({text: subpod.img.src, title: pod.title});
+						}
+					});
+
+				}
+			})
+
+			if(answer_arr.length === 0 && loop < 4){
+				loop++;
+				result_loop(result, loop);
+			}
+		}
+
+		function split_rows(old_row)
+		{
+			var row = JSON.parse(JSON.stringify(old_row));
+			if(typeof row === 'string')
+			{
+				var split_row = row.split('\n').filter(function(col)
+				{
+					return col.trim() !== '' && col !== null;
+				});
+
+				if(split_row.length === 1)
+				{
+					return split_row[0];
+				} 
+				else if(split_row.length === 0)
+				{
+					return null;
+				} 
+				else 
+				{
+					return split_row;
+				}
+			} 
+			else if(typeof row === 'object')
+			{
+				for(var key in row){
+					row[key] = split_rows(row[key])
+				}
+				return row;
+			} 
+			else 
+			{	
+				return row;
+			}
+		}
+
+		function tableize(d)
+		{
+			if(typeof d === 'string')
+			{
+				var data = [d];
+			} 
+			else 
+			{
+				var data = d;
+			}
+
+			var table = data.some(function(a){ return a.match(' | ')});
+
+			if(table)
+			{
+				var col_count = 0;
+				var data_arr = data.map(function(row)
+				{
+					var row_arr =  row.split(' | ').map(function(col)
+					{
+						return col.trim();
+					});
+
+					if(row_arr.length > col_count) col_count = row_arr.length;
+					return row_arr;
+				});
+				var data_table = [];
+				var table_row_count = 0;
+
+				data_arr.forEach(function(row_arr)
+				{
+					if(row_arr.length === 1)
+					{
+						data_table.push(row_arr[0]);
+					} 
+					else 
+					{
+						var row = {};
+						for(var i = 0; i < col_count; i++)
+						{
+							row['col_' + i] = row_arr[i] !== undefined ? row_arr[i] : '';
+						}
+
+						data_table.push(row);
+						table_row_count++;
+					}
+				});
+
+				if(table_row_count > 1)
+				{
+					return {table: data_table};
+				} 
+				else 
+				{
+					return {text: d};
+				}
+			} 
+			else 
+			{
+				return {text: d};
+			}
+		}
+
+	}
+
 }
