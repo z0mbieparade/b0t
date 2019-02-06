@@ -113,7 +113,7 @@ var cmds = {
 						str += c.pink(' ♬ ');
 					}
 
-					if(d.service !== 'listenbrainz' && d.user_play_count !== 0 && d.play_count !== 0)
+					if(d.user_play_count !== 0 || d.play_count !== 0)
 					{
 						str += '[' + x.score(d.user_play_count, {max: d.play_count, score_str: x.abv_num(d.user_play_count), config: CHAN.config})  + '/';
 						str += x.score(d.play_count, {max: info.highest_song_count, score_str: x.abv_num(d.play_count), config: CHAN.config}) + '] '
@@ -277,7 +277,7 @@ var cmds = {
 									artist: d.artist ? d.artist : null,
 									song: d.name ? d.name : null,
 									album: d.album ? d.album : null,
-									plays: x.abv_num(d.user_play_count) + '/' + x.abv_num(d.play_count),
+									plays: d.user_play_count === 0 && d.play_count === 0 ? '-----' : x.abv_num(d.user_play_count) + '/' + x.abv_num(d.play_count),
 									user_plays_hidden: d.user_play_count,
 									total_plays_hidden: d.play_count,
 									'♥': '♥',
@@ -324,8 +324,7 @@ var cmds = {
 								song: function(row, cell){ return CHAN.t.highlight(cell) },
 								album: function(row, cell){ return CHAN.t.highlight(cell) },
 								plays: function(row, cell){ 
-									if(row.service_hidden === 'listenbrainz') return CHAN.t.null('x/x');
-									if(row.user_plays_hidden === 0 && row.total_plays_hidden === 0) return CHAN.t.null('x/x');
+									if(row.user_plays_hidden === 0 && row.total_plays_hidden === 0) return CHAN.t.null('-----');
 
 									return x.score(row.user_plays_hidden, {max: row.total_plays_hidden, score_str: x.abv_num(row.user_plays_hidden), config: CHAN.config})  + 
 									'/' + x.score(row.total_plays_hidden, {max: info.highest_song_count, score_str: x.abv_num(row.total_plays_hidden), config: CHAN.config}) 

@@ -140,8 +140,8 @@ module.exports = class Music{
 				artist: track.artist_name ? track.artist_name : '',
 				album: track.release_name ? track.release_name : '',
 				album_date: track.album_date,
-				user_play_count: null,
-				play_count: null,
+				user_play_count: 0,
+				play_count: 0,
 				tags: track.tags ? track.tags : [],
 			}
 		}
@@ -181,8 +181,8 @@ module.exports = class Music{
 				name: track.name,
 				artist: artist,
 				album: album,
-				user_play_count: track.userplaycount || 0,
-				play_count: track.playcount || 0,
+				user_play_count: +track.userplaycount || 0,
+				play_count: +track.playcount || 0,
 			};
 
 			data.tags = tag_names;
