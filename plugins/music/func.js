@@ -399,7 +399,7 @@ module.exports = class Music{
 				}
 
 				send_track = track_data[service];
-
+			
 				var update_fields = ['artist', 'album', 'tags'];
 				for(var s in track_data){
 					if(s === service) continue;
@@ -407,7 +407,7 @@ module.exports = class Music{
 					{
 						update_fields.forEach(function(field)
 						{
-							if(typeof send_track[field] === 'string' || send_track[s][field] === 'string')
+							if(typeof send_track[field] === 'string' || track_data[s][field] === 'string')
 							{
 								if(send_track[field] === null || send_track[field] === '')
 								{
@@ -423,7 +423,6 @@ module.exports = class Music{
 							}
 						})
 					}
-
 				}
 			}
 
