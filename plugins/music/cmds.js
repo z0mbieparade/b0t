@@ -270,7 +270,7 @@ var cmds = {
 								CHAN.log.error(d.err);
 							} else {
 								var play_data = {
-									'♬': '♬',
+									'♪': '♪',
 									service_hidden: d.service,
 									user: d.irc_nick,
 									now_playing_hidden: d.now_playing,
@@ -303,8 +303,6 @@ var cmds = {
 
 					var say_data = [playing, not_playing];
 
-					console.log(say_data)
-
 					say(say_data, 1, {
 						table: true, 
 						table_opts: {
@@ -314,13 +312,13 @@ var cmds = {
 							cluster_symbols: ['▸', '॥'],
 							full_width: ['user', 'plays', '♥'],
 							col_format: {
-								'♬': function(row, cell){
-									if(row.service_hidden === 'lastfm') return c.red('♬');
-									if(row.service_hidden === 'librefm') return c.olive('♬');
-									if(row.service_hidden === 'listenbrainz') return c.pink('♬');
+								'♪': function(row, cell){
+									if(row.service_hidden === 'lastfm') return c.red('♪');
+									if(row.service_hidden === 'librefm') return c.olive('♪');
+									if(row.service_hidden === 'listenbrainz') return c.pink('♪');
 								},
 								user: function(row, cell){ 
-									return row.now_playing_hidden ? CHAN.t.success(cell) : CHAN.t.null(cell)
+									return row.now_playing_hidden ? CHAN.t.success(x.no_highlight(cell)) : CHAN.t.null(x.no_highlight(cell))
 								},
 								artist: function(row, cell){ return CHAN.t.highlight(cell) },
 								song: function(row, cell){ return CHAN.t.highlight(cell) },
