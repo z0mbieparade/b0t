@@ -359,6 +359,8 @@ var cmds = {
 					});
 				}*/
 
+				if(args.to === bot.nick) args.to = USER.nick;
+
 				insults_db.get_data("/", function(d){
 					//insult(d, 0);
 					var str = (args.to !== undefined ? args.to.replace('<', '') + ': ' : '') + x.rand_arr(d);
