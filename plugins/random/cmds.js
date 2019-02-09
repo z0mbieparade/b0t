@@ -389,38 +389,52 @@ var cmds = {
 				}
 			});*/
 
-			x.get_url('https://www.fmylife.com/random', 'html', function(result){
-				if(result.err){
-					CHAN.log.error(result.err);
-					return say(result);
-				} else {
-					try {
-						var str = CHAN.t.highlight('FML: ');
-						var txt = xpath.select1('.//div[2]/p/a/text()', result[0]).nodeValue.replace(/\n/gm, '');
+			var get_fml = function(tries)
+			{
+				x.get_url('https://www.fmylife.com/random', 'html', function(result){
+					if(result.err){
+						CHAN.log.error(result.err);
+						return say(result);
+					} else {
+						try {
+							var str = CHAN.t.highlight('FML: ');
+							var txt = xpath.select1('.//div[2]/p/a/text()', result[0]).nodeValue.replace(/\n/gm, '');
 
-						var auth_reg = /By (.*?) /g;
-						var auth = xpath.select1('.//div[3]/text()', result[0]).nodeValue;
-						var author = auth_reg.exec(auth);
+							var auth_reg = /By (.*?) /g;
+							var auth = xpath.select1('.//div[3]/text()', result[0]).nodeValue;
+							var author = auth_reg.exec(auth);
 
-						var agree = xpath.select1('.//button[contains(@class, \'vote-up\')]/text()', result[0]).nodeValue;
-						var deserved = xpath.select1('.//button[contains(@class, \'vote-down\')]/text()', result[0]).nodeValue;
+							var agree = xpath.select1('.//button[contains(@class, \'vote-up\')]/text()', result[0]).nodeValue;
+							var deserved = xpath.select1('.//button[contains(@class, \'vote-down\')]/text()', result[0]).nodeValue;
 
-						if(+agree > +deserved){
-							str += CHAN.t.warn('"' + txt + '"');
-						} else {
-							str += CHAN.t.fail('"' + txt + '"');
+							if(+agree > +deserved){
+								str += CHAN.t.warn('"' + txt + '"');
+							} else {
+								str += CHAN.t.fail('"' + txt + '"');
+							}
+							if(author && author.length) str += CHAN.t.null(' -' + author[1]);
+
+							say(str);
+						} catch(e){
+							CHAN.log.error(e.message);
+
+							if(tries > 3)
+							{
+								return say({err: 'Something went wrong'});
+							}
+							else
+							{
+								get_fml(tries + 1)
+							}
 						}
-						if(author && author.length) str += CHAN.t.null(' -' + author[1]);
-
-						say(str);
-					} catch(e){
-						return say({err: 'Something went wrong'});
 					}
-				}
-			}, {
-				return_err: true,
-				xpath: '//*[@id="content"]/div/div[1]/div[1]/article[1]/div[1]/div[1]'
-			})
+				}, {
+					return_err: true,
+					xpath: '//*[@id="content"]/div/div[1]/div[1]/article[1]/div[1]/div[1]'
+				})
+			}
+
+			get_fml(0)
 		}
 	},
 	lottery: {
