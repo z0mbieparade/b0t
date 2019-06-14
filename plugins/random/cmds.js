@@ -397,15 +397,18 @@ var cmds = {
 						return say(result);
 					} else {
 						try {
+							//console.log(result[0].toString().slice(1, 2000))
+
 							var str = CHAN.t.highlight('FML: ');
-							var txt = xpath.select1('.//div[2]/p/a/text()', result[0]).nodeValue.replace(/\n/gm, '');
 
 							var auth_reg = /By (.*?) /g;
-							var auth = xpath.select1('.//div[3]/text()', result[0]).nodeValue;
+							var auth = xpath.select1('.//div[1]/text()', result[0]).nodeValue.replace(/\n/gm, ' ');
 							var author = auth_reg.exec(auth);
 
-							var agree = xpath.select1('.//button[contains(@class, \'vote-up\')]/text()', result[0]).nodeValue;
-							var deserved = xpath.select1('.//button[contains(@class, \'vote-down\')]/text()', result[0]).nodeValue;
+							var txt = xpath.select1('.//div[2]/a/text()', result[0]).nodeValue.replace(/\n/gm, '');
+
+							var agree = xpath.select1('.//div[contains(@class, \'vote-up-group\')]/div/text()', result[0]).nodeValue.replace(/\n/gm, '');
+							var deserved = xpath.select1('.//div[contains(@class, \'vote-down-group\')]/div/text()', result[0]).nodeValue.replace(/\n/gm, '');
 
 							if(+agree > +deserved){
 								str += CHAN.t.warn('"' + txt + '"');
@@ -430,7 +433,7 @@ var cmds = {
 					}
 				}, {
 					return_err: true,
-					xpath: '//*[@id="content"]/div/div[1]/div[1]/article[1]/div[1]/div[1]'
+					xpath: '//*[@id="content"]/div/div[1]/div[1]/article[1]/div[1]'
 				})
 			}
 
