@@ -306,6 +306,7 @@ var cmds = {
 				str += ' | P/S: ' + gi.na(CHAN, quote.ps);
 				str += ' | P/B: ' + gi.na(CHAN, quote.pb);
 				str += ' | Div/yield: ' + gi.na(CHAN, quote.div) + '/' + gi.na(CHAN, quote.yield);
+				str += ' | YTD: ' + gi.na(CHAN, quote.ytd*100) + '%';
 
 				say(str, 1, {skip_verify: true});
 
