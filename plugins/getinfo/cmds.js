@@ -302,13 +302,22 @@ var cmds = {
 				str += ' (' + gi.na(CHAN, quote.change, true) + ' ' + gi.na(CHAN, quote.changepct, true, true) + ')';
 				str += ' | DAY L/H ' + gi.na(CHAN, quote.day_low) + '/' + gi.na(CHAN, quote.day_high);
 				str += ' | 52w L/H ' + gi.na(CHAN, quote.fifty_two_week_low) + '/' + gi.na(CHAN, quote.fifty_two_week_high);
-				str += ' | P/E: ' + gi.na(CHAN, quote.pe);
-				str += ' | P/S: ' + gi.na(CHAN, quote.ps);
-				str += ' | P/B: ' + gi.na(CHAN, quote.pb);
-				str += ' | Div/yield: ' + gi.na(CHAN, quote.div) + '/' + gi.na(CHAN, quote.yield);
-				str += ' | YTD: ' + gi.na(CHAN, quote.ytd*100) + '%';
-
-				say(str, 1, {skip_verify: true});
+				if (Object.entries(quote.pe).length !== 0) {
+					str += ' | P/E: ' + gi.na(CHAN, quote.pe);
+				}
+				if (Object.entries(quote.ps).length !== 0) {
+					str += ' | P/S: ' + gi.na(CHAN, quote.ps);
+				}
+				if (Object.entries(quote.pb).length !== 0) {
+					str += ' | P/B: ' + gi.na(CHAN, quote.pb);
+				}
+				if (Object.entries(quote.div).length !== 0) {
+					str += ' | Div/yield: ' + gi.na(CHAN, quote.div) + '/' + gi.na(CHAN, quote.yield);
+				}
+				if (Object.entries(quote.ytd).length !== 0) {
+					str += ' | YTD: ' + quote.ytd.value * 100 + '%';
+				}
+				say(str, 1, { skip_verify: true });
 
 			}, {
 				return_err: true,
