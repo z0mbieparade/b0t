@@ -216,6 +216,106 @@ var cmds = {
 			});
 		}
 	},
+	stats: {
+		action: 'get user stats info',
+		params: [{
+			name: 'username',
+			type: 'string'
+		}],
+		func: function(CHAN, USER, say, args, command_string){
+			b.users.get_user_data(args.username, {
+				ignore_err: true,
+				skip_say: true,
+				return_nicks: true
+			}, function(d){
+				if(!d) return say({err: 'No user found'});
+
+				function above_below_avr(usr, avr)
+				{
+					var ret = '';
+
+					if(usr > avr){
+						ret += CHAN.t.success(x.abv_num(usr))
+					} else if(usr == avr) {
+						ret += CHAN.t.warn(x.abv_num(usr))
+					} else {
+						ret += CHAN.t.fail(x.abv_num(usr))
+					}
+
+					ret += '/' + x.abv_num(avr);
+
+					return ret;
+				}
+
+				db.get_data('/nicks', function(users){
+					if(!users) return say({err: 'None found'});
+
+					var stats = {
+						user_by_word_rank: {
+
+						},
+						total: { //total for all users
+							words: 0,
+							letters: 0,
+							lines: 0
+						},
+						avr: { //avr for all users
+							words: 0,
+							letters: 0,
+							lines: 0
+						},
+						usr: { //current user
+							words: 0,
+							letters: 0,
+							lines: 0
+						},
+						count: 0 //user count
+					};
+					for(var usr in users){
+						if(users[usr].spoke){
+							stats.count++;
+
+							var word_count = (users[usr].spoke.words ? users[usr].spoke.words : 0);
+
+							stats.user_by_word_rank[word_count] = stats.user_by_word_rank[word_count] || [];
+							stats.user_by_word_rank[word_count].push(usr);
+
+							stats.total.words = stats.total.words + word_count;
+							stats.total.letters = stats.total.letters + (users[usr].spoke.letters ? users[usr].spoke.letters : 0);
+							stats.total.lines = stats.total.lines + (users[usr].spoke.lines ? users[usr].spoke.lines : 0);
+						}
+					}
+
+					stats.avr.words = stats.total.words / stats.count
+					stats.avr.letters = stats.total.letters / stats.count
+					stats.avr.lines = stats.total.lines / stats.count
+
+					if(d.spoke) stats.usr = d.spoke;
+
+					var words_counts = Object.keys(stats.user_by_word_rank).sort(function(a, b){return b-a});
+					stats.usr.rank = words_counts.indexOf(stats.usr.words + '') + 1;
+
+					var rank = stats.usr.rank;
+					if(rank <= 5){
+						rank = CHAN.t.success('#'+rank);
+					} else if (rank > 5 && rank < 10){
+						rank = CHAN.t.warn('#'+rank);
+					} else {
+						rank = CHAN.t.fail('#'+rank);
+					}
+
+					var str = CHAN.t.highlight(x.no_highlight(d.nick_org)) + ' [' + rank + '/' + stats.count + ' users]';
+						str += CHAN.t.null(' (User/Average)');
+						str += CHAN.t.highlight(' Words: ') + above_below_avr(stats.usr.words, stats.avr.words);
+						str += CHAN.t.highlight(' Letters: ') + above_below_avr(stats.usr.letters, stats.avr.letters);
+						str += CHAN.t.highlight(' Lines: ') + above_below_avr(stats.usr.lines, stats.avr.lines)
+
+					say(str, 1, {skip_verify: true});
+				
+				});
+			});
+		}
+	},
 	stock: {
 		action: 'get stock info',
 		params: [{
@@ -226,77 +326,7 @@ var cmds = {
 		func: function(CHAN, USER, say, args, command_string){
 
 		  x.get_url(CHAN.config.plugin_settings.stock.url + args.symbol, 'json', function(quote){
-
-				if(quote.err){
-					 b.users.get_user_data(args.symbol, {
-						ignore_err: true,
-						skip_say: true,
-						return_nicks: true
-					}, function(d){
-						if(!d) return say({err: 'None found'});
-
-						db.get_data('/nicks', function(users){
-							if(!users) return say({err: 'None found'});
-
-							var stats = {
-								total: {
-									words: 0,
-									letters: 0,
-									lines: 0
-								},
-								avr: {
-									words: 0,
-									letters: 0,
-									lines: 0
-								},
-								usr: {
-									words: 0,
-									letters: 0,
-									lines: 0
-								},
-								count: 0
-							};
-							for(var usr in users){
-								if(users[usr].spoke){
-									stats.count++;
-
-									stats.total.words = stats.total.words + (users[usr].spoke.words ? users[usr].spoke.words : 0);
-									stats.total.letters = stats.total.letters + (users[usr].spoke.letters ? users[usr].spoke.letters : 0);
-									stats.total.lines = stats.total.lines + (users[usr].spoke.lines ? users[usr].spoke.lines : 0);
-								}
-							}
-
-							stats.avr.words = stats.total.words / stats.count
-							stats.avr.letters = stats.total.letters / stats.count
-							stats.avr.lines = stats.total.lines / stats.count
-
-							var symb = d.nick_org;
-							if(d.nick_org.length > 4){
-								symb = symb.replace(/[aeiou]/gi, '');
-								if(symb[0] !== d.nick_org[0]) symb = d.nick_org[0] + symb;
-
-								if(symb.length > 4){
-									symb = symb[0] + symb[1] + symb[2] + symb[symb.length - 1];
-								}
-							}
-
-							if(d.spoke) stats.usr = d.spoke;
-
-							var perc = ((stats.usr.words - stats.avr.words) / stats.avr.words) * 100;
-
-							var str = CHAN.t.highlight(d.nick_org) + ' (' + CHAN.t.highlight(symb.toUpperCase()) + ') -> ' + gi.na(CHAN, {value: stats.usr.words});
-							str += ' (' + gi.na(CHAN, {value: stats.usr.words - stats.avr.words}, true) + ' ' + gi.na(CHAN, {value: perc}, true, true) + ')';
-							str += ' | Words Avr: ' + gi.na(CHAN, {value: stats.avr.words});
-							str += ' | Letters U/A: ' + gi.na(CHAN, {value: stats.usr.letters}) + '/' + gi.na(CHAN, {value: stats.avr.letters});
-							str += ' | Lines U/A: ' + gi.na(CHAN, {value: stats.usr.lines}) + '/' + gi.na(CHAN, {value: stats.avr.lines});
-
-							say(str, 1, {skip_verify: true});
-						
-						});
-					});
-
-					return;
-				}
+		  		if(quote.err) return say({err: 'None found'});
 
 				var str = CHAN.t.highlight(quote.name) + ' (' + CHAN.t.highlight(quote.symbol.toUpperCase()) + ') -> ' + gi.na(CHAN, quote.price);
 				str += ' (' + gi.na(CHAN, quote.change, true) + ' ' + gi.na(CHAN, quote.changepct, true, true) + ')';
