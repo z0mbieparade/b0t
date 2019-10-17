@@ -3,15 +3,13 @@ var request 		= require('request');
 module.exports = class TTV{
 	constructor(){
 		if(config.API.youtube && config.API.youtube.key !== ''){
-			this.yt_search = true
+			this.yt_search = true;
 		} else { 
 			b.log.error('Missing Youtube API key!');
 			this.yt_search = false;
 		}
 
 		if (config.API.trakt && config.API.trakt.key !== ''){
-			var Trakt = require('trakt-api');
-			this.trakt = Trakt(config.API.trakt.key, {logLevel: 'debug'});
 			this.use_trakt = true;
 		} else {
 			b.log.error('Missing Trakt API key!');
@@ -26,34 +24,78 @@ module.exports = class TTV{
 		}
 	}
 
-	get_tmdb_url(CHAN, method, send_data){
+	get_tmdb_url(CHAN, method, params, callback){
+
 		var url = 'https://api.themoviedb.org/3/' + method + '?';
-		for(var field in send_data){
-			if(field === 'handlers') continue;
-			url += '&' + field + '=' + encodeURIComponent(send_data[field]);
+		for(var key in params){
+			if(key === 'handlers') continue;
+			url += '&' + key + '=' + encodeURIComponent(params[key]);
 		}
 		url += '&api_key=' + config.API.themoviedb.key;
 
 		request({url: url, followRedirect: false}, function (error, response, body) {
 			if(error){
 				CHAN.log.error('Error:', error);
-				if(send_data.handlers.error) send_data.handlers.error(error);
+				if(params.handlers.error) params.handlers.error(error);
 			} else if(response.statusCode !== 200){
 				CHAN.log.error('Invalid Status Code Returned:', response.statusCode);
-				if(send_data.handlers.error) send_data.handlers.error(error);
+				if(params.handlers.error) params.handlers.error(error);
 			} else {
 				var json_parse = JSON.parse(body);
 				if(json_parse.error) CHAN.log.error('Error:', json_parse.message);
 
-				send_data.handlers.success(json_parse);
+				params.handlers.success(json_parse);
+			}
+		});
+	};
+
+	get_trakt_url(CHAN, method, params, callback){
+
+		if (this.use_trakt){
+			var headers = {
+				'trakt-api-key'     : config.API.trakt.key,
+				'trakt-api-version' : '2',
+				'Content-type'      : 'application/json'
+			}
+		} else {
+			callback({err: 'Missing Trakt API key!'});
+			return;
+		}
+
+		var url = 'https://api.trakt.tv/' + method;
+
+		var i = 0;
+		for(var key in params){
+			if(key === 'handlers') continue;
+			url += (i === 0 ? '?' : '&') + key + '=' + encodeURIComponent(params[key]);
+			i++;
+		}
+
+		CHAN.log.debug(url);
+
+		request({url: url, followRedirect: false, headers: headers}, function (error, response, body) {
+			if(error){
+				CHAN.log.error('Error:', error);
+				if(params.handlers.error) params.handlers.error(error);
+			} else if(response.statusCode >= 400){
+				CHAN.log.error('Invalid Status Code Returned:', response.statusCode);
+				if(params.handlers.error) params.handlers.error(error);
+			} else {
+				try{
+					var json_parse = JSON.parse(body);
+					params.handlers.success(json_parse);
+				} catch(e) {
+					CHAN.log.debug(e.message);
+					params.handlers.success({err: response.statusCode});
+				}
 			}
 		});
 	};
 
 	yt_video_search(CHAN, term, callback)
 	{
-		{
-			callback({err: 'No YouTube API key provided'});
+		if(!this.yt_search){
+			return callback({err: 'No YouTube API key provided'});
 		}
 
 		var params = {
@@ -68,7 +110,7 @@ module.exports = class TTV{
 			url += '&' + key + '=' + encodeURI(params[key]);
 		}
 
-		CHAN.log.debug(url)
+		CHAN.log.debug(url);
 
 		request({url: url}, function (error, response, body){
 			try{
@@ -136,39 +178,63 @@ module.exports = class TTV{
 			return;
 		}
 
-		this.trakt.searchTextQuery(media_type, query, { extended : 'full' }, function(err, data){
-			if(err){
-				CHAN.log.error(err);
-				callback({err: 'An error has occured'});
-				return;
-			}		
-			if(!data || !data[0] || !data[0][media_type]){
-				callback({err: 'No ' + media_type + ' found by that name (' + query + ')'});
-				return;
-			}
-
-			var d = data[0][media_type];
-			d.type = media_type;
-			d.score = data[0].score;
-			delete d.available_translations;
-
-			if(!d.trailer && _this.yt_search !== false){
-				_this.yt_video_search((d.title + ' trailer'), function(results) {
-					if(results.err){
-						CHAN.log.error(results.err);
-						callback({err: 'an error has occured'});
-					} else if(!results || results.length === 0){
-						callback({err: 'no youtube video found show'}, 2);
-					} else {
-						d.trailer = CHAN.t.null('(YouTube Search) ') + results[0].link;
+		this.get_trakt_url(CHAN, 'search/' + media_type, {
+			query: query,
+			extended : 'max',
+			handlers: {
+				error: function(err){
+					CHAN.log.error(err);
+					callback({err: 'An error has occured'});
+					return;
+				},
+				success: function(data){
+					if(!data || !data[0] || !data[0][media_type]){
+						callback({err: 'No ' + media_type + ' found by that name (' + query + ')'});
+						return;
 					}
 
-					callback(d);
-				});
-			} else {
-				callback(d);
+					var d = data[0][media_type];
+					d.type = media_type;
+					d.score = data[0].score;
+
+					_this.get_trakt_url(CHAN, media_type + 's/' + d.ids.slug, {
+						extended : 'full',
+						handlers: {
+							error: function(err){
+								CHAN.log.error(err);
+								callback({err: 'An error has occured'});
+								return;
+							},
+							success: function(dd){
+								if(!dd){
+									callback({err: 'No ' + media_type + ' found by that name (' + query + ')'});
+									return;
+								}
+
+								d = Object.assign({}, d, dd);
+
+								if(!d.trailer && _this.yt_search){
+									_this.yt_video_search(CHAN, (d.title + ' trailer'), function(results) {
+										if(results.err){
+											CHAN.log.error(results.err);
+											callback({err: 'an error has occured'});
+										} else if(!results || results.length === 0){
+											callback({err: 'no youtube video found show'}, 2);
+										} else {
+											d.trailer = CHAN.t.null('(YouTube Search) ') + results[0].link;
+										}
+
+										callback(d);
+									});
+								} else {
+									callback(d);
+								}
+							}
+						}
+					});
+				}
 			}
-		});
+		})
 	}
 
 	getTrending(CHAN, media_type, callback){
@@ -184,28 +250,44 @@ module.exports = class TTV{
 		}
 
 		if(media_type === '-movies'){
-			this.trakt.movieTrending(function(err, data){
-				if (err){
-				  CHAN.log.error('trakt.movieTrending error', err);  
-				  callback({err: err.statusMessage});
-				  return;
-				}
+			this.get_trakt_url(CHAN, 'movies/trending', {
+				handlers: {
+					error: function(err){
+						CHAN.log.error(err);
+						callback({err: 'An error has occured'});
+						return;
+					},
+					success: function(data){
+						if(!data || !data.length){
+							callback({err: 'No movies trending'});
+							return;
+						}
 
-				_this.parseMediaInfo(CHAN, data, null, null, {type: 'movie'}, function(new_data){
-					callback(new_data);
-				});
+						_this.parseMediaInfo(CHAN, data, null, null, {type: 'movie'}, function(new_data){
+							callback(new_data);
+						});
+					}
+				}
 			});
 		} else if(media_type === '-shows') {
-			this.trakt.showTrending(function(err, data){
-				if (err){
-				  CHAN.log.error('trakt.showTrending error', err);  
-				  callback({err: err.statusMessage});
-				  return;
-				}
+			this.get_trakt_url(CHAN, 'shows/trending', {
+				handlers: {
+					error: function(err){
+						CHAN.log.error(err);
+						callback({err: 'An error has occured'});
+						return;
+					},
+					success: function(data){
+						if(!data || !data.length){
+							callback({err: 'No shows trending'});
+							return;
+						}
 
-				_this.parseMediaInfo(CHAN, data, null, null, {type: 'show'}, function(new_data){
-					callback(new_data);
-				});
+						_this.parseMediaInfo(CHAN, data, null, null, {type: 'show'}, function(new_data){
+							callback(new_data);
+						});
+					}
+				}
 			});
 		} 
 	};
@@ -287,34 +369,50 @@ module.exports = class TTV{
 			return;
 		}
 
-		this.trakt.userWatching(ttv_nick, function(err, data) {
-			if (err){
-			  CHAN.log.error('trakt.userWatching error', err);  
-			  callback({err: ('An error has occured: ' + err.statusCode)});
-			  return;
-			}
-
-			if(data === undefined) {
-				_this.trakt.userHistory(ttv_nick, function(err2, data2) {
-					if (err){
-					  CHAN.log.error('trakt.userHistory error', err2);  
-					  callback({err: err.statusMessage});
-					  return;
-					} 
-
-					if(data2.length > 0) {
-						var media = data2[0];
-						_this.parseMediaInfo(CHAN, media, irc_nick, ttv_nick, {now_watching: false}, callback);
-					} else {
-						CHAN.log.error(CHAN.t.highlight(irc_nick) + ' hasn\'t scrobbled any media yet.');
-						callback({err: CHAN.t.highlight(irc_nick) + ' hasn\'t scrobbled any media yet.'});
+		this.get_trakt_url(CHAN, 'users/' + ttv_nick + '/watching', {
+			handlers: {
+				error: function(err){
+					CHAN.log.error(err);
+					callback({err: 'An error has occured'});
+					return;
+				},
+				success: function(data){
+					if(data.err && data.err === 204) //no content
+					{
+						_this.get_trakt_url(CHAN, 'users/' + ttv_nick + '/history', {
+							handlers: {
+								error: function(err){
+									CHAN.log.error(err);
+									callback({err: 'An error has occured'});
+									return;
+								},
+								success: function(data2){
+									if(data2.err && data2.err === 204) //no content
+									{
+										CHAN.log.error(CHAN.t.highlight(irc_nick) + ' hasn\'t scrobbled any media yet.');
+										callback({err: CHAN.t.highlight(irc_nick) + ' hasn\'t scrobbled any media yet.'});
+									}
+									else if(data2.err) {
+										callback({err: 'An error has occured, status code ' + data2.err});
+										return;
+									} else if(data2.length > 0) {
+										var media = data2[0];
+										_this.parseMediaInfo(CHAN, media, irc_nick, ttv_nick, {now_watching: false}, callback);
+									}
+								}
+							}
+						});
 					}
-				});
-			}
-			else
-			{
-				var media = data;
-				_this.parseMediaInfo(CHAN, media, irc_nick, ttv_nick, {now_watching: true}, callback);
+					else if(data.err) {
+						callback({err: 'An error has occured, status code ' + data.err});
+						return;
+					}
+					else
+					{
+						var media = data;
+						_this.parseMediaInfo(CHAN, media, irc_nick, ttv_nick, {now_watching: true}, callback);
+					}
+				}
 			}
 		});
 	}
