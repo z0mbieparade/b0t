@@ -3,11 +3,7 @@ var request 		= require('request');
 module.exports = class TTV{
 	constructor(){
 		if(config.API.youtube && config.API.youtube.key !== ''){
-			this.yt_search = require('youtube-search');
-			this.yt_opts = {
-					maxResults: 1,
-					key: config.API.youtube.key
-				};
+			this.yt_search = true
 		} else { 
 			b.log.error('Missing Youtube API key!');
 			this.yt_search = false;
@@ -31,9 +27,6 @@ module.exports = class TTV{
 	}
 
 	get_tmdb_url(CHAN, method, send_data){
-
-		///discover/movie?primary_release_date.gte=2014-09-15&primary_release_date.lte=2014-10-22
-
 		var url = 'https://api.themoviedb.org/3/' + method + '?';
 		for(var field in send_data){
 			if(field === 'handlers') continue;
@@ -42,7 +35,6 @@ module.exports = class TTV{
 		url += '&api_key=' + config.API.themoviedb.key;
 
 		request({url: url, followRedirect: false}, function (error, response, body) {
-			//b.log.debug(error, response, body);
 			if(error){
 				CHAN.log.error('Error:', error);
 				if(send_data.handlers.error) send_data.handlers.error(error);
@@ -57,6 +49,85 @@ module.exports = class TTV{
 			}
 		});
 	};
+
+	yt_video_search(CHAN, term, callback)
+	{
+		{
+			callback({err: 'No YouTube API key provided'});
+		}
+
+		var params = {
+			q: term,
+			part: 'snippet',
+			maxResults: 1
+		}
+
+		var url = 'https://www.googleapis.com/youtube/v3/search?key=' + config.API.youtube.key
+
+		for(var key in params){
+			url += '&' + key + '=' + encodeURI(params[key]);
+		}
+
+		CHAN.log.debug(url)
+
+		request({url: url}, function (error, response, body){
+			try{
+				if(error && error != null && error != 'null')
+				{
+					CHAN.log.error('Error:', error);
+					return callback({err: error});
+				} 
+				else 
+				{
+					var json_parse = JSON.parse(body);
+
+					if(json_parse && json_parse.items)
+					{
+						var results = json_parse.items.map(function (item) {
+							var link = ''
+							var id = ''
+							switch (item.id.kind) {
+								case 'youtube#channel':
+									link = 'https://www.youtube.com/channel/' + item.id.channelId;
+									id = item.id.channelId;
+									break;
+								case 'youtube#playlist':
+									link = 'https://www.youtube.com/playlist?list=' + item.id.playlistId;
+									id = item.id.playlistId
+									break;
+								default:
+									link = 'https://www.youtube.com/watch?v=' + item.id.videoId;
+									id = item.id.videoId
+									break;
+							}
+
+							return {
+								id: id,
+								link: link,
+								kind: item.id.kind,
+								publishedAt: item.snippet.publishedAt,
+								channelId: item.snippet.channelId,
+								channelTitle: item.snippet.channelTitle,
+								title: item.snippet.title,
+								description: item.snippet.description,
+								thumbnails: item.snippet.thumbnails
+							}
+						});
+
+						return callback(results);
+					}
+					else
+					{
+						CHAN.log.error('Error:', body);
+						return callback({err: 'An error has occured'});
+					}
+				}
+			} catch(e) {
+					CHAN.log.error('Error:', error);
+					return callback({err: e.message});
+			}
+		});
+	}
 
 	search(CHAN, media_type, query, callback){
 		var _this = this;
@@ -82,9 +153,9 @@ module.exports = class TTV{
 			delete d.available_translations;
 
 			if(!d.trailer && _this.yt_search !== false){
-				_this.yt_search((d.title + ' trailer'), _this.yt_opts, function(err, results) {
-					if(err){
-						CHAN.log.error(err.stack);
+				_this.yt_video_search((d.title + ' trailer'), function(results) {
+					if(results.err){
+						CHAN.log.error(results.err);
 						callback({err: 'an error has occured'});
 					} else if(!results || results.length === 0){
 						callback({err: 'no youtube video found show'}, 2);

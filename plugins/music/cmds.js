@@ -10,17 +10,8 @@ var info = {
 	highest_song_count: 10000,
 	last_artist: null
 }
-exports.info = info;
 
-if(config.API.youtube && config.API.youtube.key !== ''){
-	var yt_search = require('youtube-search'),
-		yt_opts = {
-			maxResults: 1,
-			key: config.API.youtube.key
-		};
-} else { 
-	b.log.warn('Missing Youtube API key!');
-}
+exports.info = info;
 
 var cmds = {
 	np: { //fix this when we re-write commands logic, the params aren't functioning quite right.
@@ -213,23 +204,12 @@ var cmds = {
 
 					if(d.name !== '') title.push(d.name);
 
-					yt_search(title.join(' '), yt_opts, function(err, results) 
+					m.yt_video_search(CHAN, title.join(' '), function(results) 
 					{
-						if(err)
+						if(results.err)
 						{
-							CHAN.log.error(err.stack)
-							say({err: 'an error has occured'}, 2);
-							b.users.owner(false, function(owner_nicks)
-							{
-								if(owner_nick !== null)
-								{
-									owner_nicks.forEach(function(owner_nick)
-									{
-									   say({err: err.stack}, 3, {skip_verify: true, to: owner_nick}); 
-								   });
-								}
-							});
-
+							CHAN.log.error(results.err)
+							say({err: results.err}, 2);
 							return;
 						}
 					 

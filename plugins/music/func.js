@@ -9,6 +9,87 @@ module.exports = class Music{
 		}
 	}
 
+	yt_video_search(CHAN, term, callback)
+	{
+		if(!config.API.youtube)
+		{
+			callback({err: 'No YouTube API key provided'});
+		}
+
+		var params = {
+			q: term,
+			part: 'snippet',
+			maxResults: 1
+		}
+
+		var url = 'https://www.googleapis.com/youtube/v3/search?key=' + config.API.youtube.key
+
+		for(var key in params){
+			url += '&' + key + '=' + encodeURI(params[key]);
+		}
+
+		CHAN.log.debug(url)
+
+		request({url: url}, function (error, response, body){
+			try{
+				if(error && error != null && error != 'null')
+				{
+					CHAN.log.error('Error:', error);
+					return callback({err: error});
+				} 
+				else 
+				{
+					var json_parse = JSON.parse(body);
+
+					if(json_parse && json_parse.items)
+					{
+						var results = json_parse.items.map(function (item) {
+							var link = ''
+							var id = ''
+							switch (item.id.kind) {
+								case 'youtube#channel':
+									link = 'https://www.youtube.com/channel/' + item.id.channelId;
+									id = item.id.channelId;
+									break;
+								case 'youtube#playlist':
+									link = 'https://www.youtube.com/playlist?list=' + item.id.playlistId;
+									id = item.id.playlistId
+									break;
+								default:
+									link = 'https://www.youtube.com/watch?v=' + item.id.videoId;
+									id = item.id.videoId
+									break;
+							}
+
+							return {
+								id: id,
+								link: link,
+								kind: item.id.kind,
+								publishedAt: item.snippet.publishedAt,
+								channelId: item.snippet.channelId,
+								channelTitle: item.snippet.channelTitle,
+								title: item.snippet.title,
+								description: item.snippet.description,
+								thumbnails: item.snippet.thumbnails
+							}
+						});
+
+						return callback(results);
+					}
+					else
+					{
+						CHAN.log.error('Error:', body);
+						return callback({err: 'An error has occured'});
+					}
+				}
+			} catch(e) {
+					CHAN.log.error('Error:', error);
+					return callback({err: e.message});
+			}
+		});
+	}
+
+
 	get_url(CHAN, service, method, send_data){
 		if(service === 'lastfm' && !this.use_lastfm){
 			send_data.handlers.error({message: 'LastFM is not enabled.'});
@@ -64,7 +145,7 @@ module.exports = class Music{
 			}
 		}
 
-		console.log(url);
+		CHAN.log.debug(url);
 
 		request({url: url, followRedirect: false, headers: headers}, function (error, response, body){
 			try{
