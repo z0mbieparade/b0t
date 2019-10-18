@@ -200,6 +200,7 @@ module.exports = class GI{
 								}
 								
 							} else {
+
 								var table_arr = CHAN.SAY.table(answer.table, 
 								{
 									title: answer.title,
@@ -347,6 +348,8 @@ module.exports = class GI{
 				var data_table = [];
 				var table_row_count = 0;
 
+				var table_cols_not_empty = [];
+
 				data_arr.forEach(function(row_arr)
 				{
 					if(row_arr.length === 1)
@@ -358,7 +361,12 @@ module.exports = class GI{
 						var row = {};
 						for(var i = 0; i < col_count; i++)
 						{
-							row['col_' + i] = row_arr[i] !== undefined ? row_arr[i] : '';
+							row[i] = row_arr[i] !== undefined ? row_arr[i].trim() : '';
+
+							if(row[i] !== '' && !table_cols_not_empty.includes(i))
+							{
+								table_cols_not_empty.push(i);
+							}
 						}
 
 						data_table.push(row);
@@ -368,6 +376,22 @@ module.exports = class GI{
 
 				if(table_row_count > 1)
 				{
+					data_table.forEach(function(row)
+					{
+						if(typeof row !== 'string')
+						{
+							for(var i in row)
+							{
+								if(table_cols_not_empty.includes(+i))
+								{
+									row['col_' + i] = row[i];
+								}
+
+								delete row[i];
+							}
+						}
+					})
+
 					return {table: data_table};
 				} 
 				else 
