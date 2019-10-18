@@ -1,8 +1,0 @@
-{
-	"less_chan_spam": false,
-
-	"discord_relay_channel": true,
-	"discord_relay_bot": "relay_bot",
-
-	"disable_colors": true
-}

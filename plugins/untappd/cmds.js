@@ -67,7 +67,6 @@ var cmds = {
 		action: 'get all users in current chan w/ registered untappd nicks last checked in beer',
 		API: ['untappd'],
 		no_pm: true,
-		discord: false,
 		spammy: true,
 		func: function(CHAN, USER, say, args, command_string){
 			CHAN.get_all_users_in_chan_data({col: 'untappd', label: 'Untappd'}, function(data){

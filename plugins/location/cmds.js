@@ -139,7 +139,6 @@ var cmds = {
 		action: 'get weather for all users in current chan',
 		API: ['weather'],
 		no_pm: true,
-		discord: false,
 		spammy: true,
 		func: function(CHAN, USER, say, args, command_string){
 			CHAN.get_all_users_in_chan_data({no_highlight: false, col: 'location', label: 'Location'}, function(data){

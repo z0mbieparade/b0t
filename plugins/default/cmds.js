@@ -12,7 +12,6 @@ var cmds = {
 		action: 'list all of the available bot commands',
 		params: [{
 			optional: true,
-			discord: false,
 			name: 'list',
 			type: 'flag'
 		}],
@@ -38,8 +37,6 @@ var cmds = {
 					say(cmd_arr, 3, {skip_verify: true, join: '\n'});
 				} else {
 					var cmd_arr = [];
-
-					if(!USER.is_discord_user && !USER.is_owner && CHAN.is_pm) cmd_arr.push(CHAN.t.fail('Note: When using in a PM, only shows base privileges'));
 
 					for(var plugin in cmd_obj){
 						cmd_arr.push(CHAN.t.warn(plugin + ':') + ' ' + cmd_obj[plugin].join(', '));
@@ -74,7 +71,6 @@ var cmds = {
 				}]
 		}],
 		perm: '+',
-		discord: false,
 		func: function(CHAN, USER, say, args, command_string){
 
 			var help_topics = {
@@ -111,7 +107,6 @@ var cmds = {
 			colors: true
 		}],
 		perm: '+',
-		discord: false,
 		no_pm: true,
 		func: function(CHAN, USER, say, args, command_string){ 
 			topic_db.update('/' + CHAN.chan, {topic: [args.topic]}, false, function(){
@@ -134,7 +129,6 @@ var cmds = {
 				}]
 		}],
 		perm: '~',
-		discord: false,
 		no_pm: true,
 		func: function(CHAN, USER, say, args, command_string){ 
 			topic_db.search_arr(USER, '/' + CHAN.chan + '/topic', args, false, function(data, found){
@@ -154,7 +148,6 @@ var cmds = {
 	unpin: {
 		action: 'unpin the channel topic',
 		perm: '~',
-		discord: false,
 		no_pm: true,
 		func: function(CHAN, USER, say, args, command_string){ 
 			topic_db.delete('/' + CHAN.chan + '/pinned', function(act){
@@ -169,7 +162,6 @@ var cmds = {
 	updatetopic: {
 		action: 'update channel topic from qotd',
 		perm: 'owner',
-		discord: false,
 		no_pm: true,
 		func: function(CHAN, USER, say, args, command_string){ 
 			CHAN.update_topic();
@@ -242,7 +234,6 @@ var cmds = {
 				}]
 		}],
 		perm: 'owner',
-		discord: false,
 		registered: true,
 		func: function(CHAN, USER, say, args, command_string){ 
 
@@ -288,7 +279,6 @@ var cmds = {
 				type: 'string'
 		}],
 		perm: '~',
-		discord: false,
 		registered: true,
 		func: function(CHAN, USER, say, args, command_string){ 
 			if(args.service === 'tags' || args.service === 'tag'){
@@ -337,7 +327,6 @@ var cmds = {
 				colors: true
 		}],
 		perm: 'owner',
-		discord: false,
 		func: function(CHAN, USER, say, args, command_string){ 
 			say(args.message, 1, {to: args.to, skip_verify: true, ignore_bot_speak: true})
 		}
@@ -367,7 +356,6 @@ var cmds = {
 					fake: {flag: '-add'}
 				}]
 		}],
-		discord: false,
 		registered: true,
 		func: function(CHAN, USER, say, args, command_string){
 			db.manage_arr(USER, '/nicks/' + USER.nick + '/tags', args, {case_insensitive: USER.nick}, say);
@@ -376,7 +364,6 @@ var cmds = {
 	updates: {
 		action: 'check for updates to b0t script',
 		perm: '@',
-		discord: false,
 		func: function(CHAN, USER, say, args, command_string){ 
 			x.get_url(
 				'https://raw.githubusercontent.com/z0mbieparade/b0t/master/package.json', 
@@ -465,7 +452,6 @@ var cmds = {
 				name: 'join',
 				type: 'string',
 			}],
-		discord: false,
 		func: function(CHAN, USER, say, args, command_string){ 
 			var opt = {
 				nick: USER.nick,
@@ -482,7 +468,7 @@ var cmds = {
 		}
 	},
 	list: {
-		action: 'List all users in channel (useful with discord relay mostly)',
+		action: 'List all users in channel',
 		no_pm: true,
 		params: [{
 			optional: true,
@@ -514,7 +500,7 @@ var cmds = {
 				});
 
 				for(var nick in chan.users){
-					if(nick === bot.nick || (chan.config.discord_relay_bot !== undefined && nick === chan.config.discord_relay_bot)) continue;
+					if(nick === bot.nick) continue;
 					
 					var usr = chan.users[nick];
 
@@ -544,7 +530,7 @@ var cmds = {
 				}
 
 
-				say(data.join(', '), 1, {skip_verify: true, join: ', ', skip_buffer: true, ignore_discord_formatting: true});
+				say(data.join(', '), 1, {skip_verify: true, join: ', ', skip_buffer: true});
 			}
 
 			if(args.chan !== undefined){
@@ -781,7 +767,6 @@ var cmds = {
 			}*/]
 		}],
 		perm: '~',
-		discord: false,
 		registered: true,
 		func: function(CHAN, USER, say, args, command_string){ 
 			if(args.flag === '-revert'){
@@ -983,7 +968,6 @@ var cmds = {
 	},
 	unban: {
 		action: 'Unban yourself if you were auto kick/banned for being inactive for too long',
-		discord: false,
 	   /* disabled: function(){ //this needs a little more thought
 			console.log('UNBAN', this);
 			return !config.autokb_users_inactive_for;
@@ -1041,7 +1025,6 @@ var cmds = {
 			}]
 		}],
 		perm: 'owner',
-		discord: false,
 		func: function(CHAN, USER, say, args, command_string){ 
 			var arr = [];
 			var err = '';

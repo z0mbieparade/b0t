@@ -48,10 +48,7 @@ exports.default = {
 		//"nick!user@ip.address" or "nick!*@*" or "*!user@ip.address" etc.
 		chan_owner 				: "",
 		make_owner_chan_owner 	: false, //When user listed under "chan_owner" enters the room, or the b0t enters the room, add +q mode to that user.
-
-		discord_relay_channel 	: false, //If this channel is being used as a discord relay
-		discord_relay_bot 		: "", //Name of the discord relay bot
-
+		
 		//What the b0t says when it enters the chan. Can either be a string or "qotd|string", 
 		//in which case it will attempt to pull a random topic that was set, or if no topics have been set it will say the string.
 		speak_on_channel_join 	: "qotd|holla", 

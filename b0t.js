@@ -364,34 +364,8 @@ function init_bot(){
 				b.pm.message(nick, text);
 			});
 		} else { //this is a message in a chan
-
-			//if this is a discord channel
-			if(b.channels[chan].config.discord_relay_channel && nick === b.channels[chan].config.discord_relay_bot){
-				var discord_arr = text.match(/^<(.+?)> (.+)$/);
-				if(discord_arr === null || discord_arr.length < 2){
-					b.log.error('Invalid discord bot relay input!', discord_arr);
-					return;
-				}
-
-				nick = c.stripColorsAndStyle(discord_arr[1]);
-				nick = nick.replace('\u000f', '');
-				text = discord_arr[2];
-
-				b.users.update_last_seen(nick, chan, 'speak', 'discord', text);
-
-				var is_action = text.match(/^_(.*?)_$/);
-
-				if(is_action !== null){
-					b.channels[chan].action(nick, is_action[1], true);
-				} else {
-					b.channels[chan].message(nick, text, true);
-				}
-			} else {
-				b.users.update_last_seen(nick, chan, 'speak', 'irc', text);
-				b.channels[chan].message(nick, text);
-			}
-
-			
+			b.users.update_last_seen(nick, chan, 'speak', 'irc', text);
+			b.channels[chan].message(nick, text);
 		}
 	});
 }

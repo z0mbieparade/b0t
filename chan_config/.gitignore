@@ -2,4 +2,4 @@
 *
 # Except these files
 !.gitignore
-!config_#discord.json
+!config_#example.json

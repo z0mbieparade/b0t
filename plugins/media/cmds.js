@@ -59,7 +59,6 @@ var cmds = {
 		action: 'get all users in current chan w/ registered trakt.tv nicks last scrobbled show/movie',
 		API: ['trakt'],
 		no_pm: true,
-		discord: false,
 		spammy: true,
 		func: function(CHAN, USER, say, args, command_string){
 			CHAN.get_all_users_in_chan_data({col: 'trakt', label: 'Trakt.TV'}, function(data){

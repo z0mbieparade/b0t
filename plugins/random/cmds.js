@@ -150,27 +150,23 @@ var cmds = {
 					perm: '~',
 					type: 'flag',
 					key: 'flag',
-					discord: false,
 					and: [ { name: 'id', type: 'number', key: 'id' } ]
 				},{
 					name: 'add',
 					perm: '~',
 					type: 'flag',
 					key: 'flag',
-					discord: false,
 					and: [ { name: 'new creed', type: 'text', key: 'new_val' } ]
 				},{
 					name: 'edit',
 					perm: '~',
 					type: 'flag',
 					key: 'flag',
-					discord: false,
 					and: [ { name: 'id', type: 'number' }, { name: 'new creed', type: 'text', key: 'new_val' } ]
 				},{
 					name: 'all',
 					type: 'flag',
 					key: 'flag',
-					discord: false,
 				},{
 					name: 'id',
 					key: 'id',
@@ -299,21 +295,18 @@ var cmds = {
 					name: 'list',
 					perm: '~',
 					type: 'flag',
-					key: 'flag',
-					discord: false
+					key: 'flag'
 				},{
 					name: 'delete',
 					perm: '~',
 					type: 'flag',
 					key: 'flag',
-					discord: false,
 					and: [ { name: 'id', type: 'number' } ]
 				},{
 					name: 'edit',
 					perm: '~',
 					type: 'flag',
 					key: 'flag',
-					discord: false,
 					and: [ { name: 'id', type: 'number' }, { name: 'new insult', type: 'text', key: 'new_val' } ]
 				},{
 					name: 'add',
