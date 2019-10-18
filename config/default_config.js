@@ -140,13 +140,6 @@ exports.default = {
 			secret 		: ""
 		},
 
-		//FML site clamped down on it's API years back, and it's hard to get a key from them now days. 
-		//Sometimes people leave theirs lying around accidentally however. Happy hunting!
-		//note: this is prolly not relavant anymore since the api has been shut down
-		/*fml: {
-			key 		: ""
-		},*/
-
 		// http://www.last.fm/api/account/create You will need an API key and a secret. 
 		//You can enter an app_name here too, otherwise it defaults to b0t. (Music/Artist commands)
 		lastfm: {
@@ -184,8 +177,8 @@ exports.default = {
 			secret 		: ""
 		},
 
-		// https://www.wunderground.com/weather/api/d/pricing.html You can get a free key for Weather Underground here, 
-		// so long as you don't go over a certain number of requests a day. 
+		// https://www.wunderground.com/weather/api/d/pricing.html Unfortunately Wunderground has clamped down on their API 
+		// usage for non-paying customers. Eventually this will be replaced with something else.
 		// (Required for Weather/Forecast, however uses location info for users to set times for other things such as !seen)
 		weather: {
 			key 		: ""
@@ -198,7 +191,6 @@ exports.default = {
 
 		// https://console.developers.google.com The youtube API is a bit fiddly, you have to have a gmail account first off. 
 		// Create credentials, for an API key and then you have to grant access for your server IP your b0t is running on. 
-		// The b0t should throw an error the first time you use !yt with your API key in your config with the URL to go to to enable this. 
 		// (Needed !yt, also useful for !movie/!show in trakt commands if no trailer is attached to media info.)
 		youtube: {
 			key 		: ""
