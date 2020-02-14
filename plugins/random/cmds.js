@@ -443,6 +443,13 @@ var cmds = {
 			say("You should play: " + no[0] + no[1] + no[2] + " and " + no[3] + no[4] + no[5] + no[6] + " for today's lottery!", 1, {skip_verify: true});
 		}
 	},
+	stroke: {
+		action: 'have a stroke',
+		func: function(CHAN, USER, say, args, command_string) {
+			say("Does anyone else smell toast?")
+			// Set a setting to mash up words for five minutes
+		}
+	},
 	rr: {
 		action: 'play russian roulette',
 		func: function(CHAN, USER, say, args, command_string){
