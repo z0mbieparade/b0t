@@ -207,10 +207,7 @@ function init_bot(){
 			b.is_op = true;
 			bot.send('oper', config.bot_nick, config.ircop_password);
 		}
-		if(config.nickserv_password && config.nickserv_password != '' && config.nickserv_password != null) {
-			// bot.say(config.nickserv_nick, 'identify ' + config.nickserv_password);
-		}
-		console.log(config)
+		if(config.nickserv_password) bot.say(config.nickserv_nick, 'identify ' + config.nickserv_password);
 	});
 
 	//we use raw messages instead
