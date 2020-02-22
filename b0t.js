@@ -207,7 +207,7 @@ function init_bot(){
 			b.is_op = true;
 			bot.send('oper', config.bot_nick, config.ircop_password);
 		}
-		if(config.nickserv_password) bot.say(config.nickserv_nick, 'identify ' + config.nickserv_password);
+		if(config.nickserv_password && config.nickserv_password != '') bot.say(config.nickserv_nick, 'identify ' + config.nickserv_password);
 	});
 
 	//we use raw messages instead
@@ -224,6 +224,7 @@ function init_bot(){
 		switch(message.rawCommand){
 			case 'PART': //when a user leaves, delete them from the channels
 			case 'KICK':
+				
 
 				if(message.rawCommand === 'PART') var nick = message.nick;
 				if(message.rawCommand === 'KICK') var nick = message.args[1];
