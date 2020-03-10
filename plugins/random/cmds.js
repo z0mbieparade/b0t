@@ -446,8 +446,7 @@ var cmds = {
 	stroke: {
 		action: 'have a stroke',
 		func: function(CHAN, USER, say, args, command_string) {
-			say("Does anyone else smell toast?")
-			// Set a setting to mash up words for five minutes
+			say("Does anyone else smell toast?", {stroke: true})
 		}
 	},
 	rr: {

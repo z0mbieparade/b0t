@@ -224,6 +224,7 @@ function init_bot(){
 		switch(message.rawCommand){
 			case 'PART': //when a user leaves, delete them from the channels
 			case 'KICK':
+				
 
 				if(message.rawCommand === 'PART') var nick = message.nick;
 				if(message.rawCommand === 'KICK') var nick = message.args[1];
