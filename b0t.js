@@ -381,6 +381,12 @@ function init_plugins(complete){
 			return srcArr;
 		}}
 	);
+
+	//rename weather API keys, delete this eventually
+	if(config.API.weather){
+		config.API.wunderground = config.API.weather;
+	}
+
 	b.log.setLevel(config.debug_level);
 	b.log.info('*** Reversing polarity on plugins array ***');
 	b.t = new Theme(config.chan_default.theme, config.chan_default.disable_colors);

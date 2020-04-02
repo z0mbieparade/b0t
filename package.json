@@ -1,6 +1,6 @@
 {
 	"name": "b0t",
-	"version": "0.7.3",
+	"version": "0.7.4",
 	"description": "irc node bot with trakt.tv, last.fm, urban dictionary, and more functionality",
 	"author": "<z0mbieparade.com>",
 	"scripts": {
@@ -49,7 +49,6 @@
 		"irc": "git+https://github.com/z0mbieparade/node-irc.git",
 		"irc-colors": "~1.2.1",
 		"jsonfile": "~2.4.0",
-		"lastfm": "^0.9.3",
 		"log4js": "~0.6.37",
 		"mv": "~2.1.1",
 		"node-ddg-api": "~0.1.4",

@@ -159,9 +159,21 @@ exports.default = {
 			app_id	 	: ""
 		},
 
+		// http://www.openweathermap.org is the new replacement API for wunderground. If you have a wunderground API key that
+		//still works, you can continue to use it, but this weather API is free and works just fine.
+		//If you want to use any weather/forecast/set location commands you need this or a working wunderground key.
+		openweathermap: {
+			key 		: ""
+		},
+
 		// https://www.themoviedb.org You will need an API key.
 		//Movie commands for getting which movies are in theaters
 		themoviedb: {
+			key 		: ""
+		},
+
+		//https://timezonedb.com not necessary PER SAY, but it helps with things like timezone abreviation, location names, etc.
+		timezonedb: {
 			key 		: ""
 		},
 
@@ -180,7 +192,7 @@ exports.default = {
 		// https://www.wunderground.com/weather/api/d/pricing.html Unfortunately Wunderground has clamped down on their API 
 		// usage for non-paying customers. Eventually this will be replaced with something else.
 		// (Required for Weather/Forecast, however uses location info for users to set times for other things such as !seen)
-		weather: {
+		wunderground: {
 			key 		: ""
 		},
 

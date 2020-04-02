@@ -4,7 +4,8 @@ var info = {
 }
 exports.info = info;
 
-if(config.API.weather && config.API.weather.key !== '') {
+if((config.API.wunderground && config.API.wunderground.key !== '') ||
+	(config.API.openweathermap && config.API.openweathermap.key !== '')) {
 	var Weather = require(__dirname + '/func.js'),
 		wu = new Weather(),
 		cluster = require('hierarchical-clustering');
@@ -27,7 +28,7 @@ var cmds = {
 				key: 'location'
 			}]
 		}],
-		API: ['weather'],
+		API: ['wunderground|openweathermap'],
 		register: "location",
 		func: function(CHAN, USER, say, args, command_string){
 			if(args.location === undefined) {
@@ -84,7 +85,7 @@ var cmds = {
 				key: 'location'
 			}]
 		}],
-		API: ['weather'],
+		API: ['wunderground|openweathermap'],
 		register: "location",
 		func: function(CHAN, USER, say, args, command_string){
 
@@ -92,19 +93,22 @@ var cmds = {
 				var data = [];
 				if(args.long !== undefined){
 					data.push('Forecast for ' + CHAN.t.highlight(location) + ':');
-					var add_to_prev = false;
+
+					var count = 4;
 					for(var day in d.days){
-						if(add_to_prev === false){
+						if(count > 0)
+						{
 							data.push(wu.forecast_str(d.days[day], CHAN));
-							add_to_prev = true;
-						} else {
-							data[data.length - 1] += ' | ' + wu.forecast_str(d.days[day], CHAN);
-							add_to_prev = false;
+							count--;
+						}
+						else
+						{
+							break;
 						}
 					}
 				} else {
 					data = 'Today\'s forecast for ' + CHAN.t.highlight(location) + ': ';
-					data += wu.forecast_str(d.days[0], CHAN, true);
+					data += wu.forecast_str(d.days[Object.keys(d.days)[0]], CHAN, true);
 				}
 			   
 				say(data, {join: '\n', lines: 5, force_lines: true});
@@ -137,7 +141,7 @@ var cmds = {
 	},
 	wa: {
 		action: 'get weather for all users in current chan',
-		API: ['weather'],
+		API: ['wunderground|openweathermap'],
 		no_pm: true,
 		spammy: true,
 		func: function(CHAN, USER, say, args, command_string){
@@ -325,13 +329,13 @@ var cmds = {
 				type: 'text',
 				key: 'location'
 			},{
-				name: 'city, state',
+				name: 'city, state, country',
 				type: 'text',
 				key: 'location'
 			}]
 		}],
 		registered: true,
-		API: ['weather'],
+		API: ['wunderground|openweathermap'],
 		func: function(CHAN, USER, say, args, command_string){
 			wu.set_location(args.location, USER.nick, function(d){
 				if(d.err) return say(d);
@@ -341,7 +345,7 @@ var cmds = {
 				b.users.update_user(USER.nick, {
 					location: location, 
 					offset: d.local_tz_offset, 
-					timezone: d.local_tz_short,
+					timezone: d.local_tz_short ? d.local_tz_short : null,
 					display_location: d.display_location.full,
 					lat: d.display_location.latitude,
 					long: d.display_location.longitude
