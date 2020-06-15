@@ -161,54 +161,140 @@ module.exports = class WU{
 
 	get_url_openweathermap(method, send_data, skip_try_other){
 		var _this = this;
-		if(send_data.location.match(/^\d{5}(-{0,1}\d{4})?$/)) //US zipcode
+
+		var openweathermap = function()
 		{
-			var location = 'zip=' + send_data.location + ',us';
-		}
-		else if(send_data.location.match(/^[ABCEGHJ-NPRSTVXY]\d[ABCEGHJ-NPRSTV-Z][ -]?\d[ABCEGHJ-NPRSTV-Z]\d$/i)) //CAN postal code
-		{
-			var location = 'zip=' + send_data.location.replace(/\W+/g, '') + ',ca';
-		}
-		else //we'll assume it's a city 
-		{
-			var location = 'q=' + send_data.location.replace(/,\s+/gm, ',');
+			if(send_data.lat !== undefined && send_data.lon !== undefined)
+			{
+				var location = 'lat=' + send_data.lat + '&lon=' + send_data.lon;
+			}
+			else if(send_data.location.match(/^\d{5}(-{0,1}\d{4})?$/)) //US zipcode
+			{
+				var location = 'zip=' + send_data.location + ',us';
+			}
+			else if(send_data.location.match(/^[ABCEGHJ-NPRSTVXY]\d[ABCEGHJ-NPRSTV-Z][ -]?\d[ABCEGHJ-NPRSTV-Z]\d$/i)) //CAN postal code
+			{
+				var location = 'zip=' + send_data.location.replace(/\W+/g, '') + ',ca';
+			}
+			else //we'll assume it's a city 
+			{
+				var location = 'q=' + send_data.location.replace(/,\s+/gm, ',');
+			}
+
+			if(method === 'conditions') method = 'weather';
+
+			var url = 'http://api.openweathermap.org/data/2.5/' + method + '?' + location + '&units=imperial&appid=' + config.API.openweathermap.key
+
+			console.log(url);
+
+			request({url: url, followRedirect: false}, function (error, response, body) {
+				if(error){
+					b.log.error('Error:', error);
+
+					if(config.API.wunderground && config.API.wunderground.key && !skip_try_other)
+					{
+						_this.get_url_wunderground(method, send_data, true);
+					}
+					else if(send_data.handlers.error)
+					{
+						send_data.handlers.error(error);
+					}
+				} else if(response.statusCode !== 200){
+					var json_parse = JSON.parse(body);
+					var msg = json_parse.message ? json_parse.message : 'invalid status code';
+
+					b.log.error(response.statusCode, msg);
+					
+					if(config.API.wunderground && config.API.wunderground.key && !skip_try_other)
+					{
+						_this.get_url_wunderground(method, send_data, true);
+					}
+					else if(send_data.handlers.error)
+					{
+						send_data.handlers.error({err: msg});
+					}
+				} else {
+					var json_parse = JSON.parse(body);
+					send_data.handlers.success(json_parse, send_data, 'openweathermap');
+				}
+			});
 		}
 
-		if(method === 'conditions') method = 'weather';
+		if(config.API.mapquest && config.API.mapquest.key)
+		{
+			this.get_url_mapquest({
+				location: send_data.location,
+				handlers: {
+					success: function(res)
+					{
+						/*	adminArea6 	 Neighborhood name
+							adminArea5	 City name
+							adminArea4	 County name
+							adminArea3	 State name
+							adminArea1	 Country name
+						*/
 
-		var url = 'http://api.openweathermap.org/data/2.5/' + method + '?' + location + '&units=imperial&appid=' + config.API.openweathermap.key
+						if(res.results && res.results[0] && res.results[0].locations)
+						{
+							for(var i = 0; i < res.results[0].locations.length; i++)
+							{
+								var loc =  res.results[0].locations[i];
+								console.log('city', loc.adminArea5, 'state', loc.adminArea3, 'country', loc.adminArea1)
+							
+								if(loc.adminArea5 && loc.adminArea1)
+								{
+									if(loc.adminArea5 !== loc.adminArea3)
+									{
+										send_data.nice_location = loc.adminArea5 + ', ' + loc.adminArea3 + ', ' + loc.adminArea1;
+									}
+									else
+									{
+										send_data.nice_location = loc.adminArea5 + ', ' + loc.adminArea1;
+									}
 
-		console.log(url);
+									send_data.lat = loc.latLng.lat;
+									send_data.lon = loc.latLng.lng;
+
+									break;
+								}
+
+							}
+						}
+
+						openweathermap();
+					},
+					error: function(err)
+					{
+						b.log.error('Error:', err);
+						openweathermap();
+					}
+				}
+			})
+		}
+		else
+		{
+			openweathermap();
+		}
+	}
+
+	get_url_mapquest(send_data){
+
+		if(!config.API.mapquest || !config.API.mapquest.key) return;
+
+		var url = "http://open.mapquestapi.com/geocoding/v1/address?key=" + config.API.mapquest.key + "&location=" + send_data.location
+
+		console.log(url)
 
 		request({url: url, followRedirect: false}, function (error, response, body) {
 			if(error){
 				b.log.error('Error:', error);
-
-				if(config.API.wunderground && config.API.wunderground.key && !skip_try_other)
-				{
-					_this.get_url_wunderground(method, send_data, true);
-				}
-				else if(send_data.handlers.error)
-				{
-					send_data.handlers.error(error);
-				}
+				send_data.handlers.error(error);
 			} else if(response.statusCode !== 200){
-				var json_parse = JSON.parse(body);
-				var msg = json_parse.message ? json_parse.message : 'invalid status code';
-
-				b.log.error(response.statusCode, msg);
-				
-				if(config.API.wunderground && config.API.wunderground.key && !skip_try_other)
-				{
-					_this.get_url_wunderground(method, send_data, true);
-				}
-				else if(send_data.handlers.error)
-				{
-					send_data.handlers.error({err: msg});
-				}
+				b.log.error('Invalid Status Code Returned:', response.statusCode);
+				send_data.handlers.error(error);
 			} else {
 				var json_parse = JSON.parse(body);
-				send_data.handlers.success(json_parse, 'openweathermap');
+				send_data.handlers.success(json_parse, 'mapquest');
 			}
 		});
 	}
@@ -245,7 +331,7 @@ module.exports = class WU{
 		_this.get_url('conditions', {
 			location: loc,
 			handlers: {
-				success: function(res, api) {
+				success: function(res, extra_data) {
 					if(res.response && res.response.error){
 						callback({'err': res.response.error.description});
 					}
@@ -297,7 +383,7 @@ module.exports = class WU{
 						data.display_location = {
 							latitude: res.coord.lat,
 							longitude: res.coord.lon,
-							full: res.name + ' ' + res.sys.country
+							full: extra_data && extra_data.nice_location ? extra_data.nice_location : (res.name + ' ' + res.sys.country)
 						};
 
 						data.wind_dir = 'Calm';

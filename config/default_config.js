@@ -148,6 +148,12 @@ exports.default = {
 			app_name 	: ""
 		},
 
+		//https://developer.mapquest.com/ This isn't strictly necessary, but unless you have a wunderground key this improves
+		//the openweathermaps location stuff drastically esp for canadians.
+		mapquest: {
+			key 		: ""
+		},
+
 		// http://www.dictionaryapi.com/ You will need to set up an account and then request a dictionary key. (!d command)
 		mwdictionary: {
 			key 		: ""
