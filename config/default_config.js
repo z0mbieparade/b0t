@@ -213,6 +213,10 @@ exports.default = {
 		youtube: {
 			key 		: ""
 		}
+
+		// TWITTER USES ENVIRONMENT VARIABLES
+		// START THE BOT WTIH TWITTER_CONSUMER_KEY, TWITTER_CONSUMER_SECRET,
+		// and TWITTER_BEARER_TOKEN
 	}
 
 }
