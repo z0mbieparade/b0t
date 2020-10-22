@@ -5,20 +5,20 @@
    ---------------------------------------------------------- */
 
 exports.default = {
-	//Depending on the level here, will see more or less info in your console and log. 
+	//Depending on the level here, will see more or less info in your console and log.
 	//Default is INFO, which only shows startup messages and fatal warnings. Levels uses are from log4js
-	debug_level					: "INFO", 
+	debug_level					: "INFO",
 
 	owner 						: "", //Whomever owns the b0t. "nick!user@ip.address" or "nick!*@*" or "*!user@ip.address" etc.
 	send_errors_to_owner_pm 	: false, //This will send errors to the owner's PM.
 	send_owner_bot_pms 			: true, //If a user PM's the b0t, it will send the output to the owner. If you're using the !speak command as owner, you need this to be true to see user replies.
 
-	//Order these from lowest to highest user permission symbols in the irc. 
+	//Order these from lowest to highest user permission symbols in the irc.
 	//These are used to permission commands if you don't want to give everyone access to a command in the chan.
 	permissions 				: ["", "+", "-", "%", "@", "&", "~", "!"],
 	command_prefix 				: "!", //This is the character that starts every command that the b0t listens for. (i.e. !np)
 
-	//If true, then some commands require registration and ID with NickServ before a user can update their data. 
+	//If true, then some commands require registration and ID with NickServ before a user can update their data.
 	//(Mostly commands that update user data in db, such as !location, !lastfm, !untappd, etc, however the b0t owner can still use !reg to force set these for a user.)
 	require_nickserv_to_edit_user_data 	: true,
 
@@ -48,10 +48,10 @@ exports.default = {
 		//"nick!user@ip.address" or "nick!*@*" or "*!user@ip.address" etc.
 		chan_owner 				: "",
 		make_owner_chan_owner 	: false, //When user listed under "chan_owner" enters the room, or the b0t enters the room, add +q mode to that user.
-		
-		//What the b0t says when it enters the chan. Can either be a string or "qotd|string", 
+
+		//What the b0t says when it enters the chan. Can either be a string or "qotd|string",
 		//in which case it will attempt to pull a random topic that was set, or if no topics have been set it will say the string.
-		speak_on_channel_join 	: "qotd|holla", 
+		speak_on_channel_join 	: "qotd|holla",
 
 		force_join 				: false, //b0t must have sajoin privileges to use this feature. If room is invite only b0t will attempt to sajoin itself to the room.
 		voice_users_on_join 	: false, //Will autovoice everyone in the room when they join, or the b0t joins. NOTE: atheme uses, if ChanServ baby sits your room, it may de-voice.
@@ -60,16 +60,16 @@ exports.default = {
 
 		less_chan_spam 			: true, //SAY.say() level 2 messages go to PM instead of channel (errors by default)
 
-		//When true, uses busy_interval to determine if the channel is busy, 
+		//When true, uses busy_interval to determine if the channel is busy,
 		//and if that is the case it sends b0t messages to PM instead of spamming them in the channel.
 		limit_bot_speak_when_busy 				: false,
-		//If the average time between the last 5 user messages in the channel is <= busy_interval, 
+		//If the average time between the last 5 user messages in the channel is <= busy_interval,
 		//the channel is determined to be busy. Or, if the last user mesage in the channel is 2x or greater this value, it is not busy.
 		busy_interval 							: 30000, // = 30sec
 		//When channel is busy, how often command output will go to the chan vs to to PM.
 		wait_time_between_commands_when_busy 	: 600000, // = 10min
 
-		//Some commands are considered 'spammy commands' and if flag is true, and a user attempts to do !wp multiple times in a row, 
+		//Some commands are considered 'spammy commands' and if flag is true, and a user attempts to do !wp multiple times in a row,
 		//it'll wait this length of time before letting them use the command again. Stop user from spamming channel.
 		limit_spammy_commands 					: 300000, // = 5min
 
@@ -123,7 +123,7 @@ exports.default = {
 		}
 	},
 
-	//If you would like to use a set of commands that require an API key, you must go register for that API key and copy and paste it here. 
+	//If you would like to use a set of commands that require an API key, you must go register for that API key and copy and paste it here.
 	//If you don't want to use a set of commands you can leave the key blank or delete the whole section. Commands relating to that api will be disabled
 	API: {
 
@@ -133,14 +133,14 @@ exports.default = {
 			secret 		: ""
 		},
 
-		// https://api.imgur.com/ You will need to have an imgur account, and then scroll down on this page to where it say Register an Application. 
+		// https://api.imgur.com/ You will need to have an imgur account, and then scroll down on this page to where it say Register an Application.
 		// client_id is the key, client_secret is the secret.
 		imgur: {
 			key 		: "",
 			secret 		: ""
 		},
 
-		// http://www.last.fm/api/account/create You will need an API key and a secret. 
+		// http://www.last.fm/api/account/create You will need an API key and a secret.
 		//You can enter an app_name here too, otherwise it defaults to b0t. (Music/Artist commands)
 		lastfm: {
 			key 		: "",
@@ -183,10 +183,20 @@ exports.default = {
 			key 		: ""
 		},
 
-		// http://docs.trakt.apiary.io/ You will need an api key here. 
+		// http://docs.trakt.apiary.io/ You will need an api key here.
 		// The docs should have a link for creating your key. (TV/Movie commands)
 		trakt: {
 			key 		: ""
+		},
+
+		// https://developer.twitter.com, you need to register for a dev account, create a project
+		// and add an app to it for your irc bot. This will allow you to get an API Key/secret and Bearer token.
+		// protip: if it's not working, make sure you're using v2 developer portal. This is currently only used
+		// to get the tweet for a twitter link to use as the sup text in irc. So not super important.
+		twitter: {
+			api_key				: "",
+			api_secret		: "",
+			bearer_token 	: ""
 		},
 
 		// https://untappd.com/api/docs Untappd.com takes a couple of weeks to approve your api_key and secret. (Beer commands)
@@ -195,7 +205,7 @@ exports.default = {
 			secret 		: ""
 		},
 
-		// https://www.wunderground.com/weather/api/d/pricing.html Unfortunately Wunderground has clamped down on their API 
+		// https://www.wunderground.com/weather/api/d/pricing.html Unfortunately Wunderground has clamped down on their API
 		// usage for non-paying customers. Eventually this will be replaced with something else.
 		// (Required for Weather/Forecast, however uses location info for users to set times for other things such as !seen)
 		wunderground: {
@@ -207,16 +217,12 @@ exports.default = {
 			key 		: ""
 		},
 
-		// https://console.developers.google.com The youtube API is a bit fiddly, you have to have a gmail account first off. 
-		// Create credentials, for an API key and then you have to grant access for your server IP your b0t is running on. 
+		// https://console.developers.google.com The youtube API is a bit fiddly, you have to have a gmail account first off.
+		// Create credentials, for an API key and then you have to grant access for your server IP your b0t is running on.
 		// (Needed !yt, also useful for !movie/!show in trakt commands if no trailer is attached to media info.)
 		youtube: {
 			key 		: ""
 		}
-
-		// TWITTER USES ENVIRONMENT VARIABLES
-		// START THE BOT WTIH TWITTER_CONSUMER_KEY, TWITTER_CONSUMER_SECRET,
-		// and TWITTER_BEARER_TOKEN
 	}
 
 }
