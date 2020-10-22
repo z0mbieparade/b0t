@@ -40,7 +40,7 @@ var cmds = {
 					return;
 				}
 
-				untappd.getBeer(CHAN, args.irc_nick, untappd_un, false, function(d) {
+				untappd.get_beer(CHAN, args.irc_nick, untappd_un, false, function(d) {
 					if(d.err) return say(d, 2);
 
 					if(d.beer_name !== ''){
@@ -74,7 +74,7 @@ var cmds = {
 
 				let requests = (Object.keys(data)).map((untappd_un) => {
 					return new Promise((resolve) => {
-						untappd.getBeer(CHAN, data[untappd_un], untappd_un, true, function(d) {
+						untappd.get_beer(CHAN, data[untappd_un], untappd_un, true, function(d) {
 							if(d.err) {
 								CHAN.log.error(d.err);
 							} else {
@@ -96,13 +96,13 @@ var cmds = {
 					});
 				});
 
-				Promise.all(requests).then(() => { 
-					
+				Promise.all(requests).then(() => {
+
 					say(say_data, 1, {
-						table: true, 
+						table: true,
 						table_opts: {
-							header: true, 
-							outline: false, 
+							header: true,
+							outline: false,
 							sort_by: function sort_by(a, b){
 								return b.epoc_hidden - a.epoc_hidden;
 							},
@@ -114,14 +114,14 @@ var cmds = {
 								},
 								abv: function(row, cell){
 									return x.score(row.beer_abv_hidden, {
-										score_str: cell, 
-										max: 15, 
-										config: CHAN.config, 
+										score_str: cell,
+										max: 15,
+										config: CHAN.config,
 										colors: [
-											{'%':100, c:'red'}, 
-											{'%':95, c:'brown'}, 
-											{'%':75, c:'olive'}, 
-											{'%':50, c:'green'}, 
+											{'%':100, c:'red'},
+											{'%':95, c:'brown'},
+											{'%':75, c:'olive'},
+											{'%':50, c:'green'},
 											{'%':25, c:'teal'}
 										]
 									});
@@ -129,8 +129,8 @@ var cmds = {
 								venue: function(row, cell){ return CHAN.t.success(cell) },
 								date: function(row, cell){ return CHAN.t.null(cell) }
 							}
-						}, 
-						lines: 15, 
+						},
+						lines: 15,
 						force_lines: true
 					});
 

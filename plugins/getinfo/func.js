@@ -1,16 +1,13 @@
-var google	  	= require('google'),
-	request 	= require('request'),
-	DDG		 	= require('node-ddg-api').DDG,
-	ddg		 	= new DDG(config.bot_nick);
+var request 	= require('request');
 
 module.exports = class GI{
 	nu(CHAN, send_data){
 		if(config.API.nutritionix && config.API.nutritionix.key !== '') {
 			request.post({
-				url: 'https://trackapi.nutritionix.com/v2/natural/nutrients', 
+				url: 'https://trackapi.nutritionix.com/v2/natural/nutrients',
 				headers: {
-					"Content-Type": "application/json", 
-					"x-app-id": config.API.nutritionix.app_id, 
+					"Content-Type": "application/json",
+					"x-app-id": config.API.nutritionix.app_id,
 					"x-app-key": config.API.nutritionix.key
 				},
 				form: {
@@ -33,79 +30,36 @@ module.exports = class GI{
 
 		} else {
 			b.log.warn('Missing Nutritionix API key!');
-			if(send_data.handlers.error) send_data.handlers.error({err: 'Missing imgur API key'});
+			if(send_data.handlers.error) send_data.handlers.error({err: 'Missing Nutritionix API key'});
 		}
 	};
 
-	goog(CHAN, search_string, callback){
-		var _this = this;
-		CHAN.log.debug('Searching GOOG');
-		google(search_string, function (err, res){
-			if(err){
-				CHAN.log.error('goog:', err);
-				if(err.message.match(/CAPTCHA/igm)) return callback({err: 'Slapped by Google CAPTCHA'});
-				return callback({err: 'Something went wrong'});
-			}
-			
-			var links = res.links.filter(link => link.title && link.href);
-
-			if(links.length < 1) return callback({err: 'Nothing found.'});
-
-			var say_link = links[0];
-
-			links.forEach(function(link, i){
-				if(link.href.match(/wiki/ig)){
-					say_link = link;
-					return;
-				}
-			});
-
-			_this.speak_search(CHAN, 'GOOG', say_link, callback);
-		});
-	}
-
 	ddg(CHAN, search_string, callback){
 		var _this = this;
-		CHAN.log.debug('Searching DDG');
-		ddg.instantAnswer(search_string, {skip_disambig: '0'}, function(err, res) {
-			if (err){
-				CHAN.log.error('ddg:', err);
+		var url = 'https://api.duckduckgo.com/?format=json&no_html=1&skip_disambig=0&q=' + encodeURI(search_string);
+
+		x.get_url(url, 'json', function(data){
+			if (data.err){
+				CHAN.log.error('ddg:', data.err);
 				return callback({err: 'Something went wrong.'});
 			}
 
-			if(res.RelatedTopics.length < 1) return callback({err: 'Nothing found.'});
+			if(data.RelatedTopics.length < 1) return callback({err: 'Nothing found.'});
 
 			try{
 				var say_link = {
-					title: res.Heading,
-					href: res.AbstractURL,
-					description: res.RelatedTopics[0].Text
+					title: data.Heading,
+					href: data.AbstractURL,
+					description: data.RelatedTopics[0].Text
 				}
 
-				_this.speak_search(CHAN, 'DDG', say_link, callback);
+				var str = CHAN.t.highlight(CHAN.t.term('DDG:') + ' ' + say_link.title) + ' ' + say_link.description;
+				callback(str, say_link.href);
 			} catch(e) {
 				CHAN.log.error('ddg', e);
 				return say({err: 'Something went wrong.'});
 			}
-		});
-	}
-
-	speak_search(CHAN, src, say_link, callback){
-		var is_yt = say_link.href.match(/^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?$/i);
-		//this is a youtube link
-		if(is_yt !== null){
-			 x.get_url(is_yt[5], 'youtube', function(data){
-
-				var str =  CHAN.t.highlight(data.title) + CHAN.t.null(' | Uploader: ') + CHAN.t.highlight(data.owner);
-					str += CHAN.t.null(' | Time: ') + CHAN.t.highlight(x.ms_to_time(data.duration * 1000, {short: false})) + CHAN.t.null(' | Views: ') + CHAN.t.highlight(data.views);  
-
-				say_link.title = str;
-				callback(CHAN.t.highlight(CHAN.t.term(src + ':') + ' ' + say_link.title) + ' ' + say_link.description, say_link.href)
-				
-			});
-		} else {
-			callback(CHAN.t.highlight(CHAN.t.term(src + ':') + ' ' + say_link.title) + ' ' + say_link.description, say_link.href)
-		}
+		})
 	}
 
 	na(CHAN, val, extra, perc){
@@ -168,7 +122,7 @@ module.exports = class GI{
 					if(answer_arr[0].text && answer_arr[0].text === '(data not available)')
 					{
 						callback({err: 'Data not available'});
-					} 
+					}
 					else if(answer_arr.length > 0)
 					{
 						var line_count = 0;
@@ -193,23 +147,23 @@ module.exports = class GI{
 								if(typeof answer.text === 'string')
 								{
 									say_arr.push(answer.text);
-								} 
-								else 
+								}
+								else
 								{
 									say_arr = say_arr.concat(answer.text);
 								}
-								
+
 							} else {
 
-								var table_arr = CHAN.SAY.table(answer.table, 
+								var table_arr = CHAN.SAY.table(answer.table,
 								{
 									title: answer.title,
-									header: false, 
+									header: false,
 									outline: false
 								});
 
 								say_arr = say_arr.concat(table_arr);
-							}	
+							}
 						}
 
 						callback(say_arr, true);
@@ -236,7 +190,7 @@ module.exports = class GI{
 						interpretation = interpretation.join(' ');
 					}
 					interpretation = interpretation.replace(/ \| /gm, ' ');
-				} 
+				}
 				else if(pod.primary === true)
 				{
 					pod.subpods.forEach(function(subpod)
@@ -253,11 +207,11 @@ module.exports = class GI{
 							answer_arr.push({text: subpod.img.src, title: interpretation});
 						}
 					});
-				} 
+				}
 				else if(pod.title === 'Image' && loop < 3)
 				{
 					return;
-				} 
+				}
 				else
 				{
 					pod.subpods.forEach(function(subpod)
@@ -296,25 +250,25 @@ module.exports = class GI{
 				if(split_row.length === 1)
 				{
 					return split_row[0];
-				} 
+				}
 				else if(split_row.length === 0)
 				{
 					return null;
-				} 
-				else 
+				}
+				else
 				{
 					return split_row;
 				}
-			} 
+			}
 			else if(typeof row === 'object')
 			{
 				for(var key in row){
 					row[key] = split_rows(row[key])
 				}
 				return row;
-			} 
-			else 
-			{	
+			}
+			else
+			{
 				return row;
 			}
 		}
@@ -324,8 +278,8 @@ module.exports = class GI{
 			if(typeof d === 'string')
 			{
 				var data = [d];
-			} 
-			else 
+			}
+			else
 			{
 				var data = d;
 			}
@@ -355,8 +309,8 @@ module.exports = class GI{
 					if(row_arr.length === 1)
 					{
 						data_table.push(row_arr[0]);
-					} 
-					else 
+					}
+					else
 					{
 						var row = {};
 						for(var i = 0; i < col_count; i++)
@@ -393,13 +347,13 @@ module.exports = class GI{
 					})
 
 					return {table: data_table};
-				} 
-				else 
+				}
+				else
 				{
 					return {text: d};
 				}
-			} 
-			else 
+			}
+			else
 			{
 				return {text: d};
 			}

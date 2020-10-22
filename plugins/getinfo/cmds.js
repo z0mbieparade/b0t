@@ -39,7 +39,7 @@ var cmds = {
 				} else {
 
 					var filter_entries = entries.filter(function(entry){
-						return entry.word.toLowerCase() === args.term.toLowerCase(); 
+						return entry.word.toLowerCase() === args.term.toLowerCase();
 					});
 
 					if(filter_entries.length > 0)
@@ -66,7 +66,7 @@ var cmds = {
 
 					var entry = entries[0];
 
-					var str_arr = [ 
+					var str_arr = [
 						CHAN.t.highlight('UD ' + CHAN.t.term(entry.word)) + ' 👍' + CHAN.t.success(entry.thumbs_up) + ' 👎' + CHAN.t.fail(entry.thumbs_down) + ' ' + CHAN.t.null('-' + entry.author),
 						entry.definition
 					];
@@ -164,7 +164,7 @@ var cmds = {
 						} else {
 							entries[closest].unshift(CHAN.t.highlight('MWD ' + CHAN.t.term(closest)));
 						}
-						
+
 						say(entries[closest], 1, {url: 'http://www.merriam-webster.com/dictionary/' + word, join: '\n'});
 					}
 				} catch(e) {
@@ -311,7 +311,7 @@ var cmds = {
 						str += CHAN.t.highlight(' Lines: ') + above_below_avr(stats.usr.lines, stats.avr.lines)
 
 					say(str, 1, {skip_verify: true});
-				
+
 				});
 			});
 		}
@@ -388,7 +388,7 @@ var cmds = {
 						say(list);
 						b.log.error(url, list);
 						return;
-					} 
+					}
 
 					list.forEach(function(coin){
 						info.c_list = info.c_list || {};
@@ -437,7 +437,7 @@ var cmds = {
 						say(coin);
 						b.log.error(url2, coin);
 						return;
-					} 
+					}
 
 					var price = +coin[0]['price_' + args.convert_to.toLowerCase()];
 
@@ -476,31 +476,8 @@ var cmds = {
 			say('https://www.youtube.com/results?search_query=' + query.join('+'), 1);
 		}
 	},
-	/*g: { //figure out captcha limits
-		action: 'google search query with DDG fallback',
-		params: [{
-			name: 'search string',
-			type: 'text'
-		}],
-		func: function(CHAN, USER, say, args, command_string){
-			gi.goog(CHAN, args.search_string, function(res, url){
-				if(res.err){
-					gi.ddg(CHAN, args.search_string, function(res2, url2){
-						if(res2.err){
-							say(res2);
-						} else {
-							say(res2, 1, {skip_verify: true, url: url2})
-						}
-					});
-				} else {
-					say(res, 1, {skip_verify: true, url: url});
-				}
-
-			});
-		}
-	},*/
 	ddg: {
-		action: 'DuckDuckGo search query with Google fallback',
+		action: 'DuckDuckGo search query',
 		params: [{
 			name: 'search string',
 			type: 'text'
@@ -509,19 +486,6 @@ var cmds = {
 			gi.ddg(CHAN, args.search_string, function(res, url){
 				if(res.err) return say(res);
 				say(res, 1, {skip_verify: true, url: url});
-
-				/*if(res.err){
-					gi.goog(CHAN, args.search_string, function(res2, url2){
-						if(res2.err){
-							say(res2);
-						} else {
-							say(res2, 1, {skip_verify: true, url: url2})
-						}
-					});
-				} else {
-					say(res, 1, {skip_verify: true, url: url});
-				}*/
-
 			});
 		}
 	},

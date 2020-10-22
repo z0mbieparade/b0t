@@ -1,18 +1,18 @@
-var UntappdClient   = require('node-untappd'),
-	f_untappd	   = new UntappdClient();
-
-	f_untappd.setClientId(config.API.untappd.key);
-	f_untappd.setClientSecret(config.API.untappd.secret);
-
-
 module.exports = class UTPD{
+	get_url(method, callback)
+	{
+		var url = 'https://api.untappd.com/' + method + '?client_id=';
+			  url += config.API.untappd.key + '&client_secret=' + config.API.untappd.secret;
 
-	parseBeerInfo(CHAN, beer, irc_nick, untappd_nick, ww, callback) {
+		x.get_url(url, 'json', callback)
+	}
+
+	parse_beer_info(CHAN, beer, irc_nick, untappd_nick, ww, callback) {
 		if (!beer || !beer.response || !beer.response.checkins || !beer.response.checkins.items) {
 			CHAN.log.error('no beer data found');
-			callback({err: 'no beer data found'}); 
+			callback({err: 'no beer data found'});
 			return;
-		} 
+		}
 
 		var beer_info = {
 			irc_nick:	irc_nick,
@@ -39,20 +39,18 @@ module.exports = class UTPD{
 		callback(beer_info);
 	};
 
-	getBeer(CHAN, irc_nick, untappd_nick, ww, callback) {
+	get_beer(CHAN, irc_nick, untappd_nick, ww, callback) {
 		var _this = this;
 		var lc_untappd_nick = untappd_nick.toLowerCase();
 
-		f_untappd.userActivityFeed(function(err, obj) {
-			if (err){
-				CHAN.log.error('f_untappd.userActivityFeed error', err);  
-				callback({'err': err.statusMessage});
-				return;
+		this.get_url('v4/user/checkins/' + lc_untappd_nick, function(data)
+		{
+			if (data.err){
+				CHAN.log.error('untappd', data);
+				return callback(data);
 			} else {
-			
-			_this.parseBeerInfo(CHAN, obj, irc_nick, lc_untappd_nick, ww, callback);
-		}
-		}, lc_untappd_nick);
-	};
+				_this.parse_beer_info(CHAN, data, irc_nick, lc_untappd_nick, ww, callback);
+			}
+		});
+	}
 }
-
