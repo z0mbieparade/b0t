@@ -125,7 +125,7 @@ var cmds = {
 					success: function(album){
 						var img = album.data.images[0];
 						var say_arr = [];
-						
+
 						say_arr.push(CHAN.t.highlight('POTD: ') + img.link);
 						if(img.title != 'null' && img.title !== null) say_arr.push(CHAN.t.null(img.title));
 						if(img.description != 'null' && img.description !== null) say_arr.push(CHAN.t.null(img.description));
@@ -345,7 +345,7 @@ var cmds = {
 								var str = (args.to !== undefined ? args.to + ': ' : '') + ins;
 								say(CHAN.t.warn(str), 1);
 							});
-						} else if (d.indexOf(ins) > -1 && count >= 5) { 
+						} else if (d.indexOf(ins) > -1 && count >= 5) {
 							var str = (args.to !== undefined ? args.to + ': ' : '') + d[x.rand_number_between(0, d.length - 1)];
 							say(CHAN.t.warn(str), 1);
 						}
@@ -364,24 +364,7 @@ var cmds = {
 	},
 	fml: {
 		action: 'get random fml quote',
-		API: ['fml'],
 		func: function(CHAN, USER, say, args, command_string){
-			//We'll leave this here just in case the API magically comes back. prolly not.
-		  	/* x.get_url('http://api.betacie.com/view/random?key=' + config.API.fml.key + '&language=en', 'xml', function(result){
-				try {
-					var str = CHAN.t.highlight('FML: ');
-					if(+result.root.items[0].item[0].agree > +result.root.items[0].item[0].deserved){
-						str += CHAN.t.warn('"' + result.root.items[0].item[0].text + '"');
-					} else {
-						str += CHAN.t.fail('"' + result.root.items[0].item[0].text + '"');
-					}
-					str += CHAN.t.null(' -' + result.root.items[0].item[0].author[0]._);
-					say(str);
-				} catch(e){
-					say({err: 'Something went wrong'});
-				}
-			});*/
-
 			var get_fml = function(tries)
 			{
 				x.get_url('https://www.fmylife.com/random', 'html', function(result){
@@ -390,8 +373,6 @@ var cmds = {
 						return say(result);
 					} else {
 						try {
-							//console.log(result[0].toString().slice(1, 2000))
-
 							var str = CHAN.t.highlight('FML: ');
 
 							var auth_reg = /By (.*?) /g;
@@ -399,6 +380,12 @@ var cmds = {
 							var author = auth_reg.exec(auth);
 
 							var txt = xpath.select1('.//div[2]/a/text()', result[0]).nodeValue.replace(/\n/gm, '');
+
+							if(!txt)
+							{
+								txt = xpath.select1('.//div[2]/a/span[@class="spicy-hidden"]/text()', result[0]).nodeValue.replace(/\n/gm, '');
+								str += '🌶️ ';
+							}
 
 							var agree = xpath.select1('.//div[contains(@class, \'vote-up-group\')]/div/text()', result[0]).nodeValue.replace(/\n/gm, '');
 							var deserved = xpath.select1('.//div[contains(@class, \'vote-down-group\')]/div/text()', result[0]).nodeValue.replace(/\n/gm, '');
@@ -625,7 +612,7 @@ var cmds = {
 
 								function multi_click(hit_nick){
 									setTimeout(function(){
-										if(!new_gun) 
+										if(!new_gun)
 										{
 											pull_trigger(hit_nick);
 											clicks--;
@@ -639,13 +626,13 @@ var cmds = {
 								}
 								multi_click(hit_nick);
 								break;
-							} 
+							}
 						case 6:
 						default:
 							say(CHAN.t.success('Click!'), 1, {skip_verify: true});
 							break;
 					}
-					
+
 					if(info.bullet > 6 || new_gun) info.bullet = 0;
 				}
 
@@ -654,7 +641,7 @@ var cmds = {
 				} else {
 					setTimeout(click, 200);
 				}
-				
+
 			}
 		}
 	},
@@ -771,7 +758,7 @@ var cmds = {
 
 						if(item.who_set !== item.who){
 							str += item.who_set + ' set a reminder for you to '
-						} 
+						}
 
 						str += item.to_do + ' ' + x.date_string_to_mdyhms(item.time, item.offset, item.timezone);
 
@@ -780,7 +767,7 @@ var cmds = {
 				},
 				say);
 			} else {
-				args.who = args.who.toLowerCase() === 'me' || args.who.toLowerCase() === 'myself' || args.who.toLowerCase() === 'moi' || args.who.toLowerCase() === 'mee' ? 
+				args.who = args.who.toLowerCase() === 'me' || args.who.toLowerCase() === 'myself' || args.who.toLowerCase() === 'moi' || args.who.toLowerCase() === 'mee' ?
 					USER.nick : b.users.get_nick_org(args.who);
 				args.who_set = USER.nick_org;
 				args.at_in = args.at_in.toLowerCase();
@@ -829,7 +816,7 @@ var cmds = {
 				scopes_db.get_data("/", function(d){
 					if(d !== null) {
 						var pick_sign = x.rand_arr(Object.keys(d));
-						say(CHAN.t.warn(x.rand_arr(d[pick_sign])), {skip_buffer: true, skip_verify: true})
+						say(CHAN.t.warn(x.unescape_html(x.rand_arr(d[pick_sign]))), {skip_buffer: true, skip_verify: true})
 					} else {
 						say({err: 'No horoscopes avaliable.'})
 					}
