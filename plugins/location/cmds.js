@@ -43,18 +43,6 @@ var cmds = {
 								x.add_cache('/nicks/' + d.irc_nick + '/cache/wa', d, 900000, d.irc_nick);
 
 								say('Weather for ' + wu.weather_str(d, CHAN), 1);
-
-								//after we update all the locations, will depricate this
-								b.users.update_user(USER.nick, {
-									offset: d.local_tz_offset, 
-									timezone: d.local_tz_short,
-									display_location: d.display_location.full,
-									lat: d.display_location.latitude,
-									long: d.display_location.longitude
-
-								}, function(msg){
-									CHAN.log.debug(msg);
-								});
 							});
 						}, USER.nick);
 				});
@@ -110,7 +98,7 @@ var cmds = {
 					data = 'Today\'s forecast for ' + CHAN.t.highlight(location) + ': ';
 					data += wu.forecast_str(d.days[Object.keys(d.days)[0]], CHAN, true);
 				}
-			   
+
 				say(data, {join: '\n', lines: 5, force_lines: true});
 			}
 
@@ -168,27 +156,27 @@ var cmds = {
 					});
 				});
 
-				Promise.all(requests).then(() => { 
+				Promise.all(requests).then(() => {
 
-					// Euclidean distance 
+					// Euclidean distance
 					function distance(a, b) {
 					  var d = Math.pow(a.long_hidden - b.long_hidden, 2);
 					  d += Math.pow(a.lat_hidden - b.lat_hidden, 2);
 					  return Math.sqrt(d);
 					}
-					 
-					// Single-linkage clustering 
+
+					// Single-linkage clustering
 					function linkage(distances) {
 					  return Math.min.apply(null, distances);
 					}
-					 
+
 					var levels = cluster({
 					  input: say_data,
 					  distance: distance,
 					  linkage: linkage,
 					  minClusters: Math.round(Object.keys(data).length / 1.75)
 					});
-					 
+
 					var clusters = levels[levels.length - 1].clusters;
 
 					clusters = clusters.map(function (cluster) {
@@ -249,7 +237,7 @@ var cmds = {
 							av_long_lat[i]["long"],"K");
 					}
 
-					av_long_lat.sort(function(a, b) { 
+					av_long_lat.sort(function(a, b) {
 						return a.distance - b.distance;
 					});
 
@@ -265,55 +253,55 @@ var cmds = {
 					];
 					var wind_colors = [
 						{'%':100, c:'red'},
-						{'%':30, c:'brown'}, 
-						{'%':20, c:'olive'}, 
-						{'%':10, c:'green'}, 
+						{'%':30, c:'brown'},
+						{'%':20, c:'olive'},
+						{'%':10, c:'green'},
 						{'%':2, c:'teal'}
 					];
 
 					say(new_cluster, {
-						table: true, 
+						table: true,
 						table_opts: {
-							header: true, 
+							header: true,
 							outline: false,
 							full_width: ['location'],
 							col_format: {
-								location: function(row, cell){ 
+								location: function(row, cell){
 									return CHAN.t.highlight(cell);
 								},
-								temp: function(row, cell){ 
+								temp: function(row, cell){
 									return x.score(row.temp_f_hidden, {
-											score_str: cell, 
-											colors: temp_colors, 
-											max: 105, 
-											min: -5, 
+											score_str: cell,
+											colors: temp_colors,
+											max: 105,
+											min: -5,
 											config: CHAN.config})
 								},
-								feels: function(row, cell){ 
+								feels: function(row, cell){
 									return x.score(row.feels_f_hidden, {
-											score_str: cell, 
-											colors: temp_colors, 
-											max: 105, 
-											min: -5, 
+											score_str: cell,
+											colors: temp_colors,
+											max: 105,
+											min: -5,
 											config: CHAN.config})
 								},
-								wind: function(row, cell){ 
+								wind: function(row, cell){
 									return x.score(row.wind_hidden, {
-											score_str: cell, 
-											colors: wind_colors, 
+											score_str: cell,
+											colors: wind_colors,
 											config: CHAN.config
 										});
 								},
 								hum: function(row, cell){
 									return x.score(row.humid_hidden, {
-											score_str: cell, 
-											colors: temp_colors, 
+											score_str: cell,
+											colors: temp_colors,
 											config: CHAN.config
 										});
 								}
 							}
-						}, 
-						lines: 15, 
+						},
+						lines: 15,
 						force_lines: true
 					});
 				});
@@ -341,10 +329,15 @@ var cmds = {
 				if(d.err) return say(d);
 				x.delete_cache('/nicks/' + USER.nick + '/cache/wa', USER.nick);
 				x.delete_cache('/nicks/' + USER.nick + '/cache/f', USER.nick);
-				var location = d.display_location.zip !== '00000' ?  d.display_location.zip : d.display_location.full
+
+				console.log('d', d)
+
+				var location = d.display_location.zip !== '00000' && d.display_location.zip !== undefined ?
+													d.display_location.zip : d.display_location.full;
+
 				b.users.update_user(USER.nick, {
-					location: location, 
-					offset: d.local_tz_offset, 
+					location: location,
+					offset: d.local_tz_offset,
 					timezone: d.local_tz_short ? d.local_tz_short : null,
 					display_location: d.display_location.full,
 					lat: d.display_location.latitude,

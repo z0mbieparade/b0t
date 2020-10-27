@@ -1,5 +1,4 @@
-var didYouMean = require('didyoumean2'),
-	request = require('request');
+var didYouMean = require('didyoumean2');
 
 var symbols = {
 	chanceflurries: "🌨",
@@ -42,7 +41,7 @@ var symbols = {
 	'50n': "🌫"
 };
 
-var nice_weather = 
+var nice_weather =
 {
 	'Thunderstorm': ['& thunderstorms', '& thunderstormy', '& thunderstorms', '& thunderstorms'],
 	'Drizzle': ['& drizzle', '& drizzly', '& drizzly', '& drizzling'],
@@ -59,7 +58,7 @@ var nice_weather =
 	'*': ['& *', '& *y', '& *', '& *']
 }
 
-var nice_weather_description = 
+var nice_weather_description =
 [
 	['a smidge of', 'a bit of', 'a little', 'scattered'],
 	['some what', 'kind of', 'passably'],
@@ -72,7 +71,7 @@ var wind_dir = {
 	NE: '↗',
 	NNE: '↑↗',
 	ENE: '→↗',
-	East: '→',  
+	East: '→',
 	ESE: '→↘',
 	SE: '↘',
 	SSE: '↓↘',
@@ -99,9 +98,9 @@ var temp_colors = [
 ];
 var wind_colors = [
 	{'%':100, c:'red'},
-	{'%':30, c:'brown'}, 
-	{'%':20, c:'olive'}, 
-	{'%':10, c:'green'}, 
+	{'%':30, c:'brown'},
+	{'%':20, c:'olive'},
+	{'%':10, c:'green'},
 	{'%':2, c:'teal'}
 ];
 
@@ -112,7 +111,7 @@ module.exports = class WU{
 		if(config.API.openweathermap)
 		{
 			this.get_url_openweathermap(method, send_data);
-		} 
+		}
 		else if(config.API.wunderground)
 		{
 			this.get_url_wunderground(method, send_data);
@@ -125,37 +124,24 @@ module.exports = class WU{
 
 		var url = 'http://api.wunderground.com/api/' + config.API.wunderground.key + '/' + method + '/q/' + send_data.location + '.json';
 
-		console.log(url);
+		console.log('get_url_wunderground', url);
 
-		request({url: url, followRedirect: false}, function (error, response, body) {
-			if(error){
-				b.log.error('Error:', error);
-
+		x.get_url(url, 'json', function(ret){
+			if(ret.err){
+				b.log.error('Error:', ret.err);
 				if(config.API.openweathermap && config.API.openweathermap.key && !skip_try_other)
 				{
 					_this.get_url_openweathermap(method, send_data, true);
 				}
 				else if(send_data.handlers.error)
 				{
-					send_data.handlers.error(error);
-				}
-			} else if(response.statusCode !== 200){
-				b.log.error('Invalid Status Code Returned:', response.statusCode);
-
-				if(config.API.openweathermap && config.API.openweathermap.key && !skip_try_other)
-				{
-					_this.get_url_openweathermap(method, send_data, true);
-				}
-				else if(send_data.handlers.error)
-				{
-					send_data.handlers.error(error);
+					send_data.handlers.error(ret);
 				}
 			} else {
-				var json_parse = JSON.parse(body);
-				if(json_parse.error) b.log.error('Error:', json_parse.message);
-
-				send_data.handlers.success(json_parse, 'wunderground');
+				send_data.handlers.success(ret, send_data, 'wunderground');
 			}
+		}, {
+			followRedirect: false
 		});
 	}
 
@@ -176,7 +162,7 @@ module.exports = class WU{
 			{
 				var location = 'zip=' + send_data.location.replace(/\W+/g, '') + ',ca';
 			}
-			else //we'll assume it's a city 
+			else //we'll assume it's a city
 			{
 				var location = 'q=' + send_data.location.replace(/,\s+/gm, ',');
 			}
@@ -185,43 +171,28 @@ module.exports = class WU{
 
 			var url = 'http://api.openweathermap.org/data/2.5/' + method + '?' + location + '&units=imperial&appid=' + config.API.openweathermap.key
 
-			console.log(url);
+			console.log('get_url_openweathermap', url);
 
-			request({url: url, followRedirect: false}, function (error, response, body) {
-				if(error){
-					b.log.error('Error:', error);
-
+			x.get_url(url, 'json', function(ret){
+				if(ret.err){
+					b.log.error('Error:', ret.err);
 					if(config.API.wunderground && config.API.wunderground.key && !skip_try_other)
 					{
 						_this.get_url_wunderground(method, send_data, true);
 					}
 					else if(send_data.handlers.error)
 					{
-						send_data.handlers.error(error);
-					}
-				} else if(response.statusCode !== 200){
-					var json_parse = JSON.parse(body);
-					var msg = json_parse.message ? json_parse.message : 'invalid status code';
-
-					b.log.error(response.statusCode, msg);
-					
-					if(config.API.wunderground && config.API.wunderground.key && !skip_try_other)
-					{
-						_this.get_url_wunderground(method, send_data, true);
-					}
-					else if(send_data.handlers.error)
-					{
-						send_data.handlers.error({err: msg});
+						send_data.handlers.error(ret);
 					}
 				} else {
-					var json_parse = JSON.parse(body);
-					send_data.handlers.success(json_parse, send_data, 'openweathermap');
+					send_data.handlers.success(ret, send_data, 'openweathermap');
 				}
+			}, {
+				followRedirect: false
 			});
 		}
 
-		if(config.API.mapquest && config.API.mapquest.key)
-		{
+		if(config.API.mapquest && config.API.mapquest.key){
 			this.get_url_mapquest({
 				location: send_data.location,
 				handlers: {
@@ -240,7 +211,7 @@ module.exports = class WU{
 							{
 								var loc =  res.results[0].locations[i];
 								console.log('city', loc.adminArea5, 'state', loc.adminArea3, 'country', loc.adminArea1)
-							
+
 								if(loc.adminArea5 && loc.adminArea1)
 								{
 									if(loc.adminArea5 !== loc.adminArea3)
@@ -254,6 +225,7 @@ module.exports = class WU{
 
 									send_data.lat = loc.latLng.lat;
 									send_data.lon = loc.latLng.lng;
+									send_data.zip = loc.postalCode;
 
 									break;
 								}
@@ -270,32 +242,38 @@ module.exports = class WU{
 					}
 				}
 			})
-		}
-		else
-		{
+		} else {
 			openweathermap();
 		}
 	}
 
 	get_url_mapquest(send_data){
-
 		if(!config.API.mapquest || !config.API.mapquest.key) return;
 
-		var url = "http://open.mapquestapi.com/geocoding/v1/address?key=" + config.API.mapquest.key + "&location=" + send_data.location
+		if(send_data.location.match(/^\d{5}(-{0,1}\d{4})?$/)) //US zipcode
+		{
+			var location = send_data.location + ',us';
+		}
+		else if(send_data.location.match(/^[ABCEGHJ-NPRSTVXY]\d[ABCEGHJ-NPRSTV-Z][ -]?\d[ABCEGHJ-NPRSTV-Z]\d$/i)) //CAN postal code
+		{
+			var location = send_data.location.replace(/\W+/g, '') + ',ca';
+		} else	{
+			var location = send_data.location.replace(/,\s+/gm, ',');
+		}
 
-		console.log(url)
+		var url = "http://open.mapquestapi.com/geocoding/v1/address?key=" + config.API.mapquest.key + "&location=" + location;
 
-		request({url: url, followRedirect: false}, function (error, response, body) {
-			if(error){
-				b.log.error('Error:', error);
-				send_data.handlers.error(error);
-			} else if(response.statusCode !== 200){
-				b.log.error('Invalid Status Code Returned:', response.statusCode);
-				send_data.handlers.error(error);
+		console.log('get_url_mapquest', url)
+
+		x.get_url(url, 'json', function(ret){
+			if(ret.err){
+				b.log.error('Error:', ret.err);
+				send_data.handlers.error(ret);
 			} else {
-				var json_parse = JSON.parse(body);
-				send_data.handlers.success(json_parse, 'mapquest');
+				send_data.handlers.success(ret, 'mapquest');
 			}
+		}, {
+			followRedirect: false
 		});
 	}
 
@@ -303,22 +281,20 @@ module.exports = class WU{
 		var _this = this;
 
 		if(!config.API.timezonedb || !config.API.timezonedb.key) return;
-		
+
 		var url = 'http://api.timezonedb.com/v2.1/get-time-zone?key=' + config.API.timezonedb.key + '&format=json&by=position&lat=' + send_data.latitude + '&lng=' + send_data.longitude
 
-		console.log(url);
+		console.log('get_url_timezonedb', url);
 
-		request({url: url, followRedirect: false}, function (error, response, body) {
-			if(error){
-				b.log.error('Error:', error);
-				send_data.handlers.error(error);
-			} else if(response.statusCode !== 200){
-				b.log.error('Invalid Status Code Returned:', response.statusCode);
-				send_data.handlers.error(error);
+		x.get_url(url, 'json', function(ret){
+			if(ret.err){
+				b.log.error('Error:', ret.err);
+				send_data.handlers.error(ret);
 			} else {
-				var json_parse = JSON.parse(body);
-				send_data.handlers.success(json_parse, 'timezonedb');
+				send_data.handlers.success(ret, 'timezonedb');
 			}
+		}, {
+			followRedirect: false
 		});
 	}
 
@@ -383,7 +359,8 @@ module.exports = class WU{
 						data.display_location = {
 							latitude: res.coord.lat,
 							longitude: res.coord.lon,
-							full: extra_data && extra_data.nice_location ? extra_data.nice_location : (res.name + ' ' + res.sys.country)
+							full: extra_data && extra_data.nice_location ? extra_data.nice_location : (res.name + ' ' + res.sys.country),
+							zip: extra_data && extra_data.zip ? extra_data.zip : undefined
 						};
 
 						data.wind_dir = 'Calm';
@@ -462,26 +439,26 @@ module.exports = class WU{
 	weather_str(d, CHAN){
 		var str = CHAN.t.highlight(d.display_location.full) + ': ' + symbols[d.icon] + ' ' + d.weather + ' ';
 		str += x.score(d.temp_f, {
-			score_str: parseInt(d.temp_f) + '°F (' + parseInt(d.temp_c) + '°C)', 
-			colors: temp_colors, 
-			max: 105, 
-			min: -5, 
+			score_str: parseInt(d.temp_f) + '°F (' + parseInt(d.temp_c) + '°C)',
+			colors: temp_colors,
+			max: 105,
+			min: -5,
 			config: CHAN.config});
 		str += ' Feels like: ' + x.score(d.feelslike_f, {
-			score_str: parseInt(d.feelslike_f) + '°F (' + parseInt(d.feelslike_c) + '°C)', 
-			colors: temp_colors, 
-			max: 105, 
-			min: -5, 
+			score_str: parseInt(d.feelslike_f) + '°F (' + parseInt(d.feelslike_c) + '°C)',
+			colors: temp_colors,
+			max: 105,
+			min: -5,
 			config: CHAN.config});
 
 		str += ' Wind: ' + x.score(d.wind_mph, {
-			score_str: d.wind_string === 'Calm' ? 'Calm ' + wind_dir[d.wind_dir] : Math.round(d.wind_mph) + 'mph ' + wind_dir[d.wind_dir], 
-			colors: wind_colors, 
+			score_str: d.wind_string === 'Calm' ? 'Calm ' + wind_dir[d.wind_dir] : Math.round(d.wind_mph) + 'mph ' + wind_dir[d.wind_dir],
+			colors: wind_colors,
 			config: CHAN.config});
 		str += ' Humidity: ' + x.score(d.humidity ? +d.humidity : +d.relative_humidity.slice(0, -1), {
-			colors: temp_colors, 
+			colors: temp_colors,
 			ignore_perc: true,
-			end:'%', 
+			end:'%',
 			config: CHAN.config
 		});
 
@@ -575,7 +552,7 @@ module.exports = class WU{
 									conditions: item.weather[0].main.toLowerCase(),
 								}
 
-								
+
 								data.days[date].main_counts[item.weather[0].main] = 1;
 							}
 
@@ -604,7 +581,7 @@ module.exports = class WU{
 
 								for(var k = 0; k < 4; k++)
 								{
-									if(day.main_counts[m] >= (count_step * k) && 
+									if(day.main_counts[m] >= (count_step * k) &&
 										(k < 3 && day.main_counts[m] < (count_step * (k + 1)) || k === 3 && day.main_counts[m] <= total_counts))
 									{
 										if(nice_weather[m] && nice_weather[m][k]){
@@ -617,8 +594,8 @@ module.exports = class WU{
 									}
 								}
 
-								
-								
+
+
 								var desc = x.rand_arr(nice_weather_description[k]);
 								cond = cond.replace('&', desc).replace('*', m.toLowerCase());
 
@@ -654,22 +631,22 @@ module.exports = class WU{
 	forecast_str(d, CHAN, hide_day){
 		var str = (hide_day ? '' : CHAN.t.term(d.date.weekday_short) + ': ') + (d.all_icons ? d.all_icons : symbols[d.icon]) + ' ' + d.conditions + ' ';
 		str += x.score(d.high.fahrenheit, {
-			score_str: '⬆' + parseInt(d.high.fahrenheit) + '°F (' + parseInt(d.high.celsius) + '°C)', 
-			colors: temp_colors, 
-			max: 105, 
-			min: -5, 
+			score_str: '⬆' + parseInt(d.high.fahrenheit) + '°F (' + parseInt(d.high.celsius) + '°C)',
+			colors: temp_colors,
+			max: 105,
+			min: -5,
 			config: CHAN.config
 		});
 		str += ' ' + x.score(d.low.fahrenheit, {
-			score_str: '⬇' + parseInt(d.low.fahrenheit) + '°F (' + parseInt(d.low.celsius) + '°C)', 
-			colors: temp_colors, 
-			max: 105, 
-			min: -5, 
+			score_str: '⬇' + parseInt(d.low.fahrenheit) + '°F (' + parseInt(d.low.celsius) + '°C)',
+			colors: temp_colors,
+			max: 105,
+			min: -5,
 			config: CHAN.config
 		});
 		str += ' ' + x.score(d.avehumidity, {
-			score_str: d.avehumidity + '% avr humidity', 
-			colors: temp_colors, 
+			score_str: d.avehumidity + '% avr humidity',
+			colors: temp_colors,
 			config: CHAN.config
 		});
 		return str;
