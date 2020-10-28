@@ -358,7 +358,107 @@ module.exports = class GI{
 				return {text: d};
 			}
 		}
-
 	}
 
+	booze_make_drink(CHAN, drink, callback)
+	{
+		var str = CHAN.t.highlight(CHAN.t.term(drink.strDrink));
+		if(drink.strCategory) str += ' ' + CHAN.t.considering(drink.strCategory);
+		if(drink.strTags) str += ' ' + CHAN.t.null('(' + (drink.strTags.split(',').join(', ')) + ')');
+
+		var ingredients = [];
+
+		for(var i = 1; i <= 15; i++) {
+			var ingredient = '';
+
+			if(drink['strMeasure' + i] !== null) {
+				ingredient += drink['strMeasure' + i].trim() + ' ';
+			}
+
+			if(drink['strIngredient' + i] !== null) {
+				ingredient += drink['strIngredient' + i];
+			}
+
+			if(ingredient !== '') ingredients.push(ingredient);
+		}
+
+		var instructions = [];
+		if(drink.strInstructions){
+			instructions = drink.strInstructions.split('\n').map(function(i){
+				return i.replace('\r', '').trim();
+			})
+		}
+
+		var ret_arr = [
+			str,
+			CHAN.t.highlight('ingredients:') + ' ' + ingredients.join(', '),
+			CHAN.t.warn(instructions.join(' '))
+		];
+
+		if(drink.strVideo){
+			ret_arr.push(drink.strVideo);
+		}
+
+		callback(ret_arr);
+	}
+
+	booze_rand(CHAN, callback){
+		var _this = this;
+		var url = 'https://www.thecocktaildb.com/api/json/v1/1/random.php';
+
+		x.get_url(url, 'json', function(data){
+			if (data.err){
+				CHAN.log.error('booze_rand:', data.err);
+				return callback({err: 'Something went wrong.'});
+			}
+
+			if(data.drinks && data.drinks.length > 0){
+				_this.booze_make_drink(CHAN, data.drinks[0], callback);
+			} else {
+				return callback({err: 'No drinks found.'});
+			}
+		});
+	}
+
+	booze_by_ingredient(CHAN, search, callback)	{
+		var _this = this;
+		var url = 'https://www.thecocktaildb.com/api/json/v1/1/filter.php?i=' + encodeURI(search);
+		console.log(url);
+
+		x.get_url(url, 'json', function(data){
+			if (data.err){
+				CHAN.log.error('booze_by_ingredient:', data.err);
+				return callback({err: 'Something went wrong.'});
+			}
+
+			if(data.drinks && data.drinks.length === 1){
+				_this.booze(CHAN, data.drinks[0].strDrink, callback);
+			} else if(data.drinks && data.drinks.length > 1){
+				var drink = x.rand_arr(data.drinks)
+				console.log(drink);
+				_this.booze(CHAN, drink.strDrink, callback);
+			} else {
+				return callback({err: 'No drinks found.'});
+			}
+		});
+	}
+
+	booze(CHAN, search, callback){
+		var _this = this;
+		var url = 'https://www.thecocktaildb.com/api/json/v1/1/search.php?s=' + encodeURI(search);
+		console.log(url);
+
+		x.get_url(url, 'json', function(data){
+			if (data.err){
+				CHAN.log.error('booze:', data.err);
+				return callback({err: 'Something went wrong.'});
+			}
+
+			if(data.drinks && data.drinks.length > 0){
+				_this.booze_make_drink(CHAN, data.drinks[0], callback);
+			} else {
+				return callback({err: 'No drinks found.'});
+			}
+		});
+	}
 }

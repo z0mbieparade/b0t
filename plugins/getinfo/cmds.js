@@ -545,5 +545,60 @@ var cmds = {
 			})
 		}
 	},
+	booze: {
+		action: 'Cocktail/alcohol lookup',
+		params: [{
+			or: [{
+				name: 'random',
+				type: 'flag'
+			},{
+				and: [{
+					name: 'search',
+					type: 'text'
+				},{
+					or: [{
+						name: 'cocktail',
+						type: 'flag'
+					},{
+						name: 'ingredient',
+						type: 'flag'
+					}],
+					optional: true
+				}]
+			}]
+		}],
+		func: function(CHAN, USER, say, args, command_string){
+
+			//command parsing is stupid still, fix this someday
+			if(command_string.match(/-random/)) {
+				delete args.search
+				args.flag = '-random';
+			} else if(command_string.match(/-cocktail/)) {
+				args.search = command_string.replace('-cocktail', '').trim();
+				args.flag = '-cocktail';
+			} else if(command_string.match(/-ingredient/)) {
+				args.search = command_string.replace('-ingredient', '').trim();
+				args.flag = '-ingredient';
+			} else {
+				args.flag = '-cocktail';
+			}
+
+			console.log(args);
+
+			if(args.flag === '-random'){
+				gi.booze_rand(CHAN, function(d){
+					say(d, { join: '\n', lines: 5, force_lines: true });
+				});
+			} else if(args.flag === '-cocktail'){
+				gi.booze(CHAN, args.search, function(d){
+					say(d, { join: '\n', lines: 5, force_lines: true });
+				});
+			} else {
+				gi.booze_by_ingredient(CHAN, args.search, function(d){
+					say(d, { join: '\n', lines: 5, force_lines: true });
+				});
+			}
+		}
+	},
 }
 exports.cmds = cmds;
