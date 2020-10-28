@@ -360,7 +360,7 @@ module.exports = class GI{
 		}
 	}
 
-	booze_make_drink(CHAN, drink, callback)
+	drink_make_drink(CHAN, drink, callback)
 	{
 		var str = CHAN.t.highlight(CHAN.t.term(drink.strDrink));
 		if(drink.strCategory) str += ' ' + CHAN.t.considering(drink.strCategory);
@@ -391,8 +391,8 @@ module.exports = class GI{
 
 		var ret_arr = [
 			str,
-			CHAN.t.highlight('ingredients:') + ' ' + ingredients.join(', '),
-			CHAN.t.warn(instructions.join(' '))
+			CHAN.t.highlight('ingredients:') + ' ' + CHAN.t.warn(ingredients.join(', ')),
+			instructions.join(' ')
 		];
 
 		if(drink.strVideo){
@@ -402,60 +402,108 @@ module.exports = class GI{
 		callback(ret_arr);
 	}
 
-	booze_rand(CHAN, callback){
+	drink_rand(CHAN, callback){
 		var _this = this;
 		var url = 'https://www.thecocktaildb.com/api/json/v1/1/random.php';
 
 		x.get_url(url, 'json', function(data){
 			if (data.err){
-				CHAN.log.error('booze_rand:', data.err);
+				CHAN.log.error('drink_rand:', data.err);
 				return callback({err: 'Something went wrong.'});
 			}
 
 			if(data.drinks && data.drinks.length > 0){
-				_this.booze_make_drink(CHAN, data.drinks[0], callback);
+				_this.drink_make_drink(CHAN, data.drinks[0], callback);
 			} else {
 				return callback({err: 'No drinks found.'});
 			}
 		});
 	}
 
-	booze_by_ingredient(CHAN, search, callback)	{
+	drink_by_ingredient(CHAN, search, callback)	{
 		var _this = this;
 		var url = 'https://www.thecocktaildb.com/api/json/v1/1/filter.php?i=' + encodeURI(search);
 		console.log(url);
 
 		x.get_url(url, 'json', function(data){
 			if (data.err){
-				CHAN.log.error('booze_by_ingredient:', data.err);
+				CHAN.log.error('drink_by_ingredient:', data.err);
 				return callback({err: 'Something went wrong.'});
 			}
 
 			if(data.drinks && data.drinks.length === 1){
-				_this.booze(CHAN, data.drinks[0].strDrink, callback);
+				_this.drink(CHAN, data.drinks[0].strDrink, callback);
 			} else if(data.drinks && data.drinks.length > 1){
 				var drink = x.rand_arr(data.drinks)
-				console.log(drink);
-				_this.booze(CHAN, drink.strDrink, callback);
+				_this.drink(CHAN, drink.strDrink, callback);
 			} else {
 				return callback({err: 'No drinks found.'});
 			}
 		});
 	}
 
-	booze(CHAN, search, callback){
+	drink_about_ingredient(CHAN, search, callback)	{
+		var _this = this;
+		var url = 'https://www.thecocktaildb.com/api/json/v1/1/search.php?i=' + encodeURI(search);
+		console.log(url);
+
+		x.get_url(url, 'json', function(data){
+			if (data.err){
+				CHAN.log.error('drink_about_ingredient:', data.err);
+				return callback({err: 'Something went wrong.'});
+			}
+
+			if(data.ingredients && data.ingredients.length > 0){
+
+				var ingredient = data.ingredients[0];
+
+				var str = CHAN.t.highlight(CHAN.t.term(ingredient.strIngredient));
+				if(ingredient.strType && ingredient.strType != ingredient.strIngredient) str += ' ' + CHAN.t.null('(' + ingredient.strType + ')');
+
+				if(ingredient.strAlcohol == "Yes"){
+					if(ingredient.strABV){
+						str += ' ' + x.score(ingredient.strABV, {score_str: 'Alcoholic ABV: ' + ingredient.strABV + '%', reverse: true, config: CHAN.config});
+					} else {
+						str += ' ' + CHAN.t.fail('Alcoholic');
+					}
+				} else {
+					str += ' ' + x.score(0, {score_str: 'Non-Alcoholic', reverse: true, config: CHAN.config});
+				}
+
+				var about = [];
+				if(ingredient.strDescription){
+					about = ingredient.strDescription.split('\n').map(function(i){
+						return i.replace('\r', '').trim();
+					})
+				}
+
+				if(about.length > 0)
+				{
+					var ret_arr = [str, about.join(' ')];
+					callback(ret_arr);
+				} else {
+					callback({err: 'No ingredient description found.'})
+				}
+
+			} else {
+				return callback({err: 'No ingredient found.'});
+			}
+		});
+	}
+
+	drink(CHAN, search, callback){
 		var _this = this;
 		var url = 'https://www.thecocktaildb.com/api/json/v1/1/search.php?s=' + encodeURI(search);
 		console.log(url);
 
 		x.get_url(url, 'json', function(data){
 			if (data.err){
-				CHAN.log.error('booze:', data.err);
+				CHAN.log.error('drink:', data.err);
 				return callback({err: 'Something went wrong.'});
 			}
 
 			if(data.drinks && data.drinks.length > 0){
-				_this.booze_make_drink(CHAN, data.drinks[0], callback);
+				_this.drink_make_drink(CHAN, data.drinks[0], callback);
 			} else {
 				return callback({err: 'No drinks found.'});
 			}

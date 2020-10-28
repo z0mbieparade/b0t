@@ -545,8 +545,8 @@ var cmds = {
 			})
 		}
 	},
-	booze: {
-		action: 'Cocktail/alcohol lookup',
+	drink: {
+		action: 'Cocktail/drink lookup',
 		params: [{
 			or: [{
 				name: 'random',
@@ -557,11 +557,15 @@ var cmds = {
 					type: 'text'
 				},{
 					or: [{
-						name: 'cocktail',
+						name: 'drink',
 						type: 'flag'
 					},{
 						name: 'ingredient',
 						type: 'flag'
+					},{
+						name: 'about',
+						type: 'flag',
+						optional: true
 					}],
 					optional: true
 				}]
@@ -573,28 +577,40 @@ var cmds = {
 			if(command_string.match(/-random/)) {
 				delete args.search
 				args.flag = '-random';
-			} else if(command_string.match(/-cocktail/)) {
-				args.search = command_string.replace('-cocktail', '').trim();
-				args.flag = '-cocktail';
+			} else if(command_string.match(/-drink/)) {
+				args.search = command_string.replace('-drink', '').trim();
+				args.flag = '-drink';
 			} else if(command_string.match(/-ingredient/)) {
 				args.search = command_string.replace('-ingredient', '').trim();
-				args.flag = '-ingredient';
+				if(command_string.match(/-about/)) {
+					args.search = args.search.replace('-about', '').trim();
+					args.flag = '-ingredient_about';
+				} else {
+					args.flag = '-ingredient';
+				}
+			} else if(command_string.match(/-about/)) {
+				args.search = command_string.replace('-about', '').trim();
+				args.flag = '-ingredient_about';
 			} else {
-				args.flag = '-cocktail';
+				args.flag = '-drink';
 			}
 
 			console.log(args);
 
 			if(args.flag === '-random'){
-				gi.booze_rand(CHAN, function(d){
+				gi.drink_rand(CHAN, function(d){
 					say(d, { join: '\n', lines: 5, force_lines: true });
 				});
-			} else if(args.flag === '-cocktail'){
-				gi.booze(CHAN, args.search, function(d){
+			} else if(args.flag === '-drink'){
+				gi.drink(CHAN, args.search, function(d){
 					say(d, { join: '\n', lines: 5, force_lines: true });
+				});
+			} else if(args.flag === '-ingredient_about'){
+				gi.drink_about_ingredient(CHAN, args.search, function(d){
+					say(d, { join: '\n' });
 				});
 			} else {
-				gi.booze_by_ingredient(CHAN, args.search, function(d){
+				gi.drink_by_ingredient(CHAN, args.search, function(d){
 					say(d, { join: '\n', lines: 5, force_lines: true });
 				});
 			}
