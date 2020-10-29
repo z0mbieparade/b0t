@@ -8,7 +8,7 @@ var DEFAULT		 = require(__dirname + '/func.js'),
 	def			 = new DEFAULT();
 
 var cmds = {
-	commands: { 
+	commands: {
 		action: 'list all of the available bot commands',
 		params: [{
 			optional: true,
@@ -53,7 +53,7 @@ var cmds = {
 			});
 		}
 	},
-	help: { 
+	help: {
 		action: 'help the user',
 		params: [{
 			or: [{
@@ -76,7 +76,7 @@ var cmds = {
 			var help_topics = {
 				'-colors': [
 					'If a command accepts colors, you can use various short cuts to format text preceded by an &:',
-					'\u0002b bold\u000f | \u0016i italic\u000f | \u001fu\u000f \u001funderline\u000f | r reset | ' + c.white.bgblack(' 0 ')+c.black.bgwhite(' 1 ')+c.navy(' 2 ')+c.green(' 3 ')+c.red(' 4 ')+c.brown(' 5 ')+c.purple(' 6 ')+c.olive(' 7 ')+c.yellow(' 8 ')+c.lime(' 9 ')+c.teal(' 10 ')+c.cyan(' 11 ')+c.blue(' 12 ')+c.pink(' 13 ')+c.grey(' 14 ')+c.silver(' 15 '), 
+					'\u0002b bold\u000f | \u0016i italic\u000f | \u001fu\u000f \u001funderline\u000f | r reset | ' + c.white.bgblack(' 0 ')+c.black.bgwhite(' 1 ')+c.navy(' 2 ')+c.green(' 3 ')+c.red(' 4 ')+c.brown(' 5 ')+c.purple(' 6 ')+c.olive(' 7 ')+c.yellow(' 8 ')+c.lime(' 9 ')+c.teal(' 10 ')+c.cyan(' 11 ')+c.blue(' 12 ')+c.pink(' 13 ')+c.grey(' 14 ')+c.silver(' 15 '),
 					'color codes are 0-15 see https://github.com/z0mbieparade/b0t/wiki/Colors for a complete list of color names',
 					'typing `&lime>green text here` or `&9>green text here` will return \u00039>green text here'
 				],
@@ -108,7 +108,7 @@ var cmds = {
 		}],
 		perm: '+',
 		no_pm: true,
-		func: function(CHAN, USER, say, args, command_string){ 
+		func: function(CHAN, USER, say, args, command_string){
 			topic_db.update('/' + CHAN.chan, {topic: [args.topic]}, false, function(){
 				CHAN.update_topic();
 			});
@@ -130,7 +130,7 @@ var cmds = {
 		}],
 		perm: '~',
 		no_pm: true,
-		func: function(CHAN, USER, say, args, command_string){ 
+		func: function(CHAN, USER, say, args, command_string){
 			topic_db.search_arr(USER, '/' + CHAN.chan + '/topic', args, false, function(data, found){
 				if(found && found > 1){
 					say({succ: found + " items found matching '" + command_string.trim() + "'"}, 2, {skip_verify: true});
@@ -149,7 +149,7 @@ var cmds = {
 		action: 'unpin the channel topic',
 		perm: '~',
 		no_pm: true,
-		func: function(CHAN, USER, say, args, command_string){ 
+		func: function(CHAN, USER, say, args, command_string){
 			topic_db.delete('/' + CHAN.chan + '/pinned', function(act){
 				if(act){
 					CHAN.update_topic();
@@ -163,7 +163,7 @@ var cmds = {
 		action: 'update channel topic from qotd',
 		perm: 'owner',
 		no_pm: true,
-		func: function(CHAN, USER, say, args, command_string){ 
+		func: function(CHAN, USER, say, args, command_string){
 			CHAN.update_topic();
 		}
 	},
@@ -182,7 +182,7 @@ var cmds = {
 					key: 'query'
 				}]
 		}],
-		func: function(CHAN, USER, say, args, command_string){ 
+		func: function(CHAN, USER, say, args, command_string){
 			topic_db.search_arr(USER, '/' + CHAN.chan + '/topic', args, true, function(data, found){
 				if(found && found > 1){
 					say({succ: found + " items found matching '" + command_string.trim() + "'"}, 2, {skip_verify: true});
@@ -197,7 +197,7 @@ var cmds = {
 	},
 	ping: {
 		action: 'Send ping and get pong',
-		func: function(CHAN, USER, say, args, command_string){ 
+		func: function(CHAN, USER, say, args, command_string){
 			if(b.waiting_for_pong.indexOf(CHAN.chan) < 0) b.waiting_for_pong.push(CHAN.chan);
 			bot.send('ping', config.network_name);
 		}
@@ -235,7 +235,7 @@ var cmds = {
 		}],
 		perm: 'owner',
 		registered: true,
-		func: function(CHAN, USER, say, args, command_string){ 
+		func: function(CHAN, USER, say, args, command_string){
 
 			var command_data = b.cmds.command(args.service, {
 				t: CHAN.t,
@@ -280,7 +280,7 @@ var cmds = {
 		}],
 		perm: '~',
 		registered: true,
-		func: function(CHAN, USER, say, args, command_string){ 
+		func: function(CHAN, USER, say, args, command_string){
 			if(args.service === 'tags' || args.service === 'tag'){
 				say({err: 'use reg command to modify user tags'});
 			} else {
@@ -305,7 +305,7 @@ var cmds = {
 				colors: true
 		}],
 		registered: true,
-		func: function(CHAN, USER, say, args, command_string){ 
+		func: function(CHAN, USER, say, args, command_string){
 			command_string = command_string.replace(/^.*?\s/i, '');
 			db.update('/nicks/' + args.irc_nick + '/msg/' + USER.nick + '[]', args.message, true, function(act){
 				if(act === 'remove'){
@@ -327,7 +327,7 @@ var cmds = {
 				colors: true
 		}],
 		perm: 'owner',
-		func: function(CHAN, USER, say, args, command_string){ 
+		func: function(CHAN, USER, say, args, command_string){
 			say(args.message, 1, {to: args.to, skip_verify: true, ignore_bot_speak: true})
 		}
 	},
@@ -364,9 +364,9 @@ var cmds = {
 	updates: {
 		action: 'check for updates to b0t script',
 		perm: '@',
-		func: function(CHAN, USER, say, args, command_string){ 
+		func: function(CHAN, USER, say, args, command_string){
 			x.get_url(
-				'https://raw.githubusercontent.com/z0mbieparade/b0t/master/package.json', 
+				'https://raw.githubusercontent.com/z0mbieparade/b0t/master/package.json',
 				'json',
 				function(data){
 					if(data.version === pkg.version){
@@ -406,7 +406,7 @@ var cmds = {
 					fake: {flag: '-add'}
 				}]
 		}],
-		func: function(CHAN, USER, say, args, command_string){ 
+		func: function(CHAN, USER, say, args, command_string){
 			db.manage_arr(USER, '/bugs', args, {}, say);
 		}
 	},
@@ -437,7 +437,7 @@ var cmds = {
 					fake: {flag: '-add'}
 				}]
 		}],
-		func: function(CHAN, USER, say, args, command_string){ 
+		func: function(CHAN, USER, say, args, command_string){
 			 db.manage_arr(USER, '/requests', args, {}, say);
 		}
 	},
@@ -452,7 +452,7 @@ var cmds = {
 				name: 'join',
 				type: 'string',
 			}],
-		func: function(CHAN, USER, say, args, command_string){ 
+		func: function(CHAN, USER, say, args, command_string){
 			var opt = {
 				nick: USER.nick,
 				skip_buffer: true,
@@ -475,9 +475,9 @@ var cmds = {
 			name: 'chan',
 			type: '#\\w+'
 		}],
-		func: function(CHAN, USER, say, args, command_string){ 
+		func: function(CHAN, USER, say, args, command_string){
 			//["", "+", "-", "@", "%", "&", "~"]
-		   
+
 			function usr_list(chan_name){
 				var data = [];
 
@@ -501,7 +501,7 @@ var cmds = {
 
 				for(var nick in chan.users){
 					if(nick === bot.nick) continue;
-					
+
 					var usr = chan.users[nick];
 
 					if(usr.is_owner){
@@ -523,7 +523,7 @@ var cmds = {
 				data_obj.chan_owner.forEach(format_usr);
 
 				data.push('(' + (b.is_op ? 'ο' : '') + 'β)' + bot.nick + (bot.nick !== config.bot_nick ? '/' + config.bot_nick : ''));
-				
+
 				for(var i = config.permissions.length - 1; i > -1; i--){
 					var p = config.permissions[i] === '' ? 'none' : config.permissions[i];
 					data_obj[p].forEach(format_usr);
@@ -560,22 +560,27 @@ var cmds = {
 		action: 'whois info about a user',
 		params: [{
 			name: 'irc nick',
-			type: 'string' 
+			type: 'string'
 		}],
 		perm: 'owner',
-		func: function(CHAN, USER, say, args, command_string){ 
+		func: function(CHAN, USER, say, args, command_string){
 			b.users.whois(args.irc_nick, true, function(whois_data){
 				if(whois_data.err){
 					say(whois_data);
 				} else {
-					CHAN.log.debug('whois cmd', whois_data);
-					var who_arr = [];
-					for(var who in whois_data){
-						who_arr.push(who + ': ' + JSON.stringify(whois_data[who]));
-					}
-					say(who_arr, {skip_verify: true, join: '\n'});
+					CHAN.log.debug('whois', whois_data);
+					say({whois: whois_data}, 3, {skip_verify: true, lines: 30, force_lines: true, join: '\n'});
+
+					b.users.get_user_data(args.irc_nick, {
+						ignore_err: true,
+						skip_say: true
+					}, function(d){
+						CHAN.log.debug('user_data', d);
+						say({user_data: d}, 3, {skip_verify: true, lines: 50, force_lines: true, join: '\n'});
+					});
 				}
 			});
+
 		}
 	},
 	seen: {
@@ -592,7 +597,7 @@ var cmds = {
 				spammy: true
 			}]
 		}],
-		func: function(CHAN, USER, say, args, command_string){ 
+		func: function(CHAN, USER, say, args, command_string){
 			if(args.method === '-all'){
 				var say_data = [];
 
@@ -601,7 +606,7 @@ var cmds = {
 					skip_say: true
 				}, function(d){
 					CHAN.get_all_users_in_chan_data({no_highlight: false, col: ['seen', 'spoke'], label: 'Seen/Spoke', return_rows: true}, function(data){
-						
+
 						var say_data = [];
 						var now = (new dateWithOffset(0)).getTime();
 
@@ -635,16 +640,16 @@ var cmds = {
 						}).reverse();
 
 						say(say_data, 1, {
-							table: true, 
+							table: true,
 							table_opts: {
-								header: true, 
-								outline: false, 
+								header: true,
+								outline: false,
 								full_width: ['nick'],
 								col_format: {
-									nick: function(row, cell){ 
+									nick: function(row, cell){
 										return x.score(row.date_hidden, {max: now + 100, min: now - 2592000000, score_str: x.no_highlight(row.nick), config: CHAN.config})
-									}, 
-									date: function(row, cell){ 
+									},
+									date: function(row, cell){
 										return x.score(row.date_hidden, {max: now + 100, min: now - 2592000000, score_str: row.date, config: CHAN.config})
 									},
 									action: function(row, cell){
@@ -668,20 +673,20 @@ var cmds = {
 											case 'quit':
 												return CHAN.t.null(row.action);
 												break;
-											default: 
+											default:
 												return CHAN.t.waiting(row.action);
 												break;
 										}
 									}
 								}
-							}, 
-							lines: 15, 
+							},
+							lines: 15,
 							force_lines: true
 						});
 
 					});
 				});
-				
+
 
 			} else {
 				args.irc_nick = args.method;
@@ -709,15 +714,15 @@ var cmds = {
 								str += 'last joined';
 								break;
 							case 'kick':
-								str += 'was last kicked from'; 
+								str += 'was last kicked from';
 								break;
 							case 'kill':
-								str += 'was last killed from'; 
+								str += 'was last killed from';
 								break;
 							case 'quit':
-								str += 'last quit the server'; 
+								str += 'last quit the server';
 								break;
-							default: 
+							default:
 								str += 'last ' + data.seen.action + 'ed in';
 								break;
 						}
@@ -728,7 +733,7 @@ var cmds = {
 						}, function(d){
 							if(data.seen.chan !== null){
 								str += ' ' + data.seen.chan + ' (' + data.seen.where + ')';
-							} 
+							}
 							str += ' on ' + x.epoc_to_date(data.seen.date, d.offset, d.timezone);
 
 
@@ -747,6 +752,15 @@ var cmds = {
 					}
 				});
 			}
+		}
+	},
+	date: {
+		action: 'Get server datetime',
+		func: function(CHAN, USER, say, args, command_string){
+			var date = (new dateWithOffset(0)).getTime();
+			var str = 'The datetime is: ' + x.epoc_to_date(date, 0, 'GMT');
+
+			say({succ: str});
 		}
 	},
 	nicks: {
@@ -768,7 +782,7 @@ var cmds = {
 		}],
 		perm: '~',
 		registered: true,
-		func: function(CHAN, USER, say, args, command_string){ 
+		func: function(CHAN, USER, say, args, command_string){
 			if(args.flag === '-revert'){
 				if(b.is_op){
 
@@ -799,7 +813,7 @@ var cmds = {
 						});
 					});
 
-					Promise.all(changes).then(() => { 
+					Promise.all(changes).then(() => {
 						CHAN.log.debug('nicks rand finish');
 
 						let changes2 = (new_nicks).map((nick) => {
@@ -813,7 +827,7 @@ var cmds = {
 								b.users.nick_change(nick, bot.nick === nick ? config.bot_nick : CHAN.users[nick].nick_org, function(old_nick, new_nick, new_nick_attempt){
 									if(wait) clearTimeout(wait);
 									CHAN.log.debug('nick org', old_nick, '->', new_nick, '(', new_nick_attempt, ')');
-									
+
 									if(new_nick !== new_nick_attempt){
 										nicks_failed.push(new_nick);
 									}
@@ -823,7 +837,7 @@ var cmds = {
 							});
 						});
 
-						Promise.all(changes2).then(() => { 
+						Promise.all(changes2).then(() => {
 							CHAN.log.debug('nicks org finish');
 							if(nicks_failed.length > 0){
 								CHAN.log.error('nicks failed:', nicks_failed);
@@ -865,7 +879,7 @@ var cmds = {
 
 								if(nick !== orginal_nick){
 									test_nick(orginal_nick, function(new_nick){
-										revert_nicks[nick] = new_nick; 
+										revert_nicks[nick] = new_nick;
 										resolve();
 									});
 								} else {
@@ -874,7 +888,7 @@ var cmds = {
 							});
 						});
 
-						Promise.all(requests).then(() => { 
+						Promise.all(requests).then(() => {
 							//CHAN.log.debug(revert_nicks);
 
 							let changes = (Object.keys(revert_nicks)).map((user) => {
@@ -886,7 +900,7 @@ var cmds = {
 								});
 							});
 
-							Promise.all(changes).then(() => { 
+							Promise.all(changes).then(() => {
 								//CHAN.log.debug('finished changes');
 								var again = false;
 								if(bot.nick !== config.bot_nick) again = true;
@@ -896,7 +910,7 @@ var cmds = {
 											again = true;
 											break;
 										}
-									} 
+									}
 								}
 
 								//CHAN.log.debug('again?', again);
@@ -936,7 +950,7 @@ var cmds = {
 						});
 					});
 
-					Promise.all(changes).then(() => { 
+					Promise.all(changes).then(() => {
 						nicks.sort(() => Math.random() * 2 - 1);
 						//CHAN.log.debug('finished 000');
 
@@ -963,7 +977,7 @@ var cmds = {
 					b.users.update_org_to_current(Object.keys(CHAN.users));
 				}
 				say({succ: 'Original nicks updated!'});
-			} 
+			}
 		}
 	},
 	unban: {
@@ -972,7 +986,7 @@ var cmds = {
 			console.log('UNBAN', this);
 			return !config.autokb_users_inactive_for;
 		}, */
-		func: function(CHAN, USER, say, args, command_string){ 
+		func: function(CHAN, USER, say, args, command_string){
 			if(b.is_op){
 				b.users.get_user_data(USER.nick, {
 						ignore_err: true,
@@ -1025,7 +1039,7 @@ var cmds = {
 			}]
 		}],
 		perm: 'owner',
-		func: function(CHAN, USER, say, args, command_string){ 
+		func: function(CHAN, USER, say, args, command_string){
 			var arr = [];
 			var err = '';
 			var succ = '';
@@ -1036,7 +1050,7 @@ var cmds = {
 				say({err: 'No channel by that name'}, 3);
 				return;
 			}
-			
+
 			if(args.save !== undefined){
 				if(args.chan === undefined){
 					x.update_config(config);
@@ -1052,7 +1066,7 @@ var cmds = {
 						//TODO: prolly need to have a few more actions here when specific settings are updated.
 						//if(key_arr[0] === 'bot_nick'){
 						//	bot.send('nick', conf['bot_nick']);
-						//} 
+						//}
 
 					},{
 						ignore: ['network_name', 'nickserv_password', 'ircop_password', 'bot_config', 'debug_level']
