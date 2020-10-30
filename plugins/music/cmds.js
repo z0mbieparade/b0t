@@ -4,7 +4,7 @@ var Music = require(__dirname + '/func.js'),
 var info = {
 	name: 'Music',
 	about: 'various music related commands',
-	//this is based of lastfm scrobble statistics, which state that the highest scrobbled 
+	//this is based of lastfm scrobble statistics, which state that the highest scrobbled
 	//song is 'Smells Like Teen Spirit' by Nirvana and has been scrobbled over 10 mil x, but that's just silly
 	//so we'll do 10k instead, since that's prolly a good number for a popular song.
 	highest_song_count: 10000,
@@ -66,7 +66,7 @@ var cmds = {
 				if(args.flag && !udata[service]){
 					say({err: args.irc_nick + ' does not have a registered ' + service + ' account'}, 2);
 					return;
-				} 
+				}
 				else if(!udata.lastfm && !udata.librefm && !udata.listenbrainz)
 				{
 					say({err: args.irc_nick + ' does not have a registered scrobbler account'}, 2);
@@ -78,7 +78,7 @@ var cmds = {
 					librefm: udata.librefm,
 					listenbrainz: udata.listenbrainz,
 					service: service,
-					wp: false 
+					wp: false
 				}, function(d) {
 					if(d.err) return say(d, 2);
 
@@ -94,7 +94,7 @@ var cmds = {
 					d.irc_nick = x.no_highlight(d.irc_nick);
 
 					var str = CHAN.t.highlight(d.irc_nick) + ' ';
-					str += d.now_playing ? 'is now playing: ' + CHAN.t.success(title_str) : 'last played: ' + CHAN.t.null(title_str); 
+					str += d.now_playing ? 'is now playing: ' + CHAN.t.success(title_str) : 'last played: ' + CHAN.t.null(title_str);
 
 					if(d.service === 'lastfm'){
 						str += c.red(' ♬ ');
@@ -110,7 +110,7 @@ var cmds = {
 						str += x.score(d.play_count, {max: info.highest_song_count, score_str: x.abv_num(d.play_count), config: CHAN.config}) + '] '
 					}
 
-					str += (d.loved ? CHAN.t.fail('♥') + ' (' : '('); 
+					str += (d.loved ? CHAN.t.fail('♥') + ' (' : '(');
 
 					if(d.tags.length > 0){
 						var tags = d.tags.splice(0, 4); //max 4 tags
@@ -180,7 +180,7 @@ var cmds = {
 				if(args.flag && !udata[service]){
 					say({err: args.irc_nick + ' does not have a registered ' + service + ' account'}, 2);
 					return;
-				} 
+				}
 				else if(!udata.lastfm && !udata.librefm && !udata.listenbrainz)
 				{
 					say({err: args.irc_nick + ' does not have a registered scrobbler account'}, 2);
@@ -192,7 +192,7 @@ var cmds = {
 					librefm: udata.librefm,
 					listenbrainz: udata.listenbrainz,
 					service: service,
-					wp: false 
+					wp: false
 				}, function(d) {
 					if(d.err) return say(d, 2);
 
@@ -204,7 +204,7 @@ var cmds = {
 
 					if(d.name !== '') title.push(d.name);
 
-					m.yt_video_search(CHAN, title.join(' '), function(results) 
+					m.yt_video_search(CHAN, title.join(' '), function(results)
 					{
 						if(results.err)
 						{
@@ -212,7 +212,7 @@ var cmds = {
 							say({err: results.err}, 2);
 							return;
 						}
-					 
+
 						if(!results || results.length === 0){
 							say({err: 'no youtube video found for last played song'}, 2)
 							return;
@@ -220,12 +220,12 @@ var cmds = {
 
 						var str = CHAN.t.highlight(x.no_highlight(args.irc_nick)) + ' ';
 						str += d.now_playing ? 'is now playing: ' + CHAN.t.success(results[0].title || '') : 'last played: ' + CHAN.t.null(results[0].title || '');
-						str += ' ' + results[0].link; 
+						str += ' ' + results[0].link;
 
 						say(str, 1, {skip_verify: true});
 					});
 				});
-			});		   
+			});
 		}
 	},
 	wp: {
@@ -244,7 +244,7 @@ var cmds = {
 							lastfm: data[irc_nick].lastfm,
 							librefm: data[irc_nick].librefm,
 							listenbrainz: data[irc_nick].listenbrainz,
-							wp: true 
+							wp: true
 						}, function(d) {
 							if(d.err) {
 								CHAN.log.error(d.err);
@@ -270,24 +270,24 @@ var cmds = {
 										playing.push(play_data);
 									} else {
 										not_playing.push(play_data);
-									} 
+									}
 								}
 							}
 							resolve();
 						});
-			   
+
 					});
 				});
 
-				Promise.all(requests).then(() => { 
+				Promise.all(requests).then(() => {
 
 					var say_data = [playing, not_playing];
 
 					say(say_data, 1, {
-						table: true, 
+						table: true,
 						table_opts: {
-							header: true, 
-							outline: false, 
+							header: true,
+							outline: false,
 							cluster: [CHAN.t.success, CHAN.t.null],
 							cluster_symbols: ['▸', '॥'],
 							full_width: ['user', 'plays', '♥'],
@@ -297,27 +297,27 @@ var cmds = {
 									if(row.service_hidden === 'librefm') return c.olive('♪');
 									if(row.service_hidden === 'listenbrainz') return c.pink('♪');
 								},
-								user: function(row, cell){ 
+								user: function(row, cell){
 									return row.now_playing_hidden ? CHAN.t.success(x.no_highlight(cell)) : CHAN.t.null(x.no_highlight(cell))
 								},
 								artist: function(row, cell){ return CHAN.t.highlight(cell) },
 								song: function(row, cell){ return CHAN.t.highlight(cell) },
 								album: function(row, cell){ return CHAN.t.highlight(cell) },
-								plays: function(row, cell){ 
+								plays: function(row, cell){
 									if(row.user_plays_hidden === 0 && row.total_plays_hidden === 0) return CHAN.t.null('-----');
 
-									return x.score(row.user_plays_hidden, {max: row.total_plays_hidden, score_str: x.abv_num(row.user_plays_hidden), config: CHAN.config})  + 
-									'/' + x.score(row.total_plays_hidden, {max: info.highest_song_count, score_str: x.abv_num(row.total_plays_hidden), config: CHAN.config}) 
+									return x.score(row.user_plays_hidden, {max: row.total_plays_hidden, score_str: x.abv_num(row.user_plays_hidden), config: CHAN.config})  +
+									'/' + x.score(row.total_plays_hidden, {max: info.highest_song_count, score_str: x.abv_num(row.total_plays_hidden), config: CHAN.config})
 								},
-								'♥': function(row, cell) { 
+								'♥': function(row, cell) {
 									return row.loved_hidden ? CHAN.t.fail('♥') : CHAN.t.null('♥')
 								},
-								tags: function(row, cell) { 
+								tags: function(row, cell) {
 									return row.tags === 'No Tags' ? CHAN.t.null(cell) : CHAN.t.warn(cell)
 								}
 							}
-						}, 
-						lines: 15, 
+						},
+						lines: 15,
 						force_lines: true
 					});
 
@@ -388,8 +388,8 @@ var cmds = {
 				if(d.similar_artists.length === 0) return say({err: 'No similar artists found.'});
 
 				var str =  CHAN.t.highlight('Similar to ' + CHAN.t.term(d.artist) + ': ');
-				var sa = d.similar_artists.map(function(artist){ 
-					return artist.name + ' ' + x.score(artist.match, {max: 100, end: '%', config: CHAN.config}); 
+				var sa = d.similar_artists.map(function(artist){
+					return artist.name + ' ' + x.score(artist.match, {max: 100, end: '%', config: CHAN.config});
 				});
 				str += sa.join(', ');
 
@@ -414,7 +414,9 @@ var cmds = {
 					info.last_artist = d.artist;
 				}
 
-				var str =  CHAN.t.highlight('Bio for ' + CHAN.t.term(d.artist) + ': ') + '\u000f' + d.bio;
+				var tags = (d.tags && d.tags.length > 0) ? CHAN.t.null('(' + d.tags.join(', ') + ')') : '';
+
+				var str =  CHAN.t.highlight('Bio for ' + CHAN.t.term(d.artist) + ': ') + '\u000f' + tags + ' ' + d.bio;
 				say(str, 1, {url: d.url});
 			});
 		}

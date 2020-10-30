@@ -36,8 +36,8 @@ module.exports = class Music{
 				{
 					CHAN.log.error('Error:', error);
 					return callback({err: error});
-				} 
-				else 
+				}
+				else
 				{
 					var json_parse = JSON.parse(body);
 
@@ -123,23 +123,22 @@ module.exports = class Music{
 			{
 				url += encodeURIComponent(send_data[field])
 			}
-			
+
 			i++;
 		}
 
 		var headers = null;
 
-		if(service === 'lastfm')
-		{
+		if(service === 'lastfm'){
 			url += (i === 0 ? '?' : '&') + 'api_key=' + config.API.lastfm.key + '&format=json';
-		}
-		else if(service === 'librefm')
-		{
+		}else if(service === 'librefm'){
 			url += (i === 0 ? '?' : '&') + 'format=json';
-		}
-		else if(service === 'musicbrainz' || service === 'listenbrainz')
-		{
+		} else if(service === 'musicbrainz'){
 			url += (i === 0 ? '?' : '&') + 'fmt=json';
+			headers = {
+				'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'
+			}
+		} else if(service === 'listenbrainz'){
 			headers = {
 				'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'
 			}
@@ -147,59 +146,18 @@ module.exports = class Music{
 
 		CHAN.log.debug(url);
 
-		request({url: url, followRedirect: false, headers: headers}, function (error, response, body){
-			try{
-				if(error)
-				{
-					CHAN.log.error('Error:', error);
-					if(send_data.handlers.error) send_data.handlers.error(error);
-				} 
-				else if(response.statusCode !== 200)
-				{
-					CHAN.log.error('Invalid Status Code Returned:', response.statusCode);
-					if(send_data.handlers.error) send_data.handlers.error(error);
-				} 
-				else 
-				{
-					var json_parse = JSON.parse(body);
-					if(json_parse.error) CHAN.log.error('Error:', json_parse.message);
-					send_data.handlers.success(json_parse);
-				}
-			} catch(e) {
-					CHAN.log.error('Error:', error);
-					if(send_data.handlers.error) send_data.handlers.error(e.message);
+		x.get_url(url, 'json', function(res){
+			if(res.err){
+				CHAN.log.error('Error:', error);
+				if(send_data.handlers.error) send_data.handlers.error(res.err);
+			} else {
+					send_data.handlers.success(res);
 			}
-		});
+		}, {
+			followRedirect: false,
+			headers: headers
+		})
 	};
-
-	//this is a hack because listenbrainz api doesn't show the currently playing song
-	get_listenbrainz_np(CHAN, options, callback){
-		options = Object.assign({}, {
-			irc_nick: null,
-			service: null,
-			lastfm: null,
-			librefm: null,
-			listenbrainz: null,
-			wp: false
-		}, options);
-
-		request({url: 'https://listenbrainz.org/user/' + options.listenbrainz, followRedirect: false}, function(error, response, body) 
-		{
-			var reg = /<tr id="playing_now">.*?<td>(.*?)<\/td>.*?<td>(.*?)<\/td>.*?<\/tr>/mgis;
-			var np_match = reg.exec(body)
-			if(np_match)
-			{
-				callback({
-					artist_name: np_match[1],
-					track_name: np_match[2]
-				})
-			}
-			else
-			{
-				callback(false);
-			}
-		});
-	}
 
 	parse_track_info(CHAN, track, options, callback) {
 		options = Object.assign({}, {
@@ -239,7 +197,7 @@ module.exports = class Music{
 				if(tags[i] && tags[i].name) tag_names.push(tags[i].name);
 			}
 
-			var artist = track.artist && track.artist.name ? track.artist.name : 
+			var artist = track.artist && track.artist.name ? track.artist.name :
 				track.artist && track.artist['#text'] ? track.artist['#text'] : '';
 
 			//JANKY but so is librefm still, sigh.
@@ -249,7 +207,7 @@ module.exports = class Music{
 				artist = url_arr[url_arr.indexOf('artist') + 1].replace(/\+/g, ' ');
 			}
 
-			var album = track.album && track.album.title ? track.album.title : 
+			var album = track.album && track.album.title ? track.album.title :
 				track.album && track.album['#text'] ? track.album['#text'] : '';
 
 			if(album === '' && track.url && track.url.match(/album\/.+?\/track/))
@@ -272,9 +230,9 @@ module.exports = class Music{
 
 			data.tags = tag_names;
 		}
-		
+
 		callback(data);
-		
+
 	}
 
 	get_artist_tags(CHAN, track, options, callback) {
@@ -484,7 +442,7 @@ module.exports = class Music{
 				}
 
 				send_track = track_data[service];
-			
+
 				var update_fields = ['artist', 'album', 'tags'];
 				for(var s in track_data){
 					if(s === service) continue;
@@ -498,7 +456,7 @@ module.exports = class Music{
 								{
 									send_track[field] = track_data[s][field];
 								}
-							} 
+							}
 							else if(Array.isArray(send_track[field]))
 							{
 								if(send_track[field].length === 0 && track_data[s][field].length > 0)
@@ -531,11 +489,11 @@ module.exports = class Music{
 			if(options.librefm)
 			{
 				options.service = 'librefm';
-			} 
+			}
 			else if(options.lastfm && this.use_lastfm)
 			{
 				options.service = 'lastfm';
-			} 
+			}
 			else if(options.listenbrainz)
 			{
 				options.service = 'listenbrainz';
@@ -548,48 +506,61 @@ module.exports = class Music{
 
 		if(options.service === 'listenbrainz')
 		{
+			var get_np = function(cb){
+				_this.get_url(CHAN, options.service, 'user/' + options[options.service] + '/playing-now', {
+					handlers: {
+						success: function(np_data){
+							if(np_data && np_data.payload && np_data.payload.playing_now && np_data.payload.count){
+								cb(np_data.payload);
+							} else {
+								cb(false);
+							}
+						},
+						error: function(err) {
+							CHAN.log.error('cannot get listenbrainz now-playing:', err);
+							cb(false);
+						}
+					}
+				});
+			}
+
 			_this.get_url(CHAN, options.service, 'user/' + options[options.service] + '/listens', {
 				count: 1,
 				handlers: {
 					success: function(data) {
-						_this.get_listenbrainz_np(CHAN, options, function(np){
-							var track = null;
-							if(data && data.payload && data.payload.listens && data.payload.listens.length > 0)
-							{
-								track = data.payload.listens[0].track_metadata;
-								var add_info = JSON.parse(JSON.stringify(track.additional_info))
-								delete track.additional_info;
-								track = Object.assign({}, add_info, track);
 
-							} 
+						var track = null;
+						if(data && data.payload && data.payload.listens && data.payload.listens.length > 0){
+							track = data.payload.listens[0].track_metadata;
+							var add_info = JSON.parse(JSON.stringify(track.additional_info))
+							delete track.additional_info;
+							track = Object.assign({}, add_info, track);
+						}
 
-							if(np)
-							{
-								if(np.track_name !== track.track_name && np.artist_name !== track.artist_name)
+						get_np(function(np){
+							if(np){
+								if(np.listens && np.listens.track_metadata &&
+									np.listens.track_metadata.track_name &&
+									np.listens.track_metadata.artist_name &&
+									np.listens.track_metadata.track_name !== track.track_name &&
+									np.listens.track_metadata.artist_name !== track.artist_name)
 								{
-									track = np;
+									track = np.listens.track_metadata;
 								}
 
 								track.now_playing = true;
-							}
-							else
-							{
-								if(track !== null)
-								{
+							} else {
+								if(track !== null){
 									track.now_playing = false;
-								}
-								else
-								{
+								}	else	{
 									var msg = (options.wp ? '[' + CHAN.t.highlight(options.irc_nick) + ']' : CHAN.t.highlight(options.irc_nick)) + ' hasn\'t scrobbled any tracks yet.';
 									callback({'err': 'hasn\'t scrobbled any tracks'});
 									return;
 								}
 							}
 
-							if(!track.tags || track.tags.length < 1)
-							{
-								if(track.release_name)
-								{
+							if(!track.tags || track.tags.length < 1){
+								if(track.release_name){
 									_this.get_url(CHAN, 'musicbrainz', 'release/', {
 										encode: 'encodeURI',
 										query: 'artist:' + track.artist_name + ' AND release:' + track.release_name,
@@ -661,8 +632,7 @@ module.exports = class Music{
 									})
 								}
 							}
-						})
-						
+						});
 					},
 					error: function(err) {
 						CHAN.log.error('get_recent_track error:', err);
@@ -753,7 +723,7 @@ module.exports = class Music{
 						this.error(res);
 						return;
 					}
-					
+
 					var data = {
 						artist: res.similarartists['@attr'].artist,
 						similar_artists: res.similarartists.artist
@@ -780,13 +750,24 @@ module.exports = class Music{
 						return;
 					}
 
-					var data = {
-						artist: res.artist.name,
-						bio: res.artist.bio.summary,
-						url: res.artist.url,
-						ontour: res.artist.ontour
+					if(res && res.artist){
+						var data = {
+							artist: res.artist.name,
+							bio: res.artist.bio.summary,
+							url: res.artist.url,
+							ontour: res.artist.ontour
+						}
+
+						if(res.artist.tags && res.artist.tags.tag){
+							data.tags = res.artist.tags.tag.map(function(tag){
+								return tag.name;
+							})
+						}
+
+						callback(data);
+					} else {
+						callback({err: err && err.message ? err.message : 'No artists found'});
 					}
-					callback(data);
 				},
 				error: function(err) {
 					CHAN.log.error('getArtistInfo error: ', err)
