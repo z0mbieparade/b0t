@@ -192,11 +192,27 @@ module.exports = class WU{
 			});
 		}
 
+		var update_send_data = function(loc)
+		{
+			if(loc.adminArea5 !== loc.adminArea3)
+			{
+				send_data.nice_location = loc.adminArea5 + ', ' + loc.adminArea3 + ', ' + loc.adminArea1;
+			}
+			else
+			{
+				send_data.nice_location = loc.adminArea5 + ', ' + loc.adminArea1;
+			}
+
+			send_data.lat = loc.latLng.lat;
+			send_data.lon = loc.latLng.lng;
+			send_data.zip = loc.postalCode;
+		}
+
 		if(config.API.mapquest && config.API.mapquest.key){
 			this.get_url_mapquest({
 				location: send_data.location,
 				handlers: {
-					success: function(res)
+					success: function(res, type)
 					{
 						/*	adminArea6 	 Neighborhood name
 							adminArea5	 City name
@@ -205,31 +221,33 @@ module.exports = class WU{
 							adminArea1	 Country name
 						*/
 
-						if(res.results && res.results[0] && res.results[0].locations)
-						{
+						if(res.results && res.results[0] && res.results[0].locations){
+							var first_found = null;
+							var found = false;
 							for(var i = 0; i < res.results[0].locations.length; i++)
 							{
 								var loc =  res.results[0].locations[i];
 								console.log('city', loc.adminArea5, 'state', loc.adminArea3, 'country', loc.adminArea1)
 
-								if(loc.adminArea5 && loc.adminArea1)
-								{
-									if(loc.adminArea5 !== loc.adminArea3)
-									{
-										send_data.nice_location = loc.adminArea5 + ', ' + loc.adminArea3 + ', ' + loc.adminArea1;
-									}
-									else
-									{
-										send_data.nice_location = loc.adminArea5 + ', ' + loc.adminArea1;
-									}
+								if(loc.adminArea5 && loc.adminArea1){
+									if(!first_found) first_found = loc;
 
-									send_data.lat = loc.latLng.lat;
-									send_data.lon = loc.latLng.lng;
-									send_data.zip = loc.postalCode;
-
-									break;
+									if(type){
+										if(send_data.location == loc.postalCode){
+											update_send_data(loc);
+											found = true;
+											break;
+										}
+									} else {
+										update_send_data(loc);
+										found = true;
+										break;
+									}
 								}
+							}
 
+							if(found === false && first_found !== null){
+								update_send_data(first_found);
 							}
 						}
 
@@ -250,13 +268,15 @@ module.exports = class WU{
 	get_url_mapquest(send_data){
 		if(!config.API.mapquest || !config.API.mapquest.key) return;
 
+		var type = null;
 		if(send_data.location.match(/^\d{5}(-{0,1}\d{4})?$/)) //US zipcode
 		{
 			var location = send_data.location + ',us';
-		}
-		else if(send_data.location.match(/^[ABCEGHJ-NPRSTVXY]\d[ABCEGHJ-NPRSTV-Z][ -]?\d[ABCEGHJ-NPRSTV-Z]\d$/i)) //CAN postal code
+			type = 'us_zip';
+		} else if(send_data.location.match(/^[ABCEGHJ-NPRSTVXY]\d[ABCEGHJ-NPRSTV-Z][ -]?\d[ABCEGHJ-NPRSTV-Z]\d$/i)) //CAN postal code
 		{
 			var location = send_data.location.replace(/\W+/g, '') + ',ca';
+			type = 'can_postal';
 		} else	{
 			var location = send_data.location.replace(/,\s+/gm, ',');
 		}
@@ -270,7 +290,7 @@ module.exports = class WU{
 				b.log.error('Error:', ret.err);
 				send_data.handlers.error(ret);
 			} else {
-				send_data.handlers.success(ret, 'mapquest');
+				send_data.handlers.success(ret, type, 'mapquest');
 			}
 		}, {
 			followRedirect: false
