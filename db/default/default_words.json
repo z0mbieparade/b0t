@@ -1,4 +1,7 @@
 {
+	"article": [
+		"one","a","an","your","you","he","his","she","her","them","their","the","that","those","it","its"
+	],
 	"noun": [
 		"taco","slave","stomach","pipe","acoustics","question","wrench","oven","walk","sand","range","use","increase","calculator","position",
 		"tree","value","rod","drain","statement","weight","wave","art","carpenter","pan","attraction","nerve","board","rail","team","spot","hook",
@@ -134,6 +137,41 @@
 		"exactly","voluntarily","only","frightfully","frankly","relatively","terribly","monthly","usefully","sternly","seemingly","wisely","normally",
 		"rightfully","yearningly","kiddingly","offensively"
 	],
+	"adverb_no_ly": [
+		"not","so","up","out","then","more","now","well","just","also","very","how","even","on","down","back","there","still","here","too","where","however",
+		"again","in","most","over","as","never","why","away","off","about","always","when","rather","quite","right","much","often","yet","perhaps","already",
+		"far","later","almost","together","least","less","once","ever","today","all","enough","therefore","either","around","thus","sometimes","else","soon",
+		"yesterday","long","indeed","home","instead","little","further","better","before","round","forward","forward","please","longer","along","anyway","okay",
+		"no","maybe","apart","though","above","through","tomorrow","like","below","otherwise","ahead","best","alone","nevertheless","hard","somewhere","tonight",
+		"straight","twice","elsewhere","under","neither","outside","etc","that","pretty","inside","e.g.","meanwhile","hence","somewhat","afterwards","o'clock",
+		"somehow","moreover","fast","late","anywhere","abroad","aside","by","across","behind","altogether","everywhere","whenever","furthermore","since","any",
+		"thereby","deep","upstairs","nowhere","wherever","past","whereby","bloody","eg","forth","forever","backwards","faster","upwards","besides","near",
+		"nowadays","downstairs","hitherto","half","regardless","seldom","thereafter","onwards","nearby","forwards","nonetheless","within","overall","fucking",
+		"overseas","beyond","likewise","worldwide","overnight","alike","am","high","tight","after","aloud","dead","course","doubtless","loud","underneath",
+		"throughout","sideways","wide","this","upright","downwards","worse","a.m.","beforehand","halfway","opposite","ashore","higher","indoors","underway",
+		"underground","short","sometime","sure","overhead","parallel","without","left","inland","amiss","anyhow","double","wrong","ter","easy","outwards",
+		"thereof","low","lower","real","clear","sic","aboard","beneath","alongside","fro","afield","therein","way","henceforth","downstream","damn","downhill",
+		"aback","outright","inwards","offshore","midway","anymore","upstream","northwards","extra","hereby","thence","damned","forthwith","eastwards","quick",
+		"whence","overtime","outdoors","notwithstanding","worst","approx","ill","apiece","overboard","aloft","slow","live","afresh","'ere","fair","southwards",
+		"but","backward","full","overleaf","prior","flat","uphill","anew","solo","westwards","downright","underfoot","oft","westward","onward","clockwise",
+		"wherein","thereto","afar","direct","astray","precious","kinda","outward","plain","upward","underwater","viz.","nice","bleeding","backstage","online",
+		"northward","straightaway","full-time","thereon","sharp","whereabouts","thereabouts","headlong","thick","eastward","part","unawares","non-stop","apace",
+		"approx.","good","herein","downwind","aft","thereupon","hereafter","awry","plenty","viz","offline","blooming","awhile","nigh","bis","small","'ow","sound",
+		"afoot","piecemeal","hereinafter","southward","wild","aground","leeward","hereabouts","inward","new","twofold","ere","astern","to-day","overland","hither",
+		"perforce","hereto","awful","pray","someday","therefrom","mighty","vice-versa","forte","single-handed","bad","one-handed","yonder","upfront","downward",
+		"fivefold","upriver","thither","inshore","to-morrow","passim","henceforward","downtown","lengthways","due","tighter","scarce","false","whither","askance",
+		"meantime","evermore","thrice","'course","ne'er","hereunder","asunder","amok","well-nigh","stark","verbatim","upstage","whereof","offstage","perchance",
+		"threefold","anon","offhand","afterward","skywards","up-front","wherefore","aright","thereunder","fine","homeward","hereof","herewith","seaward",
+		"upmarket","dirty","overmuch","incognito","true","esp","seawards","tenfold","windward","leftwards","fore","uptown","great","heavenwards","howsoever",
+		"point-blank","therewith","thenceforth","dear","underhand","big","infra","heavy","to-night","fortissimo","off-stage","astride","pairwise","everytime",
+		"lengthwise","skyward","so-so","head-first","legato","abed","downstage","amidships","strong","darn","therefor","anticlockwise","o'er","gratis",
+		"rightwards","someplace","sidelong","homewards","hundredfold","heavenward","heretofore","two-handed","hotfoot","apropos","wholesale","pell-mell",
+		"beside","thenceforward","polewards","headfirst","withal","raving","contrariwise","clean","more-or-less","flipping","den","lit.","sixfold","foremost",
+		"jist","flat-out","yon","sheer","nonstop","fain","shorewards","landward","stepwise","inside-out","erstwhile","bareback","unbeknownst","a-plenty",
+		"straightway","sevenfold","aslant","whereon","foreward","incommunicado","nevermore","ever-more","rough","sidewards","short-handed","all-out",
+		"parrot-fashion","downmarket","middling","ditto","plumb","upstate","dere","ofttimes","crabwise","goalwards","ninefold","whensoever","oftener",
+		"oftentimes","weatherwise"
+	],
 	"prep|preposition": [
 		"over","amid","like","down","above","anti","regarding","along","upon","across","following","behind","via","after","excepting","since","but","toward",
 		"per","until","beneath","with","under","versus","considering","besides","through","except","at","for","despite","onto","as","opposite","below",
@@ -145,7 +183,7 @@
 		"realign","uncouple","weaponize","augment","re-polarize","degauss","fix","stabilize","destabilize","clean","reset","reconfigure","energize","resequence",
 		"reroute","invert","resynchronize","disengage","detect","re-calibrate","jump-start","kick-start","carbonize","bypass","scrub","reignite","reboot",
 		"reprogram","fluctuate","re-focus","de-materialize","upgrade"
-	], 
+	],
 	"techadj": [
 		"aft","multi-spacial","hyperwave","reaction","temporal","resistance","Higgs","field","Fergnatz","glob","toroidal","dorsal","molecular","shock","ventral",
 		"superluminal","sensor","pulse","power","multitronic","ion","hydrogen","fuel","automatic","warp","prism","plutonium","auxiliary","resistance","vacuum",

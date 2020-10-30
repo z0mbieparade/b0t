@@ -61,7 +61,7 @@ var nice_weather =
 var nice_weather_description =
 [
 	['a smidge of', 'a bit of', 'a little', 'scattered'],
-	['some what', 'kind of', 'passably'],
+	['somewhat', 'kind of', 'passably'],
 	['mostly', 'moderately', 'rather', 'quite'],
 	['continuous', 'perpetual', 'ongoing', 'nonstop', 'endless']
 ];

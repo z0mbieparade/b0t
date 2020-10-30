@@ -461,7 +461,10 @@ var cmds = {
 				copy_buffer_to_user: true
 			};
 
-			if(args.lines !== undefined) opt.lines = args.lines;
+			if(args.lines !== undefined) {
+				opt.lines = args.lines;
+				opt.force_lines = true;
+			}
 			if(args.name !== undefined) opt.name = args.name;
 
 			say(null, 2, opt)
