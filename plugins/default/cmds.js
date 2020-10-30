@@ -559,7 +559,7 @@ var cmds = {
 
 		}
 	},
-	whois: {
+	user: {
 		action: 'whois info about a user',
 		params: [{
 			name: 'irc nick',

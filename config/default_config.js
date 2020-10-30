@@ -205,6 +205,11 @@ exports.default = {
 			secret 		: ""
 		},
 
+		// https://whois.whoisxmlapi.com (domain lookup)
+		whoisxmlapi: {
+			key			: ""
+		},
+
 		// https://www.wunderground.com/weather/api/d/pricing.html Unfortunately Wunderground has clamped down on their API
 		// usage for non-paying customers. Eventually this will be replaced with something else.
 		// (Required for Weather/Forecast, however uses location info for users to set times for other things such as !seen)

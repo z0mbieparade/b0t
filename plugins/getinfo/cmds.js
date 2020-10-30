@@ -22,6 +22,10 @@ if(!config.API.wolframalpha || config.API.wolframalpha.key === '') {
 	b.log.warn('Missing Wolframalpha API key!');
 }
 
+if(!config.API.whoisxmlapi || config.API.whoisxmlapi.key === '') {
+	b.log.warn('Missing whoisxmlapi API key!');
+}
+
 var cmds = {
 	ud: {
 		action: 'get urban dictionary term/word definition',
@@ -614,6 +618,75 @@ var cmds = {
 					say(d, { join: '\n', lines: 5, force_lines: true });
 				});
 			}
+		}
+	},
+	whois: {
+		action: 'Domain/IPv4/IPv6/Email whois lookup',
+		params: [{
+			name: 'domain/IPv4/IPv6/email',
+			key: 'domain',
+			type: 'text'
+		}],
+		API: ['whoisxmlapi'],
+		func: function(CHAN, USER, say, args, command_string){
+			var url = 'https://www.whoisxmlapi.com/whoisserver/WhoisService?apiKey=' + config.API.whoisxmlapi.key;
+					url += '&outputFormat=json&domainName=' + args.domain;
+
+			console.log(url);
+
+			x.get_url(url, 'json', function(res){
+				if(res.err) return say(res)
+				if(res.WhoisRecord)
+				{
+					var whois = res.WhoisRecord;
+					var str = '';
+
+					var domain = {
+						domainName: null,
+						registrarName: null,
+						createdDateNormalized: null,
+						updatedDateNormalized: null,
+				    expiresDateNormalized: null,
+						dataError: null,
+						registrant: null
+					}
+
+					for(var key in whois){
+						if(domain[key] === null){
+							domain[key] = whois[key];
+						}
+					}
+
+					for(var key in domain){
+						if(domain[key] === null){
+							for(var key in whois){
+								if(typeof whois[key] === 'object'){
+									for(var sub_key in whois[key]){
+										if(domain[sub_key] === null){
+											domain[sub_key] = whois[key][sub_key];
+										}
+									}
+								}
+							}
+						}
+					}
+
+					for(var key in domain){
+						if(domain[key] == null || domain[key] == '' || key == 'rawText') delete domain[key];
+					}
+
+					if(domain.registrant){
+						for(var key in domain.registrant){
+							if(domain.registrant[key] == null || domain.registrant[key] == '' || key == 'rawText') delete domain.registrant[key];
+						}
+					}
+
+					say(domain, 2, {force_lines: true, lines: 50, skip_verify: true})
+
+				} else {
+					say({err: 'No whois record found.'});
+				}
+			})
 		}
 	},
 }
