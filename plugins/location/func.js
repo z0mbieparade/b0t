@@ -353,7 +353,7 @@ module.exports = class WU{
 						data.temp_c = (res.main.temp - 32) * 5/9;
 						data.location = res.name;
 						data.country = res.sys.country;
-						data.local_tz_offset = res.timezone;
+						data.local_tz_offset = (res.timezone / 36);
 						data.wind_mph = res.wind.speed;
 						data.wind_deg = res.wind.deg === undefined ? null : res.wind.deg;
 						data.display_location = {
