@@ -509,4 +509,78 @@ module.exports = class GI{
 			}
 		});
 	}
+
+	whois(CHAN, domainName, callback){
+		var url = 'https://www.whoisxmlapi.com/whoisserver/WhoisService?apiKey=' + config.API.whoisxmlapi.key;
+				url += '&outputFormat=json&domainName=' + domainName;
+
+		console.log(url);
+
+		x.get_url(url, 'json', function(res){
+			if(res.err) return say(res)
+			if(res.WhoisRecord)
+			{
+				var whois = res.WhoisRecord;
+
+				var template = {
+					domainName: null,
+					registrarName: null,
+					createdDateNormalized: null,
+					updatedDateNormalized: null,
+					expiresDateNormalized: null,
+					dataError: null,
+					registrant: null,
+					nameServers: null,
+					custom: null
+				}
+
+				var domain = JSON.parse(JSON.stringify(template));
+
+				var get_data = function(obj, data){
+					for(var key in obj){
+						if(key == 'rawText' || key == 'header' || key == 'strippedText') delete obj[key];
+						if(key == 'rawText' || key == 'header' || key == 'strippedText' || (typeof obj[key] === 'string' && obj[key].match(/REDACTED/i))) continue;
+						if(data[key] === null && typeof obj[key] === 'string'){
+							data[key] = obj[key].replace(/(\r\n|\n|\r)/gm, ' ').replace(/\s+/g, ' ');
+						} else if(data[key] === null){
+							data[key] = obj[key];
+						} else if(key.match(/(customField)(\d+)(Value)/i)){
+							var match = key.match(/(customField)(\d+)(Value)/i);
+							if(obj[match[1] + match[2] + 'Name']){
+								data.custom = data.custom || {};
+								data.custom[obj[match[1] + match[2] + 'Name']] = obj[key].replace(/(\r\n|\n|\r)/gm, ' ').replace(/\s+/g, ' ');
+							}
+						}
+					}
+				}
+
+				var delete_empty = function(obj){
+					for(var key in obj){
+						if(obj[key] === null || obj[key] === '' || key === 'rawText' || key == 'header' || key == 'strippedText' ||
+						  (typeof obj[key] === 'string' && obj[key].match(/REDACTED/i))) delete obj[key];
+						if(typeof obj[key] === 'string') obj[key] = obj[key].replace(/(\r\n|\n|\r)/gm, ' ').replace(/\s+/g, ' ');
+						if(typeof obj[key] === 'object') delete_empty(obj[key]);
+					}
+				}
+
+				get_data(whois, domain);
+				if(whois.registryData) get_data(whois.registryData, domain);
+				if(whois.subRecords && whois.subRecords.length){
+					domain.subRecords = [];
+					whois.subRecords.forEach(function(record){
+						var data_sub = JSON.parse(JSON.stringify(template));
+						get_data(record, data_sub);
+						delete_empty(data_sub);
+						domain.subRecords.push(data_sub);
+					});
+				}
+				delete_empty(domain);
+
+				callback(domain);
+
+			} else {
+				callback({err: 'No whois record found.'});
+			}
+		})
+	}
 }

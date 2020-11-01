@@ -599,8 +599,6 @@ var cmds = {
 				args.flag = '-drink';
 			}
 
-			console.log(args);
-
 			if(args.flag === '-random'){
 				gi.drink_rand(CHAN, function(d){
 					say(d, { join: '\n', lines: 5, force_lines: true });
@@ -623,70 +621,115 @@ var cmds = {
 	whois: {
 		action: 'Domain/IPv4/IPv6/Email whois lookup',
 		params: [{
+			optional: true,
+			name: 'long',
+			type: 'flag'
+		},{
 			name: 'domain/IPv4/IPv6/email',
 			key: 'domain',
-			type: 'text'
+			type: 'string'
 		}],
 		API: ['whoisxmlapi'],
+		spammy: true,
 		func: function(CHAN, USER, say, args, command_string){
-			var url = 'https://www.whoisxmlapi.com/whoisserver/WhoisService?apiKey=' + config.API.whoisxmlapi.key;
-					url += '&outputFormat=json&domainName=' + args.domain;
 
-			console.log(url);
+			var make_str = function(domain, sub){
+				var ret = [];
+				var str = '';
 
-			x.get_url(url, 'json', function(res){
-				if(res.err) return say(res)
-				if(res.WhoisRecord)
-				{
-					var whois = res.WhoisRecord;
-					var str = '';
+				if(domain.domainName){
+					str += CHAN.t.highlight((sub ? 'Subrecord: ' : 'Domain: ') + CHAN.t.term(domain.domainName) + ': ');
+				} else {
+					str += CHAN.t.highlight((sub ? 'Subrecord: ' : 'Domain: ') + CHAN.t.term(args.domain) + ': ');
+				}
 
-					var domain = {
-						domainName: null,
-						registrarName: null,
-						createdDateNormalized: null,
-						updatedDateNormalized: null,
-				    expiresDateNormalized: null,
-						dataError: null,
-						registrant: null
+				if(domain.registrarName) str += CHAN.t.null('(' + domain.registrarName + ') ');
+
+				if(domain.dataError) str += CHAN.t.fail('Err: ' + domain.dataError + ' ')
+
+				if(domain.createdDateNormalized) str += CHAN.t.success('Created: ' + domain.createdDateNormalized.split(' ')[0] + ' ');
+				if(domain.updatedDateNormalized) str += CHAN.t.warn('Updated: ' + domain.updatedDateNormalized.split(' ')[0] + ' ');
+				if(domain.expiresDateNormalized) str += CHAN.t.fail('Expires: ' + domain.expiresDateNormalized.split(' ')[0] + ' ');
+
+				ret.push(str);
+
+				if(domain.registrant){
+					var reg = '';
+
+					reg += CHAN.t.highlight('Registrant: ');
+					if(domain.registrant.name) reg += domain.registrant.name + ' ';
+					if(domain.registrant.organization) reg += domain.registrant.organization + ' ';
+
+					var address = [
+						domain.registrant.street,
+						domain.registrant.street1,
+						domain.registrant.street2,
+						domain.registrant.city,
+						domain.registrant.state,
+						domain.registrant.postalCode,
+						(domain.registrant.countryCode || domain.registrant.country)
+					].filter(function(a){
+						return a !== null && a !== undefined;
+					}).join(', ')
+
+					if(address) reg += address;
+
+					ret.push(reg)
+
+					var contact = '';
+					if(domain.registrant.email) contact += domain.registrant.email + ' ';
+					if(domain.registrant.telephone) contact += 'tel: ' + domain.registrant.telephone + ' ';
+					if(domain.registrant.fax) contact += 'fax: ' + domain.registrant.fax + ' ';
+
+					if(contact) ret.push(CHAN.t.highlight('Contact: ') + contact);
+				}
+
+				if(domain.nameServers && domain.nameServers.hostNames){
+					var name_servers = CHAN.t.highlight('Name Servers: ') + domain.nameServers.hostNames.join(', ');
+					ret.push(name_servers);
+				}
+
+				if(domain.custom){
+					var custom = '';
+					for(var key in domain.custom){
+						custom += key + ': ' + domain.custom[key] + ' ';
 					}
+					if(custom) ret.push(custom);
+				}
 
-					for(var key in whois){
-						if(domain[key] === null){
-							domain[key] = whois[key];
+				return ret;
+			}
+
+			x.get_cache('/whois/' + args.domain, function(d){
+				if(d.err) return say(d);
+				if(args.long === '-long'){
+					say(d, 2, {force_lines: true, lines: 30, skip_verify: true});
+				} else {
+					var ret = make_str(d);
+					if(d.subRecords && d.subRecords.length){
+						for(var i = 1; i < d.subRecords.length; i++){
+							ret = ret.concat(make_str(d.subRecords[i], true));
 						}
 					}
-
-					for(var key in domain){
-						if(domain[key] === null){
-							for(var key in whois){
-								if(typeof whois[key] === 'object'){
-									for(var sub_key in whois[key]){
-										if(domain[sub_key] === null){
-											domain[sub_key] = whois[key][sub_key];
-										}
-									}
-								}
+					say(ret, 2, {force_lines: true, lines: 5, join: '\n', skip_verify: true});
+				}
+			}, function(){
+				gi.whois(CHAN, args.domain, function(d){
+					x.add_cache('/whois/' + args.domain, d, (60000 * 1440), args.domain);
+					if(d.err) return say(d);
+					if(args.long === '-long'){
+						say(d, 2, {force_lines: true, lines: 30, skip_verify: true});
+					} else {
+						var ret = make_str(d);
+						if(d.subRecords && d.subRecords.length){
+							for(var i = 1; i < d.subRecords.length; i++){
+								ret = ret.concat(make_str(d.subRecords[i], true));
 							}
 						}
+						say(ret, 2, {force_lines: true, lines: 5, join: '\n', skip_verify: true});
 					}
-
-					for(var key in domain){
-						if(domain[key] == null || domain[key] == '' || key == 'rawText') delete domain[key];
-					}
-
-					if(domain.registrant){
-						for(var key in domain.registrant){
-							if(domain.registrant[key] == null || domain.registrant[key] == '' || key == 'rawText') delete domain.registrant[key];
-						}
-					}
-
-					say(domain, 2, {force_lines: true, lines: 50, skip_verify: true})
-
-				} else {
-					say({err: 'No whois record found.'});
-				}
-			})
+				});
+			}, args.domain);
 		}
 	},
 }
