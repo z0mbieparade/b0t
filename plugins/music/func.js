@@ -148,14 +148,19 @@ module.exports = class Music{
 
 		x.get_url(url, 'json', function(res){
 			if(res.err){
-				CHAN.log.error('Error:', error);
-				if(send_data.handlers.error) send_data.handlers.error(res.err);
+				CHAN.log.error('Error:', res.err);
+				if(send_data.handlers.error){
+					send_data.handlers.error(res.err);
+				} else {
+					CHAN.log.error('get_url missing error handler', service, method)
+				}
 			} else {
 					send_data.handlers.success(res);
 			}
 		}, {
 			followRedirect: false,
-			headers: headers
+			headers: headers,
+			return_err: true
 		})
 	};
 
@@ -371,7 +376,15 @@ module.exports = class Music{
 
 		if(options.service)
 		{
-			_this.get_recent(CHAN, options, callback);
+			try
+			{
+				_this.get_recent(CHAN, options, callback);
+			}
+			catch(e)
+			{
+				CHAN.log.error(e);
+				callback({err: 'Something went wrong'});
+			}
 			return;
 		}
 
@@ -500,7 +513,8 @@ module.exports = class Music{
 			}
 			else
 			{
-				callback({err: 'No scrobbling service provided'})
+				callback({err: 'No scrobbling service provided'});
+				return;
 			}
 		}
 

@@ -239,6 +239,7 @@ var cmds = {
 
 				let requests = (Object.keys(data)).map((irc_nick) => {
 					return new Promise((resolve) => {
+						data[irc_nick].new_promise = true;
 						m.get_recent_np(CHAN, {
 							irc_nick: irc_nick,
 							lastfm: data[irc_nick].lastfm,
@@ -272,12 +273,15 @@ var cmds = {
 										not_playing.push(play_data);
 									}
 								}
+
+								data[d.irc_nick].promise_resolved = true;
 							}
 							resolve();
 						});
 
 					});
 				});
+
 
 				Promise.all(requests).then(() => {
 
