@@ -14,6 +14,7 @@ exports.info = info;
 
 var insults_db = new DB({db_name: 'insults'});
 var scopes_db = new DB({db_name: 'scopes'});
+var CAH_db = new DB({db_name: 'CAH'});
 var creeds_db = new DB({readable: true, db_name: 'creeds'});
 
 var answers = [
@@ -822,6 +823,91 @@ var cmds = {
 					}
 				});
 			}
+		}
+	},
+	tarot: {
+		action: 'CAH tarot spread',
+		params: [{
+			optional: true,
+			or: [{
+					name: 'ppf',
+					desc: 'past/present/future',
+					type: 'flag',
+					key: 	'flag'
+				},{
+					name: 'soa',
+					desc: 'situation/obstacle/advice',
+					type: 'flag',
+					key: 	'flag'
+				},{
+					name: 'ytr',
+					desc: 'you/them/relationship',
+					type: 'flag',
+					key: 	'flag'
+				}]
+		}],
+		func: function(CHAN, USER, say, args, command_string){
+
+			var colors = ['olive', 'lime', 'cyan'];
+			var spreads = {
+				'-ppf': ['Your past', 'Your present', 'Your future'],
+				'-soa': ['The situation', 'The obstacle', 'Some advice'],
+				'-ytr': ['You are', 'They are', 'The relationship']
+			};
+
+			if(!args.flag) args.flag = '-ppf';
+
+			CAH_db.get_data("/", function(d){
+				if(d){
+					var pick_random_white = function(tries)
+					{
+						try {
+							var deck_id = x.rand_arr(Object.keys(d));
+							var deck = d[deck_id].white;
+							var card = x.rand_arr(deck);
+							return card.text;
+						} catch(e) {
+							if(tries < 3){
+								return pick_random_white(tries + 1);
+							} else {
+								return false;
+							}
+						}
+					}
+
+					var spread_it = [];
+					for(var i = 0; i < spreads[args.flag].length; i++)
+					{
+						var card = pick_random_white(0);
+						if(card){
+							spread_it.push({
+								meaning: c[colors[i]](spreads[args.flag][i]),
+								text: card
+							});
+						}
+						else {
+							break;
+						}
+					}
+
+					if(spread_it.length === spreads[args.flag].length){
+						say(spread_it, 1, {
+							table: true,
+							table_opts: {
+								header: false,
+								outline: false,
+								full_width: ['meaning', 'text']
+							},
+							lines: spread_it.length,
+							force_lines: true
+						});
+					} else {
+						return say({err: 'Something went wrong.'});
+					}
+				} else {
+					say({err: 'Something went wrong.'})
+				}
+			});
 		}
 	},
 	slap: {
