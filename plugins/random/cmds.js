@@ -880,10 +880,7 @@ var cmds = {
 					{
 						var card = pick_random_white(0);
 						if(card){
-							spread_it.push({
-								meaning: c[colors[i]](spreads[args.flag][i]),
-								text: card
-							});
+							spread_it.push(c[colors[i]](spreads[args.flag][i] + ': ') + card);
 						}
 						else {
 							break;
@@ -891,16 +888,7 @@ var cmds = {
 					}
 
 					if(spread_it.length === spreads[args.flag].length){
-						say(spread_it, 1, {
-							table: true,
-							table_opts: {
-								header: false,
-								outline: false,
-								full_width: ['meaning', 'text']
-							},
-							lines: spread_it.length,
-							force_lines: true
-						});
+						say(spread_it, 1, {lines: spread_it.length, force_lines: true, join:'\n'});
 					} else {
 						return say({err: 'Something went wrong.'});
 					}
