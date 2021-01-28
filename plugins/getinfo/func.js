@@ -36,8 +36,6 @@ module.exports = class GI
 				}
 			}
 
-			console.log(data);
-
 			if(data.length && data.length > 7)
 			{
 				let d = {};
