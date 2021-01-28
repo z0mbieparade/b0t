@@ -173,7 +173,7 @@ var cmds = {
 					}
 				} catch(e) {
 					say({err: 'Something went wrong'});
-					CHAN.log.error(e);
+					CHAN.log.error('!d MWD', e.message, e);
 				}
 			});
 		}
@@ -570,18 +570,24 @@ var cmds = {
 					if(key_text[key] === undefined) continue;
 
 					let row = {
+						order_hidden: key_order[key],
 						type: 'X' + key_text[key].slice(1),
 						type_hidden: key_text[key],
 						key_hidden: key,
 						total: x.comma_num(d[key].today),
-						'today↑↓': pos_neg(d[key].change_1),
-						today_change_hidden: d[key].change_1,
-						'weekly↑↓': pos_neg(d[key].change_7),
+						day_change_hidden: d[key].change_1,
 						weekly_change_hidden: d[key].change_7,
-						'monthly↑↓': pos_neg(d[key].change_30),
-						monthly_change_hidden: d[key].change_30,
-						order_hidden: key_order[key]
+						monthly_change_hidden: d[key].change_30
 					};
+
+					if(d.is_today){
+						row.todayxxx = pos_neg(d[key].change_1);
+					} else {
+						row.yesterdayxxx = pos_neg(d[key].change_1);
+					}
+
+					row.sedaysxxx = pos_neg(d[key].change_7);
+					row.thidaysxxx = pos_neg(d[key].change_30);
 
 					say_data.push(row);
 				}
@@ -594,6 +600,10 @@ var cmds = {
 						title: (args.state ? args.state.toUpperCase() : 'USA') + ' COVID-19 data totals and changes in the last day, week, and month.',
 						header: {
 							type: '-',
+							todayxxx: 'today ↑↓',
+							yesterdayxxx: 'yesterday ↑↓',
+							sedaysxxx: '7 days ↑↓',
+							thidaysxxx: '30 days ↑↓'
 						},
 						outline: false,
 						sort_by: function(a, b){
@@ -616,13 +626,16 @@ var cmds = {
 									return c.gray(row.type_hidden)
 								}
 							},
-							'today↑↓': function(row, cell){
-								return pos_neg(row.today_change_hidden, true, ['recovered', 'vaccinated'].includes(row.key_hidden));
+							todayxxx: function(row, cell){
+								return pos_neg(row.day_change_hidden, true, ['recovered', 'vaccinated'].includes(row.key_hidden));
 							},
-							'weekly↑↓': function(row, cell){
+							yesterdayxxx: function(row, cell){
+								return pos_neg(row.day_change_hidden, true, ['recovered', 'vaccinated'].includes(row.key_hidden));
+							},
+							sedaysxxx: function(row, cell){
 								return pos_neg(row.weekly_change_hidden, true, ['recovered', 'vaccinated'].includes(row.key_hidden));
 							},
-							'monthly↑↓': function(row, cell){
+							thidaysxxx: function(row, cell){
 								return pos_neg(row.monthly_change_hidden, true, ['recovered', 'vaccinated'].includes(row.key_hidden));
 							}
 						}

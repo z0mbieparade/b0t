@@ -382,7 +382,7 @@ module.exports = class Music{
 			}
 			catch(e)
 			{
-				CHAN.log.error(e);
+				CHAN.log.error('music.func get_recent_np', e.message, e);
 				callback({err: 'Something went wrong'});
 			}
 			return;

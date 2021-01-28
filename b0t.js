@@ -21,8 +21,8 @@ let config_default	= require(__dirname + '/config/./default_config.js').default,
 	config_custom	= {};
 
 log4js.configure({
-	appenders: [{ 
-		type: 'file', 
+	appenders: [{
+		type: 'file',
 		filename: __dirname + '/logs/b0t_' + get_date() + '.log',
 		category: [ 'b0t','console' ]
 	},{
@@ -31,14 +31,14 @@ log4js.configure({
 	replaceConsole: true
 });
 
-b				   = { 
+b				   = {
 	log: log4js.getLogger('b0t'),
-	is_op: false, 
-	waiting_for_pong: [], 
-	log_date: get_date(), 
-	channels: {}, 
-	users: new Users(), 
-	cbs: {}, 
+	is_op: false,
+	waiting_for_pong: [],
+	log_date: get_date(),
+	channels: {},
+	users: new Users(),
+	cbs: {},
 	whois_queue: []
 },
 
@@ -90,13 +90,13 @@ words_db.get_data('/', function(w){
 				};
 
 				try {
-				   config_db.push("/", config_custom, false); 
+				   config_db.push("/", config_custom, false);
 
 				   if(result.start){
 						init_plugins(init_bot);
 				   }
 				} catch(e) {
-					b.log.error(e);
+					b.log.error('load config db', e.message, e);
 				}
 			});
 
@@ -105,16 +105,16 @@ words_db.get_data('/', function(w){
 				return 1;
 			}
 		} else {
-			b.log.error(e);
+			b.log.error('load custom config.json', e.message, e);
 		}
 	}
 });
-	
+
 function init_bot(){
 	//load db
 	polls_db = new DB({readable: true, db_name: 'polls'});
 	topic_db = new DB({
-		readable: true, 
+		readable: true,
 		db_name: 'topic',
 		on_load: function(db_root)
 		{
@@ -162,7 +162,7 @@ function init_bot(){
 					{
 						topic_db.update('/' + chan + '/pinned' , db_root.pinned[chan], true);
 					}
-					
+
 					delete db_root.pinned;
 				}
 
@@ -178,8 +178,8 @@ function init_bot(){
 
 	b.log.info("Initiating", config.bot_nick, "animatter shields...");
 	bot = new irc.Client(
-		config.network_name, 
-		config.bot_nick, 
+		config.network_name,
+		config.bot_nick,
 		config.bot_config
 	);
 
@@ -187,7 +187,7 @@ function init_bot(){
 		PM   = require(__dirname + '/lib/pm.js');
 
 	b.pm = new PM();
-		
+
 	bot.addListener('join', function(chan, nick, message) {
 
 		if(!b.channels[chan]){
@@ -224,14 +224,14 @@ function init_bot(){
 		switch(message.rawCommand){
 			case 'PART': //when a user leaves, delete them from the channels
 			case 'KICK':
-				
+
 
 				if(message.rawCommand === 'PART') var nick = message.nick;
 				if(message.rawCommand === 'KICK') var nick = message.args[1];
 				var chan = message.args[0];
 
 				b.users.leave_channel(nick, chan, message.rawCommand.toLowerCase());
-				break; 
+				break;
 			case 'KILL':
 			case 'QUIT':
 				b.users.leave_server(message.nick, message.rawCommand.toLowerCase());
@@ -275,7 +275,7 @@ function init_bot(){
 			case '352': //who
 				b.users.who_reply(message);
 				break;
-			default: 
+			default:
 				b.log.warn(message.rawCommand, message);
 				break;
 		}
@@ -334,9 +334,9 @@ function init_bot(){
 
 				if(config.send_owner_bot_pms && owner_nicks.indexOf(nick) < 0 && owner_nicks !== null){ //send pms to bot to owner
 					owner_nicks.forEach(function(owner_nick){
-						bot.say(owner_nick, '*' + nick + text + '*');  
+						bot.say(owner_nick, '*' + nick + text + '*');
 					});
-				} 
+				}
 
 				b.users.update_last_seen(nick, chan, 'pm', 'irc', text);
 				b.pm.action(nick, text);
@@ -357,9 +357,9 @@ function init_bot(){
 				b.log.debug('owner_nicks', owner_nicks);
 				if(owner_nicks !== null && config.send_owner_bot_pms && owner_nicks.indexOf(nick) < 0 && owner_nicks !== null){ //send pms to bot to owner
 					owner_nicks.forEach(function(owner_nick){
-						bot.say(owner_nick, nick + ': ' + text); 
+						bot.say(owner_nick, nick + ': ' + text);
 					});
-				} 
+				}
 
 				b.users.update_last_seen(nick, chan, 'pm', 'irc', text);
 				b.pm.message(nick, text);
@@ -375,7 +375,7 @@ function init_plugins(complete){
 	var error = function(err){
 		b.log.error('Error getting plugins', err);
 	}
-	
+
 	config  = merge.all([config_default, config_custom],
 		{ arrayMerge: function(destArr, srcArr, options){
 			return srcArr;
@@ -401,7 +401,3 @@ function get_date(){
 	var year = today.getUTCFullYear();
 	return year + '_' + (month < 10 ? '0' + month : month) + '_' + (day < 10 ? '0' + day : day);
 }
-
-
-
-

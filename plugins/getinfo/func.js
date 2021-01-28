@@ -23,6 +23,13 @@ module.exports = class GI
 			}
 		}
 
+		function is_today(date)
+		{
+			let today = new Date();
+			return date.getDate() === today.getDate() &&
+						date.getMonth() == today.getMonth() &&
+						date.getFullYear() == today.getFullYear();
+		}
 
 		x.get_url(url, 'json', function(res){
 
@@ -35,6 +42,8 @@ module.exports = class GI
 					return;
 				}
 			}
+
+			console.log(data[0]);
 
 			if(data.length && data.length > 7)
 			{
@@ -75,7 +84,18 @@ module.exports = class GI
 				{
 					if(data[i])
 					{
-						if(!d.start_date) d.start_date = data[i].date;
+						if(!d.start)
+						{
+							let date = data[i].date + '';
+							if(!date.match(/-/)){
+								d.start = date.slice(0,4) + '-' + date.slice(4,6) + '-' + date.slice(6,8);
+							} else {
+								d.start = data[i].date;
+							}
+							d.start_date = new Date(d.start);
+
+							d.is_today = is_today(d.start_date);
+						}
 
 						keys.forEach(function(key)
 						{
@@ -88,7 +108,16 @@ module.exports = class GI
 
 						if(i === 0)
 						{
-							d.end_date = data[i].date;
+							if(!d.end)
+							{
+								let date = data[i].date + '';
+								if(!date.match(/-/)){
+									d.end = date.slice(0,4) + '-' + date.slice(4,6) + '-' + date.slice(6,8);
+								} else {
+									d.end = data[i].date;
+								}
+								d.end_date = new Date(d.end);
+							}
 						}
 					}
 					else

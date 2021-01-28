@@ -13,7 +13,7 @@ module.exports = class BK{
 
 			callback(d);
 
-		 }, { return_err: true });   
+		 }, { return_err: true });
 	}
 
 	get_user_info(CHAN, irc_nick, gr_nick, callback) {
@@ -60,8 +60,8 @@ module.exports = class BK{
 						if(update.object[0].read_status && update.object[0].read_status[0]){
 							u.status = update.object[0].read_status[0].status[0];
 
-							if(update.object[0].read_status[0].review[0] && 
-								update.object[0].read_status[0].review[0].book && 
+							if(update.object[0].read_status[0].review[0] &&
+								update.object[0].read_status[0].review[0].book &&
 								update.object[0].read_status[0].review[0].book[0]) u.book = _this.parse_book(CHAN, update.object[0].read_status[0].review[0].book[0]);
 						}
 					}
@@ -71,10 +71,10 @@ module.exports = class BK{
 
 				callback(data);
 			} catch(e) {
-				CHAN.log.error(e);
+				CHAN.log.error('book.func get_user_info', e.message, e);
 				callback({err: 'Something went wrong.'})
 			}
-			
+
 		});
 	}
 
@@ -172,7 +172,7 @@ module.exports = class BK{
 		} catch(e) {
 			//CHAN.log.warn('parse_book: popular_shelves', e.message);
 		}
-		
+
 
 		try{
 			book.similar_books[0].book.forEach(function(sbook){
@@ -233,7 +233,7 @@ module.exports = class BK{
 			} catch(e) {
 				CHAN.log.warn(e);
 				callback({err: 'None found.'});
-			}   
+			}
 		});
 	}
 
@@ -266,7 +266,7 @@ module.exports = class BK{
 			} catch(e) {
 				CHAN.log.warn(e);
 				callback({err: 'None found.'});
-			}   
+			}
 		});
 	}
 }
