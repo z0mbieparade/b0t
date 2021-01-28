@@ -3,36 +3,94 @@ module.exports = class GI
 {
 	covid(CHAN, state, callback)
 	{
+		let canada = false;
+
+		state = state ? state.toLowerCase() : null;
+
 		let url = 'https://api.covidtracking.com/v1/us/daily.json';
-		if(state){
-			url = 'https://api.covidtracking.com/v1/states/' + state.toLowerCase() + '/daily.json';
+
+		if(state)
+		{
+			if(state === 'can'){ //all of canada
+				url = 'https://api.covid19tracker.ca/reports?fill_dates';
+				canada = true;
+		/*	} else if(state.match(/can,\s*\w{2}/)) { //canadian province idk api doesn't like this
+				let prov = state.split(',')[1].trim();
+
+				console.log(prov);*/
+			} else { //us state
+				url = 'https://api.covidtracking.com/v1/states/' + state + '/daily.json';
+			}
 		}
 
+
 		x.get_url(url, 'json', function(res){
-			console.log(res[0]);
-			if(res.length && res.length > 7)
+
+			let data = res;
+			if(canada){
+				if(res.data && res.data.length){
+					data = res.data.reverse();
+				} else {
+					callback({err: 'No CAN COVID data available.'})
+					return;
+				}
+			}
+
+			console.log(data);
+
+			if(data.length && data.length > 7)
 			{
 				let d = {};
-				let keys = ['death', 'hospitalizedCurrently','hospitalizedCumulative','inIcuCurrently', 'inIcuCumulative', 'positive', 'recovered']
+				let convert = {};
+				let keys = [
+					'fatalities',
+					'hospitalizedCurrently',
+					'hospitalizedCumulative',
+					'inIcuCurrently',
+					'inIcuCumulative',
+					'positive',
+					'recovered'
+				]
+
+				if(canada)
+				{
+					keys = [
+						'total_fatalities',
+						'total_hospitalizations',
+						'total_criticals',
+						'total_cases',
+						'total_recoveries',
+						'total_vaccinated'
+					]
+
+					convert = {
+						total_fatalities: 'death',
+						total_hospitalizations: 'hospitalizedCumulative',
+						total_vaccinated: 'vaccinated',
+						total_fatalities: 'positive',
+						total_recoveries: 'recovered',
+						total_criticals: 'inIcuCumulative'
+					}
+				}
 
 				for(let i = 30; i >= 0; i--)
 				{
-					if(res[i])
+					if(data[i])
 					{
-						if(!d.start_date) d.start_date = res[i].date;
+						if(!d.start_date) d.start_date = data[i].date;
 
 						keys.forEach(function(key)
 						{
-							if(res[i][key] !== null && res[i][key] !== undefined)
+							if(data[i][key] !== null && data[i][key] !== undefined)
 							{
 								d[key + '_arr'] = d[key + '_arr'] || {};
-								d[key + '_arr'][i] = res[i][key];
+								d[key + '_arr'][i] = data[i][key];
 							}
 						})
 
 						if(i === 0)
 						{
-							d.end_date = res[i].date;
+							d.end_date = data[i].date;
 						}
 					}
 					else
@@ -43,11 +101,14 @@ module.exports = class GI
 
 				keys.forEach(function(key)
 				{
-					if(d[key + '_arr'])
+					let arr_key = key + '_arr';
+					let d_key = convert[key] ? convert[key] : key;
+
+					if(d[arr_key])
 					{
-						let days = Object.keys(d[key + '_arr']);
-						d[key] = {
-							today: d[key + '_arr'][days[0]]
+						let days = Object.keys(d[arr_key]);
+						d[d_key] = {
+							today: d[arr_key][days[0]]
 						}
 
 						if(days.length > 1)
@@ -60,16 +121,16 @@ module.exports = class GI
 								return (Math.abs(parseInt(curr) - today_plus_6) < Math.abs(parseInt(prev) - today_plus_6) ? parseInt(curr) : parseInt(prev));
 							});
 
-							d[key].change_30 = d[key + '_arr'][today_i] - d[key + '_arr'][last_i];
-							d[key].change_7 = d[key + '_arr'][today_i] - d[key + '_arr'][week_i];
+							d[d_key].change_30 = d[arr_key][today_i] - d[arr_key][last_i];
+							d[d_key].change_7 = d[arr_key][today_i] - d[arr_key][week_i];
 
-							if(d[key + '_arr'][0] && d[key + '_arr'][1])
+							if(d[arr_key][0] && d[arr_key][1])
 							{
-								d[key].change_1 = d[key + '_arr'][0] - d[key + '_arr'][1];
+								d[d_key].change_1 = d[arr_key][0] - d[arr_key][1];
 							}
 						}
 
-						delete d[key + '_arr'];
+						delete d[arr_key];
 					}
 				})
 

@@ -496,7 +496,8 @@ var cmds = {
 	covid: {
 		action: 'COVID-19 Data',
 		params: [{
-			name: 'state abbreviation',
+			name: 'state abbr | CAN',
+			key: 'state',
 			type: 'text',
 			optional: true
 		}],
@@ -504,6 +505,7 @@ var cmds = {
 			function say_table(d, title)
 			{
 				let key_text = {
+					vaccinated: '💉 Vaccinated',
 					recovered: '🤕 Recovered',
 					positive: '🦠 Positive Tests',
 					hospitalizedCurrently: '🚑 Hospital Now',
@@ -514,16 +516,17 @@ var cmds = {
 				}
 
 				let key_order = {
-					recovered: 0,
-					positive: 1,
-					hospitalizedCurrently: 2,
-					hospitalizedCumulative: 3,
-					inIcuCurrently: 4,
-					inIcuCumulative: 5,
-					death: 6
+					vaccinated: 0,
+					recovered: 1,
+					positive: 2,
+					hospitalizedCurrently: 3,
+					hospitalizedCumulative: 4,
+					inIcuCurrently: 5,
+					inIcuCumulative: 6,
+					death: 7
 				}
 
-				function pos_neg(n, col)
+				function pos_neg(n, col, rev_color)
 				{
 					if(!col)
 					{
@@ -537,12 +540,25 @@ var cmds = {
 					}
 					else
 					{
-						if(Math.sign(n) === 1){
-							return CHAN.t.errors('+' + x.comma_num(n));
-						} else if(Math.sign(n) === -1){
-							return CHAN.t.success('-' + x.comma_num(Math.abs(n)));
-						} else {
-							return CHAN.t.success(n);
+						if(rev_color)
+						{
+							if(Math.sign(n) === 1){
+								return CHAN.t.success('+' + x.comma_num(n));
+							} else if(Math.sign(n) === -1){
+								return CHAN.t.errors('-' + x.comma_num(Math.abs(n)));
+							} else {
+								return CHAN.t.warn(n);
+							}
+						}
+						else
+						{
+							if(Math.sign(n) === 1){
+								return CHAN.t.errors('+' + x.comma_num(n));
+							} else if(Math.sign(n) === -1){
+								return CHAN.t.success('-' + x.comma_num(Math.abs(n)));
+							} else {
+								return CHAN.t.success(n);
+							}
 						}
 					}
 				}
@@ -567,7 +583,6 @@ var cmds = {
 						order_hidden: key_order[key]
 					};
 
-
 					say_data.push(row);
 				}
 
@@ -576,7 +591,7 @@ var cmds = {
 					force_lines: true,
 					lines: 9,
 					table_opts: {
-						title: title,
+						title: (args.state ? args.state.toUpperCase() : 'USA') + ' COVID-19 data totals and changes in the last day, week, and month.',
 						header: {
 							type: '-',
 						},
@@ -587,48 +602,39 @@ var cmds = {
 						col_format: {
 							type: function(row, cell)
 							{
-								if(row.key_hidden === 'recovered'){
-									return CHAN.t.success(row.type_hidden)
+								if(row.key_hidden === 'vaccinated'){
+									return c.cyan(row.type_hidden)
+								} else if(row.key_hidden === 'recovered'){
+									return c.green(row.type_hidden)
 								} else if(row.key_hidden === 'positive'){
-									return CHAN.t.warn(row.type_hidden)
+									return c.yellow(row.type_hidden)
 								} else if(row.key_hidden === 'hospitalizedCurrently' || row.key_hidden === 'hospitalizedCumulative'){
-									return CHAN.t.errors(row.type_hidden)
+									return c.olive(row.type_hidden)
 								} else if(row.key_hidden === 'inIcuCurrently' || row.key_hidden === 'inIcuCumulative'){
-									return CHAN.t.considering(row.type_hidden)
+									return c.red(row.type_hidden)
 								} else {
-									return CHAN.t.null(row.type_hidden)
+									return c.gray(row.type_hidden)
 								}
 							},
 							'today↑↓': function(row, cell){
-								return pos_neg(row.today_change_hidden, true);
+								return pos_neg(row.today_change_hidden, true, ['recovered', 'vaccinated'].includes(row.key_hidden));
 							},
 							'weekly↑↓': function(row, cell){
-								return pos_neg(row.weekly_change_hidden, true);
+								return pos_neg(row.weekly_change_hidden, true, ['recovered', 'vaccinated'].includes(row.key_hidden));
 							},
 							'monthly↑↓': function(row, cell){
-								return pos_neg(row.monthly_change_hidden, true);
+								return pos_neg(row.monthly_change_hidden, true, ['recovered', 'vaccinated'].includes(row.key_hidden));
 							}
 						}
 					}
 				})
 			}
 
-			if(args.state_abbreviation)
+			gi.covid(CHAN, args.state, function(d)
 			{
-				gi.covid(CHAN, args.state_abbreviation, function(d)
-				{
-					if(d.err) return say(d);
-					say_table(d, args.state_abbreviation.toUpperCase() + ' COVID-19 data totals and changes in the last day, week, and month.');
-				});
-			}
-			else
-			{
-				gi.covid(CHAN, null, function(d)
-				{
-					if(d.err) return say(d);
-					say_table(d, 'USA COVID-19 data totals and changes in the last day, week, and month.');
-				});
-			}
+				if(d.err) return say(d);
+				say_table(d);
+			});
 		}
 	},
 	n: {
