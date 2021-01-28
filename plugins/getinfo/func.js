@@ -1,6 +1,90 @@
 var request 	= require('request');
+module.exports = class GI
+{
+	covid(CHAN, state, callback)
+	{
+		let url = 'https://api.covidtracking.com/v1/us/daily.json';
+		if(state){
+			url = 'https://api.covidtracking.com/v1/states/' + state.toLowerCase() + '/daily.json';
+		}
 
-module.exports = class GI{
+		x.get_url(url, 'json', function(res){
+			console.log(res[0]);
+			if(res.length && res.length > 7)
+			{
+				let d = {};
+				let keys = ['death', 'hospitalizedCurrently','hospitalizedCumulative','inIcuCurrently', 'inIcuCumulative', 'positive', 'recovered']
+
+				for(let i = 30; i >= 0; i--)
+				{
+					if(res[i])
+					{
+						if(!d.start_date) d.start_date = res[i].date;
+
+						keys.forEach(function(key)
+						{
+							if(res[i][key] !== null && res[i][key] !== undefined)
+							{
+								d[key + '_arr'] = d[key + '_arr'] || {};
+								d[key + '_arr'][i] = res[i][key];
+							}
+						})
+
+						if(i === 0)
+						{
+							d.end_date = res[i].date;
+						}
+					}
+					else
+					{
+						break;
+					}
+				}
+
+				keys.forEach(function(key)
+				{
+					if(d[key + '_arr'])
+					{
+						let days = Object.keys(d[key + '_arr']);
+						d[key] = {
+							today: d[key + '_arr'][days[0]]
+						}
+
+						if(days.length > 1)
+						{
+							let today_i = days[0];
+							let last_i = days[days.length - 1];
+							let today_plus_6 = parseInt(today_i) + 6;
+							let week_i = days.reduce(function(prev, curr)
+							{
+								return (Math.abs(parseInt(curr) - today_plus_6) < Math.abs(parseInt(prev) - today_plus_6) ? parseInt(curr) : parseInt(prev));
+							});
+
+							d[key].change_30 = d[key + '_arr'][today_i] - d[key + '_arr'][last_i];
+							d[key].change_7 = d[key + '_arr'][today_i] - d[key + '_arr'][week_i];
+
+							if(d[key + '_arr'][0] && d[key + '_arr'][1])
+							{
+								d[key].change_1 = d[key + '_arr'][0] - d[key + '_arr'][1];
+							}
+						}
+
+						delete d[key + '_arr'];
+					}
+				})
+
+				console.log(d);
+				callback(d);
+			}
+			else
+			{
+				callback({err: 'No COVID data available.'})
+			}
+		},{
+			return_err: true
+		})
+	}
+
 	nu(CHAN, send_data){
 		if(config.API.nutritionix && config.API.nutritionix.key !== '') {
 			request.post({

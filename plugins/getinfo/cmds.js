@@ -493,6 +493,144 @@ var cmds = {
 			});
 		}
 	},
+	covid: {
+		action: 'COVID-19 Data',
+		params: [{
+			name: 'state abbreviation',
+			type: 'text',
+			optional: true
+		}],
+		func: function(CHAN, USER, say, args, command_string){
+			function say_table(d, title)
+			{
+				let key_text = {
+					recovered: '🤕 Recovered',
+					positive: '🦠 Positive Tests',
+					hospitalizedCurrently: '🚑 Hospital Now',
+					hospitalizedCumulative: '🚑 Hospital Total',
+					inIcuCurrently: '🫁 ICU Now',
+					inIcuCumulative: '🫁 ICU Total',
+					death: '💀 Deaths'
+				}
+
+				let key_order = {
+					recovered: 0,
+					positive: 1,
+					hospitalizedCurrently: 2,
+					hospitalizedCumulative: 3,
+					inIcuCurrently: 4,
+					inIcuCumulative: 5,
+					death: 6
+				}
+
+				function pos_neg(n, col)
+				{
+					if(!col)
+					{
+						if(Math.sign(n) === 1){
+							return '+' + x.comma_num(n);
+						} else if(Math.sign(n) === -1){
+							return '-' + x.comma_num(Math.abs(n));
+						} else {
+							return n;
+						}
+					}
+					else
+					{
+						if(Math.sign(n) === 1){
+							return CHAN.t.errors('+' + x.comma_num(n));
+						} else if(Math.sign(n) === -1){
+							return CHAN.t.success('-' + x.comma_num(Math.abs(n)));
+						} else {
+							return CHAN.t.success(n);
+						}
+					}
+				}
+
+				let say_data = [];
+
+				for(var key in d)
+				{
+					if(key_text[key] === undefined) continue;
+
+					let row = {
+						type: 'X' + key_text[key].slice(1),
+						type_hidden: key_text[key],
+						key_hidden: key,
+						total: x.comma_num(d[key].today),
+						'today↑↓': pos_neg(d[key].change_1),
+						today_change_hidden: d[key].change_1,
+						'weekly↑↓': pos_neg(d[key].change_7),
+						weekly_change_hidden: d[key].change_7,
+						'monthly↑↓': pos_neg(d[key].change_30),
+						monthly_change_hidden: d[key].change_30,
+						order_hidden: key_order[key]
+					};
+
+
+					say_data.push(row);
+				}
+
+				say(say_data, 1, {
+					table: true,
+					force_lines: true,
+					lines: 9,
+					table_opts: {
+						title: title,
+						header: {
+							type: '-',
+						},
+						outline: false,
+						sort_by: function(a, b){
+							return (a.order_hidden > b.order_hidden) ? 1 : -1;
+						},
+						col_format: {
+							type: function(row, cell)
+							{
+								if(row.key_hidden === 'recovered'){
+									return CHAN.t.success(row.type_hidden)
+								} else if(row.key_hidden === 'positive'){
+									return CHAN.t.warn(row.type_hidden)
+								} else if(row.key_hidden === 'hospitalizedCurrently' || row.key_hidden === 'hospitalizedCumulative'){
+									return CHAN.t.errors(row.type_hidden)
+								} else if(row.key_hidden === 'inIcuCurrently' || row.key_hidden === 'inIcuCumulative'){
+									return CHAN.t.considering(row.type_hidden)
+								} else {
+									return CHAN.t.null(row.type_hidden)
+								}
+							},
+							'today↑↓': function(row, cell){
+								return pos_neg(row.today_change_hidden, true);
+							},
+							'weekly↑↓': function(row, cell){
+								return pos_neg(row.weekly_change_hidden, true);
+							},
+							'monthly↑↓': function(row, cell){
+								return pos_neg(row.monthly_change_hidden, true);
+							}
+						}
+					}
+				})
+			}
+
+			if(args.state_abbreviation)
+			{
+				gi.covid(CHAN, args.state_abbreviation, function(d)
+				{
+					if(d.err) return say(d);
+					say_table(d, args.state_abbreviation.toUpperCase() + ' COVID-19 data totals and changes in the last day, week, and month.');
+				});
+			}
+			else
+			{
+				gi.covid(CHAN, null, function(d)
+				{
+					if(d.err) return say(d);
+					say_table(d, 'USA COVID-19 data totals and changes in the last day, week, and month.');
+				});
+			}
+		}
+	},
 	n: {
 		action: 'get nutrition info about food',
 		params: [{
@@ -509,7 +647,7 @@ var cmds = {
 						{
 							var say_arr = [];
 							data.foods.forEach(function(food){
-								console.log(food);
+								//console.log(food);
 
 								for(var key in food){
 									if(food[key] === null) food[key] = 0;
