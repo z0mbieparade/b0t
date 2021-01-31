@@ -1001,7 +1001,14 @@ var cmds = {
 							var chans = Object.keys(d.auto_kb);
 							for(var chan in d.auto_kb){
 								bot.send('mode', chan, '-b', USER.nick + '!*@*');
-								bot.send('sajoin', USER.nick, chan);
+
+								// check for OperServ
+								if(config.use_serv_for_admin_commands && config.use_serv_for_admin_commands == true) {
+									bot.say('OperServ', 'svsjoin ', USER.nick, chan);
+								}
+								else {
+									bot.send('sajoin', USER.nick, chan);
+								}
 							}
 							db.delete("/nicks/" + USER.nick + '/auto_kb', function(){
 								say({succ: 'You have been unbanned from: ' + chans.join(', ') + ' you can now rejoin if you were not autojoined.' });
