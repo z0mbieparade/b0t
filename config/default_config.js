@@ -80,6 +80,8 @@ exports.default = {
 		info_bot 			: false,
 		//an array of words for info_bot to ignore.
 		info_bot_ignore 	: ["who", "what", "wat", "wot", "where", "why", "y", "he", "she", "they", "it", "us", "me", "you", "I", "but", "up"],
+		// minimum user permission at which "lock" and "unlock" will work (defaults to "~", but some IRC servers like ircd-hybrid don't have that by default, and you may want it to be lower anyway)
+		info_bot_minimum_lock_perm	: '~',
 
 		//auto kick/ban users who are inactive for a long enough period of time
 		autokb_users_inactive_for: 0, //2629746000 = 1mo, setting a time in ms > 0 enables this setting
