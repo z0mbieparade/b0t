@@ -28,6 +28,12 @@ exports.default = {
 	nickserv_password			: "", //NickServ registration password. You don't have to have this, but if your b0t isn't registered it may cause problems with commands.
 	ircop_password				: "", //If your b0t is an ircop on your network, set their oper password here.
 
+	// some IRC servers (ircd-hybrid, for example) do not have SA* commands (i.e. SAMODE, SAJOIN, etc.), so if this applies to you, you can set this to "true" to use OperServ commands instead (which obviously requires IRC services provided by i.e. Anope, as well as the bot being listed as an OPER in the services configuration)
+	use_serv_for_admin_commands	: false,
+
+	// also, some IRC servers (again, using ircd-hybrid for an example) don't support "+a", so here you can make the bot use another op-like mode ("+o, for instance")
+	bot_op_mode	: "a",
+
 	//These are all the settings that are used to connect the b0t to the server
 	//http://node-irc.readthedocs.io/en/latest/API.html
 	bot_config: {
