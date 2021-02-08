@@ -127,9 +127,14 @@ exports.default = {
 	//If you don't want to use a set of commands you can leave the key blank or delete the whole section. Commands relating to that api will be disabled
 	API: {
 
+		// https://coinmarketcap.com (!cc crypto command)
+		coinmarketcap: {
+			key 		: ""
+		},
+
 		// https://www.goodreads.com/api You will need an API key and secret. (Book commands)
 		goodreads: {
-			key 		: "",
+			key 			: "",
 			secret 		: ""
 		},
 
@@ -143,7 +148,7 @@ exports.default = {
 		// http://www.last.fm/api/account/create You will need an API key and a secret.
 		//You can enter an app_name here too, otherwise it defaults to b0t. (Music/Artist commands)
 		lastfm: {
-			key 		: "",
+			key 			: "",
 			secret 		: "",
 			app_name 	: ""
 		},
@@ -201,7 +206,7 @@ exports.default = {
 
 		// https://untappd.com/api/docs Untappd.com takes a couple of weeks to approve your api_key and secret. (Beer commands)
 		untappd: {
-			key 		: "",
+			key 			: "",
 			secret 		: ""
 		},
 

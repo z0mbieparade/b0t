@@ -173,6 +173,42 @@ module.exports = class GI
 		})
 	}
 
+	cc(CHAN, data, callback)
+	{
+		let _this = this;
+		if(config.API.coinmarketcap && config.API.coinmarketcap.key !== '')
+		{
+			var url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest';
+			let i = 0;
+			for(var key in data)
+			{
+				url += (i === 0 ? '?' : '&') + key + '=' + encodeURI(data[key]);
+				i++;
+			}
+
+			x.get_url(url, 'json', function(d){
+				if(d.err && d.err == 400 && data.slug !== undefined)
+				{
+					data.symbol = data.slug;
+					delete data.slug;
+					_this.cc(CHAN, data, callback);
+
+				} else if(d.err){
+					callback(d);
+				} else if(d.status && d.status.error_message){
+					callback({err: d.status.error_message});
+				} else if(d.data && Object.keys(d.data).length){
+					callback(d.data[Object.keys(d.data)[0]]);
+				}
+			}, {
+				return_err: true,
+				headers: {
+					'X-CMC_PRO_API_KEY': config.API.coinmarketcap.key
+				}
+			});
+		}
+	}
+
 	nu(CHAN, send_data){
 		if(config.API.nutritionix && config.API.nutritionix.key !== '') {
 			request.post({
@@ -238,9 +274,10 @@ module.exports = class GI
 		if(val === null || val === undefined || val.value === null || val.value === undefined){
 			return extra ? CHAN.t.warn('-') : '-';
 		} else {
-			var ret = '';
-			var col = false;
-			var pre = '';
+			let ret = '';
+			let col = false;
+			let pre = '';
+
 
 			if(Math.sign(val.value) === 0 || Math.sign(val) === -0){
 				col = CHAN.t.warn;

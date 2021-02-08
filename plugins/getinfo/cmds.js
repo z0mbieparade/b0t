@@ -364,107 +364,58 @@ var cmds = {
 		}
 	},
 	cc: {
-		action: 'get cryptocurrency info (by default in USD)',
+		action: 'get cryptocurrency info in USD',
 		params: [{
-			or: [{
-				name: 'list',
-				type: 'flag'
+			and: [{
+				name: 'name',
+				type: 'string'
 			},{
-				and: [{
-					name: 'symbol',
-					type: 'string'
-				},{
-					optional: true,
-					name: 'convert to currency',
-					key: 'convert_to',
-					type: 'string',
-					default: function(USER){ return 'USD' }
-				}]
+				optional: true,
+				name: 'convert to currency',
+				key: 'convert_to',
+				type: 'string',
+				default: function(USER){ return 'USD' }
 			}]
 		}],
-		settings: ['stock/url'],
-		func: function(CHAN, USER, say, args, command_string){
+		API: ['coinmarketcap'],
+		func: function(CHAN, USER, say, args, command_string)
+		{
+			if(args.name)
+			{
+				gi.cc(CHAN, {
+					slug: args.name,
+					convert: args.convert_to.toUpperCase()
+				}, function(d)
+				{
+					if(d.err) return say(d);
 
-			if(!info.c_list){
-				var url = 'https://api.coinmarketcap.com/v1/ticker/';
-				x.get_url(url, 'json', function(list){
-					if(list.err){
-						say(list);
-						b.log.error(url, list);
-						return;
+					let quote = null;
+					if(d.quote)
+					{
+						if(d.quote[args.convert_to.toUpperCase()])
+						{
+							quote = d.quote[args.convert_to.toUpperCase()];
+							args.convert_to = args.convert_to.toUpperCase();
+						}
+						else if(Object.keys(d.quote)[0])
+						{
+							args.convert_to = Object.keys(d.quote)[0];
+							quote = d.quote[args.convert_to];
+						}
 					}
 
-					list.forEach(function(coin){
-						info.c_list = info.c_list || {};
-						info.c_list[coin.symbol] = coin;
-
-						if(coin.rank > info.c_last_rank) info.c_last_rank = coin.rank;
-					});
-
-					if(args.symbol){
-						get_info();
-					} else if (args.flag){
-						list_ccs();
+					if(quote === null)
+					{
+						return say({err: 'No price quote for ' + d.name});
 					}
 
-				}, {
-					return_err: true
-				});
-			} else {
-				if(args.symbol){
-					get_info();
-				} else if (args.flag){
-					list_ccs();
-				}
-			}
-
-			function list_ccs(){
-				var str_list = [];
-
-				for(var symbol in info.c_list){
-					str_list.push(CHAN.t.warn('[' + info.c_list[symbol].rank + '] ') + info.c_list[symbol].name + ' (' + symbol + ')');
-				}
-
-				say(str_list.join(', '), 1, {skip_verify: true});
-			}
-
-			function get_info(){
-				args.convert_to = args.convert_to.toUpperCase();
-				if(args.convert_to && info.c_convert.indexOf(args.convert_to) < 0) args.convert_to = 'USD';
-
-				args.symbol = args.symbol.toUpperCase();
-				if(!info.c_list[args.symbol]) return say({err: 'No cryptocurrency with symbol ' + args.symbol + ' found.'});
-
-				var url2 = 'https://api.coinmarketcap.com/v1/ticker/' + info.c_list[args.symbol].id + (args.convert_to ? '/?convert=' + args.convert_to : '');
-				x.get_url(url2, 'json', function(coin){
-					if(coin.err){
-						say(coin);
-						b.log.error(url2, coin);
-						return;
-					}
-
-					var price = +coin[0]['price_' + args.convert_to.toLowerCase()];
-
-					var c = {
-						price: {value: price},
-						price_24h: {value: (coin[0].percent_change_24h * price / 100)},
-						price_24h_perc: {value: +coin[0].percent_change_24h},
-						price_7d: {value: (coin[0].percent_change_7d * price / 100)},
-						price_7d_perc: {value: +coin[0].percent_change_7d},
-					}
-
-					var str = CHAN.t.highlight(coin[0].name) + ' (' + CHAN.t.highlight(coin[0].symbol.toUpperCase()) + ') -> ' + gi.na(CHAN, c.price) + ' ' + args.convert_to;
-					str += ' [' + x.score(coin[0].rank, {max: info.c_last_rank, config: CHAN.config, reverse: true}) + '/' + x.score(info.c_last_rank, {max: info.c_last_rank, config: CHAN.config, reverse: true}) + ']';
-					str += ' | 24h: ' + gi.na(CHAN, c.price_24h, true) + ' ' + gi.na(CHAN, c.price_24h_perc, true, true);
-					str += ' | 7d: ' + gi.na(CHAN, c.price_7d, true) + ' ' + gi.na(CHAN, c.price_7d_perc, true, true);
+					var str = CHAN.t.highlight(d.name) + ' (' + CHAN.t.highlight(d.symbol) + ') -> ' + gi.na(CHAN, {value: quote.price}) + ' ' + args.convert_to.toUpperCase();
+					str += ' | 24h: ' + gi.na(CHAN, {value: quote.percent_change_24h}, true, true);
+					str += ' | 7d: ' + gi.na(CHAN, {value: quote.percent_change_7d}, true, true);
 
 					say(str, 1, {skip_verify: true});
-
-				}, {
-					return_err: true
-				});
+				})
 			}
-
 		}
 	},
 	yts: {
