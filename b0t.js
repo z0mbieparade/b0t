@@ -276,6 +276,7 @@ function init_bot(){
 			case '317': //whoisidle
 			case '319': //whoischannels
 			case '352': //who
+			case '302': //userhost
 				b.users.who_reply(message);
 				break;
 			default:

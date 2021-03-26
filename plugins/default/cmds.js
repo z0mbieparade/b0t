@@ -571,6 +571,24 @@ var cmds = {
 				if(whois_data.err){
 					say(whois_data);
 				} else {
+
+					//console.log(b.users.on_server);
+
+					//check for users with same ip or ip_mask
+					for(let who in whois_data)
+					{
+						for(let w in b.users.on_server){
+							if(who !== w && (
+								b.users.on_server[w].ip === whois_data[who].ip ||
+								b.users.on_server[w].ip_mask === whois_data[who].ip_mask
+							))
+							{
+								whois_data[who].matching_users = whois_data[who].matching_users || [];
+								whois_data[who].matching_users.push(w);
+							}
+						}
+					}
+
 					CHAN.log.debug('whois', whois_data);
 					say({whois: whois_data}, 3, {skip_verify: true, lines: 30, force_lines: true, join: '\n'});
 
