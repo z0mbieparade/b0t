@@ -238,7 +238,10 @@ function init_bot(){
 				break;
 			case 'PONG':
 				for(var i = b.waiting_for_pong.length; i--;){
-					bot.say(b.waiting_for_pong[i], 'pong');
+					// this could be undefined if "!ping" is sent in a bot PM, which would cause the "say" line to crash
+					if(typeof b.waiting_for_pong[i] != 'undefined') {
+						bot.say(b.waiting_for_pong[i], 'pong');
+					}
 					b.waiting_for_pong.splice(i, 1)
 				}
 				x.pong();
