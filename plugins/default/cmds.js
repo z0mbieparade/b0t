@@ -574,23 +574,28 @@ var cmds = {
 
 					//console.log(b.users.on_server);
 
+					let w_data = JSON.parse(JSON.stringify(whois_data));
+
 					//check for users with same ip or ip_mask
-					for(let who in whois_data)
+					for(let who in w_data)
 					{
 						for(let w in b.users.on_server){
-							if(who !== w && (
-								b.users.on_server[w].ip === whois_data[who].ip ||
-								b.users.on_server[w].ip_mask === whois_data[who].ip_mask
-							))
+							if(who !== w && b.users.on_server[w].ip === w_data[who].ip)
 							{
-								whois_data[who].matching_users = whois_data[who].matching_users || [];
-								whois_data[who].matching_users.push(w);
+								w_data[who].matching_ips = w_data[who].matching_ips || [];
+								w_data[who].matching_ips.push(w);
+							}
+
+							if(who !== w && b.users.on_server[w].host === w_data[who].host)
+							{
+								w_data[who].matching_hosts = w_data[who].matching_hosts || [];
+								w_data[who].matching_hosts.push(w);
 							}
 						}
 					}
 
-					CHAN.log.debug('whois', whois_data);
-					say({whois: whois_data}, 3, {skip_verify: true, lines: 30, force_lines: true, join: '\n'});
+					CHAN.log.debug('whois', w_data);
+					say({whois: w_data}, 3, {skip_verify: true, lines: 30, force_lines: true, join: '\n'});
 
 					b.users.get_user_data(args.irc_nick, {
 						ignore_err: true,
