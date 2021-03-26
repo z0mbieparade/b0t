@@ -28,6 +28,12 @@ exports.default = {
 	nickserv_password			: "", //NickServ registration password. You don't have to have this, but if your b0t isn't registered it may cause problems with commands.
 	ircop_password				: "", //If your b0t is an ircop on your network, set their oper password here.
 
+	// some IRC servers (ircd-hybrid, for example) do not have SA* commands (i.e. SAMODE, SAJOIN, etc.), so if this applies to you, you can set this to "true" to use OperServ commands instead (which obviously requires IRC services provided by i.e. Anope, as well as the bot being listed as an OPER in the services configuration)
+	use_serv_for_admin_commands	: false,
+
+	// also, some IRC servers (again, using ircd-hybrid for an example) don't support "+a", so here you can make the bot use another op-like mode ("+o, for instance")
+	bot_op_mode	: "a",
+
 	//These are all the settings that are used to connect the b0t to the server
 	//http://node-irc.readthedocs.io/en/latest/API.html
 	bot_config: {
@@ -80,6 +86,8 @@ exports.default = {
 		info_bot 			: false,
 		//an array of words for info_bot to ignore.
 		info_bot_ignore 	: ["who", "what", "wat", "wot", "where", "why", "y", "he", "she", "they", "it", "us", "me", "you", "I", "but", "up"],
+		// minimum user permission at which "lock" and "unlock" will work (defaults to "~", but some IRC servers like ircd-hybrid don't have that by default, and you may want it to be lower anyway)
+		info_bot_minimum_lock_perm	: '~',
 
 		//auto kick/ban users who are inactive for a long enough period of time
 		autokb_users_inactive_for: 0, //2629746000 = 1mo, setting a time in ms > 0 enables this setting

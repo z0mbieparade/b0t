@@ -573,16 +573,31 @@ var cmds = {
 							if(force_fire_on) {
 								say(CHAN.t.success('Click! ' + hit_nick + ' gets a new nickname!'), 1, {skip_verify: true});
 								var new_nick = x.rand_arr(russian_nick);
-								if(!debug) bot.send('sanick', hit_nick, new_nick);
-								if(debug) CHAN.log.debug('sanick', hit_nick, new_nick);
+								// need to check for OperServ
+								if(config.use_serv_for_admin_commands && config.use_serv_for_admin_commands == true) {
+									bot.say('OperServ', 'svsnick ' + hit_nick + ' ' + new_nick);
+									if(debug) CHAN.log.debug('msg OperServ svsnick', hit_nick, new_nick);
+								}
+								else {
+									bot.send('sanick', hit_nick, new_nick);
+									if(debug) CHAN.log.debug('sanick', hit_nick, new_nick);
+								}
+
 								if(!debug) hit_nick = new_nick;
 							} else if(misfire){
 								say(CHAN.t.success('Click! Watch where you\'re pointing that thing! ' + hit_nick + ', enjoy your new nickname!'), 1, {skip_verify: true});
 							} else {
 								say(CHAN.t.success('Click! Enjoy your new nickname!'), 1, {skip_verify: true});
 							}
-							if(!debug) bot.send('sanick', hit_nick, x.rand_arr(russian_nick));
-							if(debug) CHAN.log.debug('sanick', hit_nick, x.rand_arr(russian_nick));
+							// check for OperServ here, too
+							if(config.use_serv_for_admin_commands && config.use_serv_for_admin_commands == true) {
+								bot.say('OperServ', 'svsnick ' + hit_nick + ' ' + x.rand_arr(russian_nick));
+								if(debug) CHAN.log.debug('msg OperServ svsnick', hit_nick, x.rand_arr(russian_nick));
+							}
+							else {
+								bot.send('sanick', hit_nick, x.rand_arr(russian_nick));
+								if(debug) CHAN.log.debug('sanick', hit_nick, x.rand_arr(russian_nick));
+							}
 							break;
 						case 4:
 							if(['~', '&', '@'].includes(CHAN.users[hit_nick].perm))
