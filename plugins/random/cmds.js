@@ -1,8 +1,8 @@
-var fortune 		= require("adage"),
+var fortune 			= require("adage"),
 	dateWithOffset  = require("date-with-offset"),
-	xpath 			= require('xpath'),
-	RND 			= require(__dirname + '/func.js'),
-	rnd 			= new RND();
+	xpath 					= require('xpath'),
+	RND 						= require(__dirname + '/func.js'),
+	rnd 						= new RND();
 
 var info = {
 	name: 'Random',
@@ -28,11 +28,13 @@ var answers = [
 		'Outlook good',
 		'Yes',
 		'Signs point to yes', //0-9 positive
+
 		'Reply hazy try again',
 		'Ask again later',
 		'Better not tell you now',
 		'Cannot predict now',
 		'Concentrate and ask again', //10-14 maybe
+
 		'Don\'t count on it',
 		'My reply is no',
 		'My sources say no',
@@ -105,9 +107,9 @@ var cmds = {
 		}],
 		func: function(CHAN, USER, say, args, command_string){
 			var num = x.rand_number_between(0, answers.length - 1);
-			if(num <= 10){
+			if(num <= 9){
 				var answer = CHAN.t.success(answers[num]);
-			} else if (num <= 15) {
+			} else if (num <= 14) {
 				var answer = CHAN.t.warn(answers[num]);
 			} else {
 				var answer = CHAN.t.fail(answers[num]);
@@ -115,30 +117,15 @@ var cmds = {
 			say(answer, 1, {skip_verify: true});
 		}
 	},
-	potd: {
-		action: 'pull the last image from a pre-set imgur album',
-		settings: ['potd/imgur_album'],
-		API: ['imgur'],
+	choose: {
+		action: 'Choose one thing or another',
+		params: [{
+			name: 'this or that',
+			type: '\\S.*?\\sor\\s\\S.*'
+		}],
 		func: function(CHAN, USER, say, args, command_string){
-			rnd.imgur(CHAN, 'album', {
-				path: [CHAN.config.plugin_settings.potd.imgur_album],
-				handlers: {
-					success: function(album){
-						var img = album.data.images[0];
-						var say_arr = [];
-
-						say_arr.push(CHAN.t.highlight('POTD: ') + img.link);
-						if(img.title != 'null' && img.title !== null) say_arr.push(CHAN.t.null(img.title));
-						if(img.description != 'null' && img.description !== null) say_arr.push(CHAN.t.null(img.description));
-
-						say(say_arr, 1, {skip_verify: true, join: '\n'});
-					},
-					error: function(err){
-						b.log.error(err);
-						say({err: 'None found'}, 2);
-					}
-				}
-			})
+			var choose = args.this_or_that.split(/\sor\s/i);
+			say({succ: x.rand_arr(choose)}, {skip_buffer: true, skip_verify: true})
 		}
 	},
 	creed: {
@@ -250,119 +237,6 @@ var cmds = {
 			});
 		}
 	},
-	oontz: {
-		params: [{
-			optional: true,
-			name: 'text',
-			type: 'text'
-		}],
-		action: 'random excitement',
-		func: function(CHAN, USER, say, args, command_string){
-			var inside = args.text ? args.text : x.rand_arr(dance_inside);
-
-			var outside_left = [];
-			for(var i = 0; i < 8; i++) {
-				outside_left.push(x.rand_color(x.rand_arr(dance_outside)));
-			}
-
-			var outside_right = Array.prototype.slice.call(outside_left);
-			outside_right.reverse();
-
-			var oontz_arr = outside_left.concat([x.rand_color(' ' + inside + ' ')], outside_right);
-
-			var create_mirror = function(){
-				var mirror_pos = x.rand_number_between(1, 8);
-				var mirror_arr = x.rand_color(x.rand_arr(dance_mirror));
-
-				oontz_arr.splice(mirror_pos, 0, mirror_arr[0]);
-				oontz_arr.splice(-mirror_pos, 0, mirror_arr[1]);
-			}
-
-			create_mirror();
-			create_mirror();
-
-			var str = oontz_arr.join('');
-
-
-			say(str, 1, {skip_verify: true});
-		}
-	},
-	insult: {
-		action: 'insult a user',
-		params: [{
-			optional: true,
-			or: [
-				{
-					name: 'list',
-					perm: '~',
-					type: 'flag',
-					key: 'flag'
-				},{
-					name: 'delete',
-					perm: '~',
-					type: 'flag',
-					key: 'flag',
-					and: [ { name: 'id', type: 'number' } ]
-				},{
-					name: 'edit',
-					perm: '~',
-					type: 'flag',
-					key: 'flag',
-					and: [ { name: 'id', type: 'number' }, { name: 'new insult', type: 'text', key: 'new_val' } ]
-				},{
-					name: 'add',
-					type: 'flag',
-					key: 'flag',
-					and: [ { name: 'insult', type: 'text', key: 'new_val' } ]
-				},{
-					name: 'to',
-					type: 'text',
-					key: 'to'
-				}
-
-			]
-		}],
-		func: function(CHAN, USER, say, args, command_string){
-			if(args.flag){
-				insults_db.manage_arr(USER, '/', args, {}, say);
-			} else {
-
-				/*function get_new_insult(callback){
-					x.get_url('http://www.randominsults.net/', 'html', function(result){
-						callback(result[4]);
-					}, {
-						only_return_text: true,
-						only_return_nodes: {tag: ['table']}
-					});
-				}
-
-				function insult(d, count){
-					get_new_insult(function(ins){
-						if(d.indexOf(ins) > -1 && count < 5){
-							count++;
-							insult(d, count);
-						} else if (d.indexOf(ins) < 0) {
-							insult_db.update("/[]", ins, true, function(act){
-								var str = (args.to !== undefined ? args.to + ': ' : '') + ins;
-								say(CHAN.t.warn(str), 1);
-							});
-						} else if (d.indexOf(ins) > -1 && count >= 5) {
-							var str = (args.to !== undefined ? args.to + ': ' : '') + d[x.rand_number_between(0, d.length - 1)];
-							say(CHAN.t.warn(str), 1);
-						}
-					});
-				}*/
-
-				if(args.to === bot.nick) args.to = USER.nick;
-
-				insults_db.get_data("/", function(d){
-					//insult(d, 0);
-					var str = (args.to !== undefined ? args.to.replace('<', '') + ': ' : '') + x.rand_arr(d);
-					say(CHAN.t.warn(str), 1);
-				});
-			}
-		}
-	},
 	fml: {
 		action: 'get random fml quote',
 		func: function(CHAN, USER, say, args, command_string){
@@ -421,6 +295,93 @@ var cmds = {
 			get_fml(0)
 		}
 	},
+	fortune: {
+		action: 'Unix fortune',
+		func: function(CHAN, USER, say, args, command_string){
+			fortune({}, function(err, a) {
+			  if(err) return say({err: err});
+			  say(a, {skip_buffer: true, skip_verify: true});
+			});
+		}
+	},
+	horoscope: {
+		action: 'horoscope',
+		params: [{
+			optional: true,
+			name: 'sign',
+			type: 'string'
+		}],
+		func: function(CHAN, USER, say, args, command_string){
+			if(args.sign && args.sign !== '') {
+				scopes_db.get_data("/" + args.sign.toLowerCase(), function(d){
+					if(d !== null) {
+						say(CHAN.t.warn(x.cap_first_letter(args.sign) + ': ' + x.rand_arr(d)), {skip_buffer: true, skip_verify: true})
+					} else {
+						say({err: x.cap_first_letter(args.sign) + ' is not a valid zodiac sign.'})
+					}
+				});
+			} else {
+				scopes_db.get_data("/", function(d){
+					if(d !== null) {
+						var pick_sign = x.rand_arr(Object.keys(d));
+						say(CHAN.t.warn(x.unescape_html(x.rand_arr(d[pick_sign]))), {skip_buffer: true, skip_verify: true})
+					} else {
+						say({err: 'No horoscopes avaliable.'})
+					}
+				});
+			}
+		}
+	},
+	insult: {
+		action: 'insult a user',
+		params: [{
+			optional: true,
+			or: [
+				{
+					name: 'list',
+					perm: '~',
+					type: 'flag',
+					key: 'flag'
+				},{
+					name: 'delete',
+					perm: '~',
+					type: 'flag',
+					key: 'flag',
+					and: [ { name: 'id', type: 'number' } ]
+				},{
+					name: 'edit',
+					perm: '~',
+					type: 'flag',
+					key: 'flag',
+					and: [ { name: 'id', type: 'number' }, { name: 'new insult', type: 'text', key: 'new_val' } ]
+				},{
+					name: 'add',
+					type: 'flag',
+					key: 'flag',
+					and: [ { name: 'insult', type: 'text', key: 'new_val' } ]
+				},{
+					name: 'to',
+					type: 'text',
+					key: 'to'
+				}
+
+			]
+		}],
+		func: function(CHAN, USER, say, args, command_string){
+			if(args.flag){
+				insults_db.manage_arr(USER, '/', args, {}, say);
+			} else {
+
+				if(args.to === bot.nick) args.to = USER.nick;
+
+				insults_db.get_data("/", function(d){
+					//insult(d, 0);
+					var str = (args.to !== undefined ? args.to.replace('<', '') + ': ' : '') + x.rand_arr(d);
+					say(CHAN.t.warn(str), 1);
+				});
+			}
+		}
+	},
 	lottery: {
 		action: 'play the lottery',
 		func: function(CHAN, USER, say, args, command_string){
@@ -431,10 +392,185 @@ var cmds = {
 			say("You should play: " + no[0] + no[1] + no[2] + " and " + no[3] + no[4] + no[5] + no[6] + " for today's lottery!", 1, {skip_verify: true});
 		}
 	},
-	stroke: {
-		action: 'have a stroke',
-		func: function(CHAN, USER, say, args, command_string) {
-			say("Does anyone else smell toast?", {stroke: true})
+	oontz: {
+		params: [{
+			optional: true,
+			name: 'text',
+			type: 'text'
+		}],
+		action: 'random excitement',
+		func: function(CHAN, USER, say, args, command_string){
+			var inside = args.text ? args.text : x.rand_arr(dance_inside);
+
+			var outside_left = [];
+			for(var i = 0; i < 8; i++) {
+				outside_left.push(x.rand_color(x.rand_arr(dance_outside)));
+			}
+
+			var outside_right = Array.prototype.slice.call(outside_left);
+			outside_right.reverse();
+
+			var oontz_arr = outside_left.concat([x.rand_color(' ' + inside + ' ')], outside_right);
+
+			var create_mirror = function(){
+				var mirror_pos = x.rand_number_between(1, 8);
+				var mirror_arr = x.rand_color(x.rand_arr(dance_mirror));
+
+				oontz_arr.splice(mirror_pos, 0, mirror_arr[0]);
+				oontz_arr.splice(-mirror_pos, 0, mirror_arr[1]);
+			}
+
+			create_mirror();
+			create_mirror();
+
+			var str = oontz_arr.join('');
+
+
+			say(str, 1, {skip_verify: true});
+		}
+	},
+	poll: {
+		action: 'Create a poll and have users vote on it',
+		params: [{
+			optional: true,
+			or: [{
+					name: 'close',
+					key: 'close',
+					perm: '~',
+					type: 'flag'
+				},{
+					and: [{
+						name: 'question',
+						type: '.+?(?=\\s-\\d)'
+					},{
+						name: '-1 answer -2 answer...',
+						key: 'answers',
+						type: '-\\d+\\s\\S+.*?-\\d+\\s\\S+.*'
+					}]
+				}
+			]
+		}],
+		func: function(CHAN, USER, say, args, command_string){
+			b.log.debug(args);
+			if(args.close !== undefined){
+				x.close_current_poll(CHAN, function(result){
+					say(result);
+				});
+			} else {
+				x.get_poll(CHAN, USER, args, function(result){
+					say(result, {skip_buffer: true, skip_verify: true, join: '\n'});
+				});
+			}
+		}
+	},
+	potd: {
+		action: 'pull the last image from a pre-set imgur album',
+		settings: ['potd/imgur_album'],
+		API: ['imgur'],
+		func: function(CHAN, USER, say, args, command_string){
+			rnd.imgur(CHAN, 'album', {
+				path: [CHAN.config.plugin_settings.potd.imgur_album],
+				handlers: {
+					success: function(album){
+						var img = album.data.images[0];
+						var say_arr = [];
+
+						say_arr.push(CHAN.t.highlight('POTD: ') + img.link);
+						if(img.title != 'null' && img.title !== null) say_arr.push(CHAN.t.null(img.title));
+						if(img.description != 'null' && img.description !== null) say_arr.push(CHAN.t.null(img.description));
+
+						say(say_arr, 1, {skip_verify: true, join: '\n'});
+					},
+					error: function(err){
+						b.log.error(err);
+						say({err: 'None found'}, 2);
+					}
+				}
+			})
+		}
+	},
+	remind: {
+		action: 'Remind user at/in time to do something',
+		registered: true,
+		params: [{
+			or: [{
+					name: 'list',
+					type: 'flag',
+					key: 'flag',
+				},{
+					name: 'delete',
+					type: 'flag',
+					key: 'flag',
+					and: [ { name: 'id', type: 'number' } ]
+				},{
+					and: [{
+						name: 'irc nick or me',
+						type: 'string',
+						key: 'who',
+						default: function(USER){ return 'me'; }
+					},{
+						name: 'at|in',
+						key: 'at in',
+						type: 'at|in'
+					},{
+						name: 'time',
+						type: '.+?)(?=\\sto\\s'
+					},{
+						name: 'to',
+						type: 'to',
+						ignore: true
+					},{
+						name: 'do something',
+						type: 'text',
+						key: 'to do'
+					}]
+				}]
+		}],
+		func: function(CHAN, USER, say, args, command_string){
+			if(args.flag){
+				db.manage_arr(USER, '/nicks/' + USER.nick_org + '/reminders', args, {
+					case_insensitive: USER.nick_org,
+					format: function(item){
+						var str = '';
+
+						if(item.who_set !== item.who){
+							str += item.who_set + ' set a reminder for you to '
+						}
+
+						str += item.to_do + ' ' + x.date_string_to_mdyhms(item.time, item.offset, item.timezone);
+
+						return str;
+					}
+				},
+				say);
+			} else {
+				args.who = args.who.toLowerCase() === 'me' || args.who.toLowerCase() === 'myself' || args.who.toLowerCase() === 'moi' || args.who.toLowerCase() === 'mee' ?
+					USER.nick : b.users.get_nick_org(args.who);
+				args.who_set = USER.nick_org;
+				args.at_in = args.at_in.toLowerCase();
+
+				b.users.get_user_data(USER.nick, {
+					label: 'timezone offset',
+					ignore_err: true,
+					skip_say: true
+				}, function(d){
+
+					var time_str = (args.at_in === 'in' ? 'in ' : 'at ') + args.time;
+					var time = x.str_to_datetime(time_str, d.offset);
+
+					if(time.err) return say(time);
+
+					args.time = time.gmt_epoc;
+					args.offset = d && d.offset ? x.convert_offset_to_min(d.offset) : 0;
+					args.timezone = d && d.timezone ? d.timezone : null;
+
+					b.log.debug(args, time);
+
+					x.set_reminder(USER, CHAN, args, function(result){
+						say(result);
+					})
+				});
+			}
 		}
 	},
 	rr: {
@@ -661,183 +797,23 @@ var cmds = {
 			}
 		}
 	},
-	poll: {
-		action: 'Create a poll and have users vote on it',
+	slap: {
+		action: 'slap something',
 		params: [{
 			optional: true,
-			or: [{
-					name: 'close',
-					key: 'close',
-					perm: '~',
-					type: 'flag'
-				},{
-					and: [{
-						name: 'question',
-						type: '.+?(?=\\s-\\d)'
-					},{
-						name: '-1 answer -2 answer...',
-						key: 'answers',
-						type: '-\\d+\\s\\S+.*?-\\d+\\s\\S+.*'
-					}]
-				}
-			]
-		}],
-		func: function(CHAN, USER, say, args, command_string){
-			b.log.debug(args);
-			if(args.close !== undefined){
-				x.close_current_poll(CHAN, function(result){
-					say(result);
-				});
-			} else {
-				x.get_poll(CHAN, USER, args, function(result){
-					say(result, {skip_buffer: true, skip_verify: true, join: '\n'});
-				});
-			}
-		}
-	},
-	vote: {
-		action: 'Vote on the current poll',
-		params: [{
-			optional: true,
-			name: 'answer id',
-			type: 'number'
-		}],
-		func: function(CHAN, USER, say, args, command_string){
-			x.get_poll(CHAN, USER, args, function(result){
-				say(result, {skip_buffer: true, skip_verify: true, join: '\n'});
-			});
-		}
-	},
-	choose: {
-		action: 'Choose one thing or another',
-		params: [{
-			name: 'this or that',
-			type: '\\S.*?\\sor\\s\\S.*'
-		}],
-		func: function(CHAN, USER, say, args, command_string){
-			var choose = args.this_or_that.split(/\sor\s/i);
-			say({succ: x.rand_arr(choose)}, {skip_buffer: true, skip_verify: true})
-		}
-	},
-	fortune: {
-		action: 'Unix fortune',
-		func: function(CHAN, USER, say, args, command_string){
-			fortune({}, function(err, a) {
-			  if(err) return say({err: err});
-			  say(a, {skip_buffer: true, skip_verify: true});
-			});
-		}
-	},
-	remind: {
-		action: 'Remind user at/in time to do something',
-		registered: true,
-		params: [{
-			or: [{
-					name: 'list',
-					type: 'flag',
-					key: 'flag',
-				},{
-					name: 'delete',
-					type: 'flag',
-					key: 'flag',
-					and: [ { name: 'id', type: 'number' } ]
-				},{
-					and: [{
-						name: 'irc nick or me',
-						type: 'string',
-						key: 'who',
-						default: function(USER){ return 'me'; }
-					},{
-						name: 'at|in',
-						key: 'at in',
-						type: 'at|in'
-					},{
-						name: 'time',
-						type: '.+?)(?=\\sto\\s'
-					},{
-						name: 'to',
-						type: 'to',
-						ignore: true
-					},{
-						name: 'do something',
-						type: 'text',
-						key: 'to do'
-					}]
-				}]
-		}],
-		func: function(CHAN, USER, say, args, command_string){
-			if(args.flag){
-				db.manage_arr(USER, '/nicks/' + USER.nick_org + '/reminders', args, {
-					case_insensitive: USER.nick_org,
-					format: function(item){
-						var str = '';
-
-						if(item.who_set !== item.who){
-							str += item.who_set + ' set a reminder for you to '
-						}
-
-						str += item.to_do + ' ' + x.date_string_to_mdyhms(item.time, item.offset, item.timezone);
-
-						return str;
-					}
-				},
-				say);
-			} else {
-				args.who = args.who.toLowerCase() === 'me' || args.who.toLowerCase() === 'myself' || args.who.toLowerCase() === 'moi' || args.who.toLowerCase() === 'mee' ?
-					USER.nick : b.users.get_nick_org(args.who);
-				args.who_set = USER.nick_org;
-				args.at_in = args.at_in.toLowerCase();
-
-				b.users.get_user_data(USER.nick, {
-					label: 'timezone offset',
-					ignore_err: true,
-					skip_say: true
-				}, function(d){
-
-					var time_str = (args.at_in === 'in' ? 'in ' : 'at ') + args.time;
-					var time = x.str_to_datetime(time_str, d.offset);
-
-					if(time.err) return say(time);
-
-					args.time = time.gmt_epoc;
-					args.offset = d && d.offset ? x.convert_offset_to_min(d.offset) : 0;
-					args.timezone = d && d.timezone ? d.timezone : null;
-
-					b.log.debug(args, time);
-
-					x.set_reminder(USER, CHAN, args, function(result){
-						say(result);
-					})
-				});
-			}
-		}
-	},
-	horoscope: {
-		action: 'horoscope',
-		params: [{
-			optional: true,
-			name: 'sign',
+			name: 'thing',
 			type: 'string'
 		}],
 		func: function(CHAN, USER, say, args, command_string){
-			if(args.sign && args.sign !== '') {
-				scopes_db.get_data("/" + args.sign.toLowerCase(), function(d){
-					if(d !== null) {
-						say(CHAN.t.warn(x.cap_first_letter(args.sign) + ': ' + x.rand_arr(d)), {skip_buffer: true, skip_verify: true})
-					} else {
-						say({err: x.cap_first_letter(args.sign) + ' is not a valid zodiac sign.'})
-					}
-				});
-			} else {
-				scopes_db.get_data("/", function(d){
-					if(d !== null) {
-						var pick_sign = x.rand_arr(Object.keys(d));
-						say(CHAN.t.warn(x.unescape_html(x.rand_arr(d[pick_sign]))), {skip_buffer: true, skip_verify: true})
-					} else {
-						say({err: 'No horoscopes avaliable.'})
-					}
-				});
-			}
+			var thing = args.thing ? args.thing : x.rand_arr(Object.keys(CHAN.users));
+			var str = 'slaps ' + thing + ' around with a ' + x.rand_arr(slap.size) + ' ' + x.rand_arr(slap.adj) + ' ' + x.rand_arr(slap.fish);
+			say('/me ' + x.rand_color(str), {skip_buffer: true, skip_verify: true})
+		}
+	},
+	stroke: {
+		action: 'have a stroke',
+		func: function(CHAN, USER, say, args, command_string) {
+			say("Does anyone else smell toast?", {stroke: true})
 		}
 	},
 	tarot: {
@@ -913,17 +889,17 @@ var cmds = {
 			});
 		}
 	},
-	slap: {
-		action: 'slap something',
+	vote: {
+		action: 'Vote on the current poll',
 		params: [{
 			optional: true,
-			name: 'thing',
-			type: 'string'
+			name: 'answer id',
+			type: 'number'
 		}],
 		func: function(CHAN, USER, say, args, command_string){
-			var thing = args.thing ? args.thing : x.rand_arr(Object.keys(CHAN.users));
-			var str = 'slaps ' + thing + ' around with a ' + x.rand_arr(slap.size) + ' ' + x.rand_arr(slap.adj) + ' ' + x.rand_arr(slap.fish);
-			say('/me ' + x.rand_color(str), {skip_buffer: true, skip_verify: true})
+			x.get_poll(CHAN, USER, args, function(result){
+				say(result, {skip_buffer: true, skip_verify: true, join: '\n'});
+			});
 		}
 	},
 
