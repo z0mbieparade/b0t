@@ -1,5 +1,4 @@
-var urban	   	= require('urban-dictionary'),
-	wikipedia   = require('wtf_wikipedia'),
+var wikipedia   = require('wtf_wikipedia'),
 	GetInfo	 	= require(__dirname + '/func.js')
 	didYouMean 	= require('didyoumean2'),
 	gi		  	= new GetInfo();
@@ -37,47 +36,20 @@ var cmds = {
 		}],
 		func: function(CHAN, USER, say, args, command_string){
 			info.last_word = args.term;
-			urban.term(args.term, (error, entries, tags, sounds) => {
-				if (error) {
-					say({err: error.message});
-				} else {
-
-					var filter_entries = entries.filter(function(entry){
-						return entry.word.toLowerCase() === args.term.toLowerCase();
-					});
-
-					if(filter_entries.length > 0)
-					{
-						entries = filter_entries;
-					}
-
-					entries.forEach(function(entry){
-						entry.rank = entry.thumbs_up - entry.thumbs_down;
-						entry.definition = c.stripColorsAndStyle(entry.definition);
-						entry.definition = entry.definition.replace(/[\[\]]/gm, '');
-
-						if(entry.example)
-						{
-							entry.example = c.stripColorsAndStyle(entry.example);
-							entry.example = entry.example.replace(/[\[\]]/gm, '');
-						}
-					});
-					entries.sort(function(a, b){
-						if (a.rank > b.rank) return -1;
-						if (a.rank < b.rank) return 1;
-						return 0;
-					});
-
-					var entry = entries[0];
-
-					var str_arr = [
-						CHAN.t.highlight('UD ' + CHAN.t.term(entry.word)) + ' 👍' + CHAN.t.success(entry.thumbs_up) + ' 👎' + CHAN.t.fail(entry.thumbs_down) + ' ' + CHAN.t.null('-' + entry.author),
-						entry.definition
-					];
-					if(entry.example) str_arr.push( CHAN.t.highlight('e.g. ') + '\u000f' + entry.example);
-
-					say(str_arr, 1, {join: '\n', url: entry.permalink});
+			gi.ud(CHAN, args.term, function(entry){
+				if(entry.err){
+					say(entry);
+					return;
 				}
+
+				var str_arr = [
+					CHAN.t.highlight('UD ' + CHAN.t.term(entry.word)) + ' 👍' + CHAN.t.success(entry.thumbs_up) + ' 👎' + CHAN.t.fail(entry.thumbs_down) + ' ' + CHAN.t.null('-' + entry.author),
+					entry.definition
+				];
+				if(entry.example) str_arr.push( CHAN.t.highlight('e.g. ') + '\u000f' + entry.example);
+
+				say(str_arr, 1, {join: '\n', url: entry.permalink});
+
 			});
 		}
 	},

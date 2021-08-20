@@ -1,6 +1,57 @@
 var request 	= require('request');
 module.exports = class GI
 {
+	ud(CHAN, term, callback)
+	{
+		var url = 'https://api.urbandictionary.com/v0/define?term=' + encodeURI(term);
+		console.log(url);
+		x.get_url(url, 'json', function(res){
+
+			if(res && res.err === undefined && res.list && res.list.length)
+			{
+				var entries = res.list;
+
+				var filter_entries = entries.filter(function(entry){
+					return entry.word.toLowerCase() === term.toLowerCase();
+				});
+
+				if(filter_entries.length > 0)
+				{
+					entries = filter_entries;
+				}
+
+				entries.forEach(function(entry){
+					entry.rank = entry.thumbs_up - entry.thumbs_down;
+					entry.definition = c.stripColorsAndStyle(entry.definition);
+					entry.definition = entry.definition.replace(/[\[\]]/gm, '');
+
+					if(entry.example)
+					{
+						entry.example = c.stripColorsAndStyle(entry.example);
+						entry.example = entry.example.replace(/[\[\]]/gm, '');
+					}
+				});
+				entries.sort(function(a, b){
+					if (a.rank > b.rank) return -1;
+					if (a.rank < b.rank) return 1;
+					return 0;
+				});
+
+				callback(entries[0]);
+			}
+			else if(res.err)
+			{
+				callback({err: 'An error has occured: ' + res.err})
+			}
+			else
+			{
+				callback({err: 'No entries found for "' + term + '".'})
+			}
+		},{
+			return_err: true
+		})
+	}
+
 	covid(CHAN, state, callback)
 	{
 		let canada = false;

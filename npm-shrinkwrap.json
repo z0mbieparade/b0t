@@ -10,7 +10,6 @@
 			"license": "MIT",
 			"dependencies": {
 				"adage": "~1.0.2",
-				"canny-edge-detector": "^1.0.0",
 				"chrono-node": "^2.3.0",
 				"clones": "~1.1.0",
 				"date-with-offset": "~1.0.1",
@@ -30,7 +29,6 @@
 				"prompt": "~1.0.0",
 				"request": "^2.88.2",
 				"strip-ansi": "~3.0.1",
-				"urban-dictionary": "^2.2.1",
 				"wtf_wikipedia": "^8.5.1",
 				"xml2js": "^0.4.23",
 				"xmldom": "^0.5.0",
@@ -156,11 +154,6 @@
 				"balanced-match": "^1.0.0",
 				"concat-map": "0.0.1"
 			}
-		},
-		"node_modules/canny-edge-detector": {
-			"version": "1.0.0",
-			"resolved": "https://registry.npmjs.org/canny-edge-detector/-/canny-edge-detector-1.0.0.tgz",
-			"integrity": "sha512-SpewmkHDE1PbJ1/AVAcpvZKOufYpUXT0euMvhb5C4Q83Q9XEOmSXC+yR7jl3F4Ae1Ev6OtQKbFgdcPrOdHjzQg=="
 		},
 		"node_modules/caseless": {
 			"version": "0.12.0",
@@ -1016,14 +1009,6 @@
 			"resolved": "https://registry.npmjs.org/tweetnacl/-/tweetnacl-0.14.5.tgz",
 			"integrity": "sha1-WuaBd/GS1EViadEIr6k/+HQ/T2Q="
 		},
-		"node_modules/urban-dictionary": {
-			"version": "2.2.1",
-			"resolved": "https://registry.npmjs.org/urban-dictionary/-/urban-dictionary-2.2.1.tgz",
-			"integrity": "sha512-wnR3QWRlIXAtzf/QNaCHABsksdw05og/ZCEabB+S2C9G02wfDZvSz5l5Mh/Ip/Tk7mYNO09vbUaaFxH7MGHJsg==",
-			"engines": {
-				"node": ">=8.10.0"
-			}
-		},
 		"node_modules/uri-js": {
 			"version": "4.4.1",
 			"resolved": "https://registry.npmjs.org/uri-js/-/uri-js-4.4.1.tgz",
@@ -1277,11 +1262,6 @@
 				"balanced-match": "^1.0.0",
 				"concat-map": "0.0.1"
 			}
-		},
-		"canny-edge-detector": {
-			"version": "1.0.0",
-			"resolved": "https://registry.npmjs.org/canny-edge-detector/-/canny-edge-detector-1.0.0.tgz",
-			"integrity": "sha512-SpewmkHDE1PbJ1/AVAcpvZKOufYpUXT0euMvhb5C4Q83Q9XEOmSXC+yR7jl3F4Ae1Ev6OtQKbFgdcPrOdHjzQg=="
 		},
 		"caseless": {
 			"version": "0.12.0",
@@ -1990,11 +1970,6 @@
 			"version": "0.14.5",
 			"resolved": "https://registry.npmjs.org/tweetnacl/-/tweetnacl-0.14.5.tgz",
 			"integrity": "sha1-WuaBd/GS1EViadEIr6k/+HQ/T2Q="
-		},
-		"urban-dictionary": {
-			"version": "2.2.1",
-			"resolved": "https://registry.npmjs.org/urban-dictionary/-/urban-dictionary-2.2.1.tgz",
-			"integrity": "sha512-wnR3QWRlIXAtzf/QNaCHABsksdw05og/ZCEabB+S2C9G02wfDZvSz5l5Mh/Ip/Tk7mYNO09vbUaaFxH7MGHJsg=="
 		},
 		"uri-js": {
 			"version": "4.4.1",
