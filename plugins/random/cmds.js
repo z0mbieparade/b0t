@@ -244,35 +244,135 @@ var cmds = {
 			{
 				x.get_url('https://www.fmylife.com/random', 'html', function(result){
 					if(result.err){
-						CHAN.log.error(result.err);
+						CHAN.log.error('fml', result.err);
 						return say(result);
 					} else {
 						try {
 							var str = CHAN.t.highlight('FML: ');
+							var spicy = xpath.select1(".//img[@alt='Spicy']", result[0]);
 
-							var auth_reg = /By (.*?) /g;
-							var auth = xpath.select1('.//div[1]/text()', result[0]).nodeValue.replace(/\n/gm, ' ');
-							var author = auth_reg.exec(auth);
+							var info = {
+								spicy: spicy ? true : false,
+								author: null,
+								date: null,
+								text: null,
+								title: null,
+								agree: null,
+								deserved: null,
+							}
 
-							var txt = xpath.select1('.//div[2]/a/text()', result[0]).nodeValue.replace(/\n/gm, '');
+							var info_regex = {
+								author: /^By (.*)$/i,
+								date: /^(\d+\/\d+\/\d+)/,
+								text: /^(.{50}.*)$/i,
+								title: /(.*)/
+							}
 
-							if(!txt)
+							if(spicy){
+								console.log('spicy!');
+							}
+
+							var text = xpath.select('.//text()', result[0]);
+							var leftover = [];
+							var next = null;
+							for(let i = 0; i < text.length; i++)
 							{
-								txt = xpath.select1('.//div[2]/a/span[@class="spicy-hidden"]/text()', result[0]).nodeValue.replace(/\n/gm, '');
-								str += '🌶️ ';
+								if(text[i].nodeValue && text[i].nodeValue.trim()){
+									let txt = text[i].nodeValue.replace(/\n/gm, ' ').trim();
+									let auth_reg = /^By ([^-]*?)($|-\s*\d+.*?$)/ig;
+
+									if(next === 'agree')
+									{
+										info.agree = txt.replace(' ', '');
+										next = null;
+									}
+									else if(next === 'deserved'){
+										info.deserved = txt.replace(' ', '');
+										next = null;
+									}
+									else if(!info.author && txt.match(auth_reg))
+									{
+										let auth = auth_reg.exec(txt);
+										console.log(auth);
+										info.author = auth[1].trim();
+
+										if(auth[2].trim() && !info.date){
+											info.date = auth[2].replace('-', '').trim();
+										}
+									}
+									else if(!info.date && txt.match(/^\d+\/\d+\/\d+/))
+									{
+										info.date = txt;
+									}
+									else if(!info.text && txt.match(/ FML$/i))
+									{
+										info.text = txt.replace(/ FML$/, '');
+									}
+									else if(!info.agree && txt.match(/I agree, your life sucks/i))
+									{
+										next = 'agree';
+									}
+									else if(!info.disagree && txt.match(/You deserved it/i))
+									{
+										next = 'deserved';
+									}
+									else if(!txt.match(/^(tweet|share)$/i))
+									{
+										leftover.push(txt);
+									}
+								}
 							}
 
-							var agree = xpath.select1('.//div[contains(@class, \'vote-up-group\')]/div/text()', result[0]).nodeValue.replace(/\n/gm, '');
-							var deserved = xpath.select1('.//div[contains(@class, \'vote-down-group\')]/div/text()', result[0]).nodeValue.replace(/\n/gm, '');
+							console.log(leftover)
 
-							if(+agree > +deserved){
-								str += CHAN.t.warn('"' + txt + '"');
-							} else {
-								str += CHAN.t.fail('"' + txt + '"');
+							if(leftover.length)
+							{
+								for(var key in info){
+									if(info[key] === null)
+									{
+										for(let i = 0; i < leftover.length; i++)
+										{
+											if(leftover[i] !== null && leftover[i].match(info_regex[key])){
+
+												let arr = info_regex[key].exec(leftover[i]);
+												console.log(arr);
+
+												info[key] = arr[1];
+												leftover[i] = null;
+											}
+										}
+									}
+								}
 							}
-							if(author && author.length) str += CHAN.t.null(' -' + author[1]);
 
-							say(str);
+
+							console.log(info)
+
+							if(info.text)
+							{
+								if(info.spicy) str += '🌶️ ';
+
+								var txt = '"' + info.text + '"';
+
+								if(info.title)
+								{
+									txt = c.bold(info.title) + ': ' + txt;
+								}
+
+								if(+info.agree > +info.deserved){
+									str += CHAN.t.warn(txt);
+								} else {
+									str += CHAN.t.fail(txt);
+								}
+								if(info.author) str += CHAN.t.null(' -' + info.author);
+
+								say(str);
+							}
+							else
+							{
+								get_fml(tries + 1);
+							}
+
 						} catch(e){
 							CHAN.log.error(e.message);
 
@@ -288,7 +388,8 @@ var cmds = {
 					}
 				}, {
 					return_err: true,
-					xpath: '//*[@id="content"]/div/div[1]/div[1]/article[1]/div[1]'
+					only_return_text: true,
+					xpath: '//div[2]/article[1]'
 				})
 			}
 
