@@ -262,10 +262,21 @@ var cmds = {
 							}
 
 							var info_regex = {
-								author: /^By (.*)$/i,
-								date: /^(\d+\/\d+\/\d+)/,
-								text: /^(.{50}.*)$/i,
-								title: /(.*)/
+								author: [
+									/^By ([^-]*?)($|-\s*\d+.*?$)/ig,
+									/^By (.*)$/i
+								],
+								date: [
+									/^(\d+\/\d+\/\d+)/,
+									/(\d+\/\d+\/\d+)/
+								],
+								text: [
+									/^(.*?) FML$/i,
+									/^(.{50}.*)$/i
+								],
+								title: [
+									/(.*)/
+								]
 							}
 
 							if(spicy){
@@ -279,7 +290,6 @@ var cmds = {
 							{
 								if(text[i].nodeValue && text[i].nodeValue.trim()){
 									let txt = text[i].nodeValue.replace(/\n/gm, ' ').trim();
-									let auth_reg = /^By ([^-]*?)($|-\s*\d+.*?$)/ig;
 
 									if(next === 'agree')
 									{
@@ -290,21 +300,20 @@ var cmds = {
 										info.deserved = txt.replace(' ', '');
 										next = null;
 									}
-									else if(!info.author && txt.match(auth_reg))
+									else if(!info.author && txt.match(info_regex.author[0]))
 									{
-										let auth = auth_reg.exec(txt);
-										console.log(auth);
+										let auth = info_regex.author[0].exec(txt);
 										info.author = auth[1].trim();
 
 										if(auth[2].trim() && !info.date){
 											info.date = auth[2].replace('-', '').trim();
 										}
 									}
-									else if(!info.date && txt.match(/^\d+\/\d+\/\d+/))
+									else if(!info.date && txt.match(info_regex.date[0]))
 									{
 										info.date = txt;
 									}
-									else if(!info.text && txt.match(/ FML$/i))
+									else if(!info.text && txt.match(info_regex.text[0]))
 									{
 										info.text = txt.replace(/ FML$/, '');
 									}
@@ -323,7 +332,7 @@ var cmds = {
 								}
 							}
 
-							console.log(leftover)
+							console.log('leftover', leftover);
 
 							if(leftover.length)
 							{
@@ -332,13 +341,16 @@ var cmds = {
 									{
 										for(let i = 0; i < leftover.length; i++)
 										{
-											if(leftover[i] !== null && leftover[i].match(info_regex[key])){
+											for(let j = 0; j < info_regex[key].length; j++)
+											{
+												if(leftover[i] !== null && leftover[i].match(info_regex[key][j])){
 
-												let arr = info_regex[key].exec(leftover[i]);
-												console.log(arr);
+													let arr = info_regex[key][j].exec(leftover[i]);
+													console.log(arr);
 
-												info[key] = arr[1];
-												leftover[i] = null;
+													info[key] = arr[1];
+													leftover[i] = null;
+												}
 											}
 										}
 									}
@@ -346,7 +358,7 @@ var cmds = {
 							}
 
 
-							console.log(info)
+							console.log('info', info)
 
 							if(info.text)
 							{
@@ -389,7 +401,7 @@ var cmds = {
 				}, {
 					return_err: true,
 					only_return_text: true,
-					xpath: '//div[2]/article[1]'
+					xpath: '//article[1]'
 				})
 			}
 
