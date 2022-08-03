@@ -926,6 +926,127 @@ var cmds = {
 			say('/me ' + x.rand_color(str), {skip_buffer: true, skip_verify: true})
 		}
 	},
+	kinkshame: {
+		action: 'give a user the kinkshame hat',
+		params: [{
+			or: [{
+					name: 'list',
+					type: 'flag'
+				},{
+					name: 'username',
+					type: 'string',
+					key: 'username',
+					and: [ { name: 'shamed for', type: 'text', key: 'shame', optional: true } ]
+				}]
+		}],
+		func: function(CHAN, USER, say, args, command_string){
+
+			console.log(args);
+			if(args.flag === '-list')
+			{
+				db.get_data('/kinkshame', function(shamed){
+					if(!shamed) return say({err: 'No users have been kinkshamed'});
+
+					var say_data = [];
+					var count = 0;
+
+					shamed.sort(function (a, b) {
+						return a.when - b.when;
+					});
+
+					for(let i = shamed.length - 1; i >= 0; i--)
+					{
+						let datetime = x.epoc_to_date(shamed[i].when, 0, 'GMT');
+						let date = datetime.split(' ');
+						let say_row = shamed[i];
+
+						say_data.push({
+							'▲': '▲',
+							hat_hidden: count === 0 ? true : false,
+							user: say_row.user,
+							shame: say_row.shame
+						});
+
+						count++;
+					}
+
+					say(say_data, 1, {
+						table: true,
+						table_opts: {
+							header: false,
+							outline: false,
+							full_width: ['▲', 'user'],
+							col_format: {
+								'▲': function(row, cell){
+									return row.hat_hidden ? CHAN.t.success('▲') : CHAN.t.fail('△');
+								},
+								user: function(row, cell){
+									return x.no_highlight(row.user);
+								}
+							}
+						},
+						lines: 5,
+						force_lines: true
+					});
+				});
+			}
+			else if(args.username && !args.shame)
+			{
+				db.get_data('/kinkshame', function(shamed){
+					if(!shamed) return say({err: 'No users have been kinkshamed'});
+
+					shamed.sort(function (a, b) {
+						return a.when - b.when;
+					});
+
+					let str = '';
+					for(let i = shamed.length - 1; i >= 0; i--)
+					{
+						if(shamed[i].user.toLowerCase() === args.username.toLowerCase())
+						{
+							let datetime = x.epoc_to_date(shamed[i].when, 0, 'GMT');
+							let date = datetime.split(' ');
+
+							if(i === shamed.length - 1)
+							{
+								str += CHAN.t.success(shamed[i].user + ' currently is the owner of the kinkshame hat')
+								str += ' which was passed to them by ';
+							}
+							else
+							{
+								str += shamed[i].user + ' was last shamed by ';
+							}
+
+							str += shamed[i].shamed_by + ' on ' + date[0] + ' for ';
+							str += CHAN.t.warn('"' + shamed[i].shame + '"');
+
+							break;
+						}
+					}
+
+					if(str)
+					{
+						say(str, {skip_buffer: true, skip_verify: true})
+					}
+					else
+					{
+						say({err: args.username + ' has never had the kinkshame hat!'})
+					}
+				});
+			}
+			else if(args.username && args.shame)
+			{
+				db.update('/kinkshame', [{
+					user: args.username,
+					shame: args.shame,
+					shamed_by: USER.nick_org,
+					when: (new dateWithOffset(0)).getTime()
+				}], false, function(act){
+					say({succ: USER.nick + ' has passed the kinkshame hat to ' + args.username + ' for ' + args.shame});
+				});
+			}
+		}
+	},
 
 }
 exports.cmds = cmds;
