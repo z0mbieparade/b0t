@@ -1018,6 +1018,7 @@ var cmds = {
 	kinkshame: {
 		action: 'give a user the kinkshame hat',
 		params: [{
+			optional: true,
 			or: [{
 					name: 'list',
 					type: 'flag'
@@ -1071,6 +1072,9 @@ var cmds = {
 								},
 								user: function(row, cell){
 									return x.no_highlight(row.user);
+								},
+								shame: function(row, cell){
+									return 'for ' + row.shame.replace(/^for\s+/i, '');
 								}
 							}
 						},
@@ -1107,7 +1111,7 @@ var cmds = {
 							}
 
 							str += shamed[i].shamed_by + ' on ' + date[0] + ' for ';
-							str += CHAN.t.warn('"' + shamed[i].shame + '"');
+							str += CHAN.t.warn('"' + shamed[i].shame.replace(/^for\s+/i, '') + '"');
 
 							break;
 						}
@@ -1127,11 +1131,32 @@ var cmds = {
 			{
 				db.update('/kinkshame', [{
 					user: args.username,
-					shame: args.shame,
+					shame: args.shame.replace(/^for\s+/i, ''),
 					shamed_by: USER.nick_org,
 					when: (new dateWithOffset(0)).getTime()
 				}], false, function(act){
 					say({succ: USER.nick + ' has passed the kinkshame hat to ' + args.username + ' for ' + args.shame});
+				});
+			}
+			else
+			{
+				db.get_data('/kinkshame', function(shamed){
+					if(!shamed) return say({err: 'No users have been kinkshamed'});
+
+					shamed.sort(function (a, b) {
+						return a.when - b.when;
+					});
+
+					let last_shamed = shamed[shamed.length - 1];
+
+					let datetime = x.epoc_to_date(last_shamed.when, 0, 'GMT');
+					let date = datetime.split(' ');
+
+					let str = CHAN.t.success(last_shamed.user + ' currently is the owner of the kinkshame hat')
+					str += ' which was passed to them by ' + last_shamed.shamed_by + ' on ' + date[0] + ' for ';
+					str += CHAN.t.warn('"' + last_shamed.shame.replace(/^for\s+/i, '') + '"');
+
+					say(str, {skip_buffer: true, skip_verify: true})
 				});
 			}
 		}
