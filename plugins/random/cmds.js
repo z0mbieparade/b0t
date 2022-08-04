@@ -1031,7 +1031,6 @@ var cmds = {
 		}],
 		func: function(CHAN, USER, say, args, command_string){
 
-			console.log(args);
 			if(args.flag === '-list')
 			{
 				db.get_data('/kinkshame', function(shamed){
@@ -1074,7 +1073,7 @@ var cmds = {
 									return x.no_highlight(row.user);
 								},
 								shame: function(row, cell){
-									return 'for ' + row.shame.replace(/^for\s+/i, '');
+									return row.shame.replace(/^for\s+/i, '');
 								}
 							}
 						},
@@ -1135,7 +1134,7 @@ var cmds = {
 					shamed_by: USER.nick_org,
 					when: (new dateWithOffset(0)).getTime()
 				}], false, function(act){
-					say({succ: USER.nick + ' has passed the kinkshame hat to ' + args.username + ' for ' + args.shame});
+					say({succ: USER.nick + ' has passed the kinkshame hat to ' + args.username + ' for ' + args.shame.replace(/^for\s+/i, '')});
 				});
 			}
 			else
