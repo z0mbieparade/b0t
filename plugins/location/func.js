@@ -281,7 +281,7 @@ module.exports = class WU{
 			var location = send_data.location.replace(/,\s+/gm, ',');
 		}
 
-		var url = "http://open.mapquestapi.com/geocoding/v1/address?key=" + config.API.mapquest.key + "&location=" + location;
+		var url = "http://www.mapquestapi.com/geocoding/v1/address?key=" + config.API.mapquest.key + "&location=" + location;
 
 		console.log('get_url_mapquest', url)
 
