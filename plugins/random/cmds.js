@@ -958,44 +958,71 @@ var cmds = {
 				'-soa': ['The situation', 'The obstacle', 'Some advice'],
 				'-ytr': ['You are', 'They are', 'The relationship']
 			};
+			var picked = [];
 
 			if(!args.flag) args.flag = '-ppf';
 
 			CAH_db.get_data("/", function(d){
 				if(d){
-					var pick_random_white = function(tries)
+					const pick_random_white_promise = (tries) =>
 					{
-						try {
-							var deck_id = x.rand_arr(Object.keys(d));
-							var deck = d[deck_id].white;
-							var card = x.rand_arr(deck);
-							return card.text;
-						} catch(e) {
-							if(tries < 3){
-								return pick_random_white(tries + 1);
+						if(tries === undefined) tries = 0;
+		
+						return new Promise((resolve, reject) => 
+						{
+							let pack_id = x.rand_arr(Object.keys(d));
+							let pack = d[pack_id];
+			
+							if(pack === undefined || pack.white === undefined || pack.white.length === 0)
+							{
+								return reject(tries + 1);
+							}
+							else 
+							{
+								let card = x.rand_arr(pack.white);
+			
+								if(card.txt === undefined || card.pid === undefined || card.cid === undefined || 
+								card.r !== 0 || picked.includes(card.txt))
+								{
+									reject(tries + 1);
+								}
+								else
+								{
+									picked.push(card.txt);
+									resolve({...card, pack: pack.name});
+								}
+							}
+						}).catch((e) => {
+							if(tries < 20){
+								return pick_random_white_promise(tries);
 							} else {
+								console.error(e.message);
 								return false;
 							}
-						}
-					}
+						});
+					};
 
-					var spread_it = [];
-					for(var i = 0; i < spreads[args.flag].length; i++)
+					Promise.all([
+						pick_random_white_promise(0), 
+						pick_random_white_promise(0), 
+						pick_random_white_promise(0)
+					]).then((cards) => 
 					{
-						var card = pick_random_white(0);
-						if(card){
-							spread_it.push(c[colors[i]](spreads[args.flag][i] + ': ') + card);
-						}
-						else {
-							break;
-						}
-					}
+						var spread_it = [];
+						spreads[args.flag].forEach((meaning, i) => 
+						{
+							if(cards[i] && cards[i].txt)
+							{
+								spread_it.push(c[colors[i]](meaning + ': ') + cards[i].txt);
+							}
+						})
 
-					if(spread_it.length === spreads[args.flag].length){
-						say(spread_it, 1, {lines: spread_it.length, force_lines: true, join:'\n'});
-					} else {
-						return say({err: 'Something went wrong.'});
-					}
+						if(spread_it.length === spreads[args.flag].length){
+							say(spread_it, 1, {lines: spread_it.length, force_lines: true, join:'\n'});
+						} else {
+							return say({err: 'Something went wrong.'});
+						}
+					});
 				} else {
 					say({err: 'Something went wrong.'})
 				}
